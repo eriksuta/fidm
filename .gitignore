@@ -6,7 +6,6 @@
 # IntelliJ IDEA project files
 **/.idea/*
 *.iml
-*.xml
 
 # Excluding maven generated target folder
 **/target/*
