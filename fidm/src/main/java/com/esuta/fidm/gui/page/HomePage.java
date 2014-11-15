@@ -1,4 +1,4 @@
-package com.esuta.fidm;
+package com.esuta.fidm.gui.page;
 
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.markup.html.basic.Label;
