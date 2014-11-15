@@ -1,20 +1,20 @@
 package com.esuta.fidm;
 
-import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.dashboard.PageDashboard;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 
 /**
  *  @author shood
  * */
-public class WicketApplication extends WebApplication
+public class FederatedIDMApplication extends WebApplication
 {
 	/**
 	 * @see org.apache.wicket.Application#getHomePage()
 	 */
 	@Override
 	public Class<? extends WebPage> getHomePage(){
-		return PageBase.class;
+		return PageDashboard.class;
 	}
 
 	/**

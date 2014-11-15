@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:panel>
+    <div class="navbar-default sidebar" role="navigation">
+        <div class="sidebar-nav navbar-collapse">
+            <ul class="nav" id="side-menu">
+
+                <!-- Search Bar - uncomment, if needed -->
+                <!--
+                <li class="sidebar-search">
+                    <div class="input-group custom-search-form">
+                        <input type="text" class="form-control" placeholder="Search...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </span>
+                    </div>
+                </li>
+                -->
+
+                <li wicket:id="navigationItem">
+                    <a href="" wicket:id="topLevelNavigationItem">
+                        <i wicket:id="icon"></i>
+                        <span wicket:id="label"></span>
+                        <span wicket:id="arrow" class="fa arrow"></span>
+                    </a>
+                    <ul wicket:id="secondLevelContainer" class="nav nav-second-level">
+                        <li wicket:id="secondLevelNavigationItem">
+                            <a wicket:id="secondLevelNavigationItemLink">
+                                <span wicket:id="secondLevelNavigationItemLabel"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!--<li>         -->
+                    <!--<a href="#"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>-->
+                <!--</li>-->
+
+                <li>
+                    <a href="#"><i class="fa fa-table fa-fw"></i> Users</a>
+                </li>
+
+                <li>
+                    <a href="#"><i class="fa fa-edit fa-fw"></i> Roles</a>
+                </li>
+
+                <li>
+                    <a href="#"><i class="fa fa-edit fa-fw"></i> Organizational Units</a>
+                </li>
+
+                <li>
+                    <a href="#"><i class="fa fa-edit fa-fw"></i> Projects</a>
+                </li>
+
+                <li>
+                    <a href="#"><i class="fa fa-edit fa-fw"></i> Federation</a>
+                </li>
+
+                <li>
+                    <a href="#"><i class="fa fa-edit fa-fw"></i> Configuration<span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
+                        <li>
+                            <a href="#"> Basic</a>
+                        </li>
+                        <li>
+                            <a href="#"> Advanced</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</wicket:panel>
+</html>
