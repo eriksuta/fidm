@@ -1,5 +1,6 @@
 package com.esuta.fidm;
 
+import com.esuta.fidm.gui.page.HomePage;
 import org.apache.wicket.util.tester.WicketTester;
 import org.junit.Before;
 import org.junit.Test;
