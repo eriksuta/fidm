@@ -1,7 +1,15 @@
 package com.esuta.fidm.gui.component.nav;
 
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
+import com.esuta.fidm.gui.page.config.PageSystemConfiguration;
 import com.esuta.fidm.gui.page.dashboard.PageDashboard;
+import com.esuta.fidm.gui.page.federation.PageFederation;
+import com.esuta.fidm.gui.page.org.PageOrg;
+import com.esuta.fidm.gui.page.org.PageOrgList;
+import com.esuta.fidm.gui.page.project.PageProject;
+import com.esuta.fidm.gui.page.project.PageProjectList;
+import com.esuta.fidm.gui.page.roles.PageRole;
+import com.esuta.fidm.gui.page.roles.PageRoleList;
 import com.esuta.fidm.gui.page.users.PageUser;
 import com.esuta.fidm.gui.page.users.PageUserList;
 import org.apache.wicket.behavior.AttributeAppender;
@@ -54,8 +62,29 @@ public class RightNavigationMenu extends Panel {
         userSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.user.list"), PageUserList.class));
         menuItemList.add(userSection);
 
-        //TODO - init other sections
+        //init Roles section
+        NavigationMenuTopLevelItem roleSection = new NavigationMenuTopLevelItem(createStringResource("page.link.role"), "fa fa-suitcase fa-fw", null);
+        roleSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.role.new"), PageRole.class));
+        roleSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.role.list"), PageRoleList.class));
+        menuItemList.add(roleSection);
 
+        //init Org section
+        NavigationMenuTopLevelItem orgSection = new NavigationMenuTopLevelItem(createStringResource("page.link.org"), "fa fa-sitemap fa-fw", null);
+        orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.new"), PageOrg.class));
+        orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.list"), PageOrgList.class));
+        menuItemList.add(orgSection);
+
+        //init Project section
+        NavigationMenuTopLevelItem projectSection = new NavigationMenuTopLevelItem(createStringResource("page.link.project"), "fa fa-gamepad fa-fw", null);
+        projectSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.project.new"), PageProject.class));
+        projectSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.project.list"), PageProjectList.class));
+        menuItemList.add(projectSection);
+
+        //init Federation section
+        menuItemList.add(new NavigationMenuTopLevelItem(createStringResource("page.link.federation"), "fa fa-institution fa-fw", PageFederation.class));
+
+        //init Configuration section
+        menuItemList.add(new NavigationMenuTopLevelItem(createStringResource("page.link.config"), "fa fa-wrench fa-fw", PageSystemConfiguration.class));
 
         return menuItemList;
     }
