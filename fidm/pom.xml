@@ -65,6 +65,13 @@
 		</dependency>
 		-->
 
+        <!-- ObjectDB dependency -->
+        <dependency>
+            <groupId>com.objectdb</groupId>
+            <artifactId>objectdb</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
 		<!-- LOGGING DEPENDENCIES - LOG4J -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -186,5 +193,11 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+
+        <repository>
+            <id>objectdb</id>
+            <name>ObjectDB Repository</name>
+            <url>http://m2.objectdb.com</url>
+        </repository>
 	</repositories>
 	</project>
