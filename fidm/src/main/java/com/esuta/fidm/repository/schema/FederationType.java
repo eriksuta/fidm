@@ -1,11 +1,13 @@
 package com.esuta.fidm.repository.schema;
 
+import javax.persistence.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *  @author shood
  * */
+@Entity
 public class FederationType {
 
     private List<ObjectReferenceType> members;

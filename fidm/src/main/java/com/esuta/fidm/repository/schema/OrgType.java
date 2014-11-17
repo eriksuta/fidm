@@ -1,16 +1,21 @@
 package com.esuta.fidm.repository.schema;
 
+import javax.jdo.annotations.Index;
+import javax.persistence.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *  @author shood
  * */
+@Entity
 public class OrgType extends ObjectType{
 
+    @Index
     private String displayName;
     private List<String> orgType;
 
+    @Index
     private String locality;
 
     private List<ObjectReferenceType> parentOrgUnits;

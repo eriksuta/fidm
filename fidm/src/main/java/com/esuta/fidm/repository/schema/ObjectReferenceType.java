@@ -1,10 +1,12 @@
 package com.esuta.fidm.repository.schema;
 
+import javax.persistence.Embeddable;
 import java.io.Serializable;
 
 /**
  *  @author shood
  * */
+@Embeddable
 public class ObjectReferenceType implements Serializable{
 
     private String uid;

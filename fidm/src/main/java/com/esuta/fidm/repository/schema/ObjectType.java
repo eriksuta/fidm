@@ -1,13 +1,18 @@
 package com.esuta.fidm.repository.schema;
 
+import javax.jdo.annotations.Index;
+import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 
 /**
  *  @author shood
  * */
+@MappedSuperclass
 public class ObjectType implements Serializable{
 
     private String uid;
+
+    @Index(unique = "true")
     private String name;
     private String description;
 

@@ -1,10 +1,15 @@
 package com.esuta.fidm.repository.schema;
 
+import javax.jdo.annotations.Index;
+import javax.persistence.Entity;
+
 /**
  *  @author shood
  * */
+@Entity
 public class ResourceType extends ObjectType{
 
+    @Index
     private String resourceType;
 
     public ResourceType(){}

@@ -1,15 +1,22 @@
 package com.esuta.fidm.repository.schema;
 
+import javax.jdo.annotations.Index;
+import javax.persistence.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *  @author shood
  * */
+@Entity
 public class RoleType extends ObjectType{
 
+    @Index
     private String displayName;
+
+    @Index
     private String roleType;
+
     private List<ObjectReferenceType> organizations;
 
     public RoleType(){}

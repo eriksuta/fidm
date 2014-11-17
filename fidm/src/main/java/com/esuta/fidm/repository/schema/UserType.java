@@ -1,5 +1,6 @@
 package com.esuta.fidm.repository.schema;
 
+import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
 
 /**
@@ -8,9 +9,21 @@ import javax.persistence.Entity;
 @Entity
 public class UserType extends ObjectType{
 
+    @Index
     private String fullName;
+
+    @Index
     private String givenName;
+
+    @Index
     private String familyName;
+
+    @Index
+    private String emailAdress;
+
+    @Index
+    private String locality;
+
     private String additionalName;
     private String nickName;
 
@@ -18,10 +31,8 @@ public class UserType extends ObjectType{
     private String honorificSuffix;
     private String title;
 
-    private String emailAdress;
     private String telephoneNumber;
 
-    private String locality;
     private String password;
 
     public UserType(){}
