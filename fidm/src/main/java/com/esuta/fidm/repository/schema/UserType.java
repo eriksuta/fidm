@@ -1,8 +1,11 @@
-package com.esuta.fidm.repository;
+package com.esuta.fidm.repository.schema;
+
+import javax.persistence.Entity;
 
 /**
  *  @author shood
  * */
+@Entity
 public class UserType extends ObjectType{
 
     private String fullName;

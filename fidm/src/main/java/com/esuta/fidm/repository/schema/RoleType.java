@@ -1,4 +1,4 @@
-package com.esuta.fidm.repository;
+package com.esuta.fidm.repository.schema;
 
 import java.util.ArrayList;
 import java.util.List;

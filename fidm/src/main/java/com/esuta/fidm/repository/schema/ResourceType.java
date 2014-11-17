@@ -1,4 +1,4 @@
-package com.esuta.fidm.repository;
+package com.esuta.fidm.repository.schema;
 
 /**
  *  @author shood
