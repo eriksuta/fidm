@@ -1,9 +1,9 @@
-package com.esuta.fidm.infra;
+package com.esuta.fidm.infra.exception;
 
 /**
  *  @author shood
  * */
-public class ObjectNotFoundException extends Exception{
+public class ObjectNotFoundException extends GeneralException{
 
     private String uid;
 
@@ -31,5 +31,10 @@ public class ObjectNotFoundException extends Exception{
     public ObjectNotFoundException(String message, Throwable cause, String uid){
         super(message, cause);
         this.uid = uid;
+    }
+
+    @Override
+    public String getExceptionMessage() {
+        return "Object wit uid='" + uid + "' was not found in the repository. Message: " + getMessage();
     }
 }

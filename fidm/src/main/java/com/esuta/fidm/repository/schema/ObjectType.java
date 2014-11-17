@@ -10,6 +10,7 @@ import java.io.Serializable;
 @MappedSuperclass
 public class ObjectType implements Serializable{
 
+    @Index(unique = "true")
     private String uid;
 
     @Index(unique = "true")

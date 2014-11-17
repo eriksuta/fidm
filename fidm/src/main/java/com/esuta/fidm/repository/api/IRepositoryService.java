@@ -1,7 +1,8 @@
 package com.esuta.fidm.repository.api;
 
-import com.esuta.fidm.infra.ObjectAlreadyExistsException;
-import com.esuta.fidm.infra.ObjectNotFoundException;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.schema.ObjectType;
 
 import java.util.List;
@@ -23,12 +24,31 @@ public interface IRepositoryService {
      *          (Unique identifier of an object, both in system and in database)
      *
      *  @return Retrieved object, a subclass of ObjectType
+     *          Returns null, if there is no object in repository with provided uid
      *
-     *  @throws ObjectNotFoundException
-     *          The system could not find the requested object in the repository
-     *
+     *  @throws DatabaseCommunicationException
+     *          When communication with database is not established, or was lost
      * */
-    <T extends ObjectType> T readObject(Class<T> type, String uid) throws ObjectNotFoundException;
+    <T extends ObjectType> T readObject(Class<T> type, String uid) throws DatabaseCommunicationException;
+
+    /**
+     *  <p>
+     *      Returns the object from repository based on provided uid
+     *  </p>
+     *
+     *  @param type
+     *          Type, or class, of an object to retrieve
+     *
+     *  @param name
+     *          (Unique identifier - name - of an object, both in system and in database)
+     *
+     *  @return Retrieved object, a subclass of ObjectType
+     *          Returns null, if there is no object in repository with provided name
+     *
+     *  @throws DatabaseCommunicationException
+     *          When communication with database is not established, or was lost
+     * */
+    <T extends ObjectType> T readObjectByName(Class<T> type, String name) throws DatabaseCommunicationException;
 
     /**
      *  <p>
@@ -43,8 +63,11 @@ public interface IRepositoryService {
      *          When object that is to be added already exists
      *          in the repository
      *
+     *  @throws DatabaseCommunicationException
+     *          When communication with database is not established, or was lost
+     *
      * */
-    <T extends ObjectType> void createObject(T object) throws ObjectAlreadyExistsException;
+    <T extends ObjectType> void createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException;
 
     /**
      *  <p>
@@ -58,8 +81,11 @@ public interface IRepositoryService {
      *  @throws ObjectNotFoundException
      *          The system could not find the requested object in the repository
      *
+     *  @throws DatabaseCommunicationException
+     *          When communication with database is not established, or was lost
+     *
      * */
-    <T extends ObjectType> void deleteObject(T object) throws ObjectNotFoundException;
+    <T extends ObjectType> void deleteObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException;
 
     /**
      *  <p>
@@ -72,8 +98,12 @@ public interface IRepositoryService {
      *
      *  @throws ObjectNotFoundException
      *          The system could not find the requested object in the repository
+     *
+     *  @throws DatabaseCommunicationException
+     *          When communication with database is not established, or was lost
+     *
      * */
-    <T extends ObjectType> void updateObject(T object) throws ObjectNotFoundException;
+    <T extends ObjectType> void updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException;
 
     /**
      *  <p>
@@ -84,8 +114,12 @@ public interface IRepositoryService {
      *          A type of objects to count
      *
      *  @return a number of objects found
+     *
+     *  @throws DatabaseCommunicationException
+     *          When communication with database is not established, or was lost
+     *
      * */
-    <T extends ObjectType> Integer countObjects(Class<T> type);
+    <T extends ObjectType> Integer countObjects(Class<T> type) throws DatabaseCommunicationException;
 
     /**
      *  <p>
@@ -96,6 +130,10 @@ public interface IRepositoryService {
      *          A type of object to retrieve
      *
      *  @return List of objects found in the repository
+     *
+     *  @throws DatabaseCommunicationException
+     *          When communication with database is not established, or was lost
+     *
      * */
-    <T extends ObjectType> List<T> getAllObjectsOfType(Class<T> type);
+    <T extends ObjectType> List<T> getAllObjectsOfType(Class<T> type) throws DatabaseCommunicationException;
 }
