@@ -2,7 +2,7 @@
 <html xmlns:wicket="http://wicket.apache.org">
     <body>
         <wicket:extend>
-            <form wicket:id="mainForm" class="form-horizontal">
+            <form wicket:id="mainForm" class="form-horizontal inputForm">
 
                 <div class="row">
 
@@ -152,9 +152,9 @@
                 </div>
 
                 <!-- Button Bar -->
-                <div class="row">
-                    <a wicket:id="saveButton" class="btn btn-primary">Save</a>
-                    <a wicket:id="cancelButton" class="btn btn-default">Cancel</a>
+                <div class="row main-button-bar">
+                    <input type="submit" wicket:id="saveButton" class="btn btn-primary" value="Save"/>
+                    <input type="submit" wicket:id="cancelButton" class="btn btn-default" value="Cancel"/>
                 </div>
             </form>
 

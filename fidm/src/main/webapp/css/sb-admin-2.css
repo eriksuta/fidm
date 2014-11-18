@@ -8,6 +8,23 @@ body {
     background-color: #f8f8f8;
 }
 
+div.main-button-bar{
+    margin-bottom: 10px;
+}
+
+ul.feedbackPanel{
+    list-style-type: none;
+}
+
+ul.feedbackPanel li span{
+    border: none;
+    padding: 5px;
+}
+
+.alert{
+    margin-bottom: 5px;
+}
+
 #wrapper {
     width: 100%;
 }

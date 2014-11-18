@@ -117,6 +117,7 @@ public class PageUser extends PageBase {
                 cancelPerformed();
             }
         };
+        cancel.setDefaultFormProcessing(false);
         mainForm.add(cancel);
 
         AjaxSubmitLink save = new AjaxSubmitLink(ID_BUTTON_SAVE) {
@@ -125,8 +126,17 @@ public class PageUser extends PageBase {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 savePerformed(target);
             }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.add(getFeedbackPanel());
+            }
         };
         mainForm.add(save);
+    }
+
+    public Form getMainForm(){
+        return (Form) get(ID_MAIN_FORM);
     }
 
     private void cancelPerformed(){
@@ -154,6 +164,6 @@ public class PageUser extends PageBase {
         }
 
         success("User has been saved.");
-        target.add(getFeedbackPanel());
+        target.add(getFeedbackPanel(), getMainForm());
     }
 }

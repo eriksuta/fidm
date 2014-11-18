@@ -1,7 +1,10 @@
 package com.esuta.fidm.gui.page;
 
+import com.esuta.fidm.gui.component.CustomFeedbackPanel;
 import com.esuta.fidm.gui.component.nav.RightNavigationMenu;
 import com.esuta.fidm.model.ModelService;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -49,7 +52,9 @@ public abstract class PageBase extends WebPage{
         feedbackContainer.setOutputMarkupId(true);
         add(feedbackContainer);
 
-        feedbackContainer.add(new FeedbackPanel(ID_FEEDBACK));
+        final FeedbackPanel feedback = new CustomFeedbackPanel(ID_FEEDBACK);
+        feedback.setOutputMarkupId(true);
+        feedbackContainer.add(feedback);
     }
 
     protected IModel<String> createPageTitleModel(){
