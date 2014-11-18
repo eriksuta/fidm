@@ -20,7 +20,7 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 public abstract class PageBase extends WebPage{
 
     //Every page is able to communicate with model through this ModelService instance
-    private ModelService modelService;
+    private transient ModelService modelService;
 
     private static final String ID_TITLE = "title";
     private static final String ID_SUBTITLE = "subtitle";

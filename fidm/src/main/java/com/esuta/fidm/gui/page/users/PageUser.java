@@ -143,9 +143,6 @@ public class PageUser extends PageBase {
         setResponsePage(PageUserList.class);
     }
 
-    /**
-     *  TODO - add password Handling
-     * */
     private void savePerformed(AjaxRequestTarget target){
         ModelService modelService = getModelService();
         UserType user;
@@ -156,6 +153,14 @@ public class PageUser extends PageBase {
 
         user = model.getObject();
 
+        if(pass.endsWith(passConfirm)){
+            user.setPassword(pass);
+        } else {
+            info("Values in password and password confirmation fields are not the same. Please provide correct password values.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
         try{
             modelService.createObject(user);
         } catch (GeneralException e){
@@ -163,7 +168,8 @@ public class PageUser extends PageBase {
             error("Can't add user with name: '" + user.getName() + "'. Reason: " + e.getExceptionMessage());
         }
 
-        success("User has been saved.");
-        target.add(getFeedbackPanel(), getMainForm());
+        getSession().success("User '" + user.getName() + "' has been saved successfully.");
+        setResponsePage(PageUserList.class);
+        target.add(getFeedbackPanel());
     }
 }
