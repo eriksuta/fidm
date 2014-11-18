@@ -12,6 +12,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *  @author shood
@@ -122,6 +123,11 @@ public class RepositoryService implements IRepositoryService{
             throw new ObjectAlreadyExistsException("Can't create object.", null, null, object.getName());
         }
 
+        //TODO - consider moving this to model layer
+        if(object.getUid() == null){
+            object.setUid(UUID.randomUUID().toString());
+        }
+
         entityManager.getTransaction().begin();
         entityManager.persist(object);
         entityManager.getTransaction().commit();
@@ -137,17 +143,44 @@ public class RepositoryService implements IRepositoryService{
             return;
         }
 
-        //TODO - when to throw ObjectNotFoundException??
+        T retrievedObject = (T)readObject(object.getClass(), object.getUid());
+
+        if(retrievedObject == null){
+            throw new ObjectNotFoundException("Can't delete object. ", object.getUid());
+        }
 
         entityManager.getTransaction().begin();
-        entityManager.remove(object);
+        entityManager.remove(retrievedObject);
         entityManager.getTransaction().commit();
     }
 
+    /**
+     *  TODO - right now, update operation consists from read, delete and then create
+     *  operation - this is a bad, temporary placeholder solution, repair this
+     *  ASAP
+     * */
     @Override
     public <T extends ObjectType> void updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException {
         if(entityManager == null){
             throw new DatabaseCommunicationException();
+        }
+
+        if(object == null){
+            return;
+        }
+
+        T retrievedObject = (T)readObject(object.getClass(), object.getUid());
+
+        if(retrievedObject == null){
+            throw new ObjectNotFoundException("Can't update object.", object.getUid());
+        }
+
+        deleteObject(retrievedObject);
+
+        try {
+            createObject(object);
+        } catch (ObjectAlreadyExistsException e){
+            //this should not happen
         }
     }
 
