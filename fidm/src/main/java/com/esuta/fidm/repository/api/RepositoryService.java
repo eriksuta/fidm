@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -190,7 +191,14 @@ public class RepositoryService implements IRepositoryService{
             throw new DatabaseCommunicationException();
         }
 
-        return null;
+        if(type == null){
+            return null;
+        }
+
+        String typeName = type.getSimpleName();
+        TypedQuery<Integer> query = entityManager.createQuery("SELECT COUNT(o) FROM " + typeName + " o", Integer.class);
+
+        return query.getSingleResult();
     }
 
     @Override
@@ -199,6 +207,13 @@ public class RepositoryService implements IRepositoryService{
             throw new DatabaseCommunicationException();
         }
 
-        return null;
+        if(type == null){
+            return null;
+        }
+
+        String typeName = type.getSimpleName();
+        TypedQuery<T> query = entityManager.createQuery("SELECT o FROM " + typeName + " AS o", type);
+
+        return query.getResultList();
     }
 }

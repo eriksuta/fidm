@@ -130,6 +130,7 @@ public interface IRepositoryService {
      *          A type of object to retrieve
      *
      *  @return List of objects found in the repository
+     *          An empty list, if there are no objects of provided type in the repository
      *
      *  @throws DatabaseCommunicationException
      *          When communication with database is not established, or was lost
