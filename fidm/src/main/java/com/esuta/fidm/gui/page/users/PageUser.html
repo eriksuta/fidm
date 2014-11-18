@@ -2,168 +2,161 @@
 <html xmlns:wicket="http://wicket.apache.org">
     <body>
         <wicket:extend>
+            <form wicket:id="mainForm" class="form-horizontal">
 
-            <div class="row">
+                <div class="row">
 
-                <!-- User Attributes -->
-                <div class="col-lg-6">
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Name</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                    <!-- User Attributes -->
+                    <div class="col-lg-6">
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="name" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Given Name</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Given Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="givenName" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Family Name</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Family Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="familyName" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Full Name</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Full Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="fullName" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Additional Name</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Additional Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="additionalName" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Nick Name</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Nick Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="nickName" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>E-mail</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>E-mail</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="email" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Locality</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Locality</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="locality" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Honorific Prefix</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Honorific Prefix</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="honorificPrefix" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Honorific Suffix</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Honorific Suffix</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="honorificSuffix" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Title</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Title</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="title" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Telephone Number</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Telephone Number</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="telephoneNumber" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Name</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <hr>
 
-                    <hr>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Password</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="password" type="password" class="form-control input-sm">
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Password</label>
-                        </dt>
-                        <dd>
-                            <input type="password" class="form-control input-sm">
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Confirm Password</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="passwordConfirm" type="password" class="form-control input-sm">
+                            </dd>
+                        </dl>
+                    </div>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Confirm Password</label>
-                        </dt>
-                        <dd>
-                            <input type="password" class="form-control input-sm">
-                        </dd>
-                    </dl>
+                    <!-- Accounts and Assignments -->
+                    <div class="col-lg-6">
+                        <div>
+                            Accounts
+                        </div>
+                        <hr>
+
+                        <div>
+                            Assignments
+                        </div>
+                        <hr>
+                    </div>
                 </div>
 
-                <!-- Accounts and Assignments -->
-                <div class="col-lg-6">
-                    <div>
-                        Accounts
-                    </div>
-                    <hr>
-
-                    <div>
-                        Assignments
-                    </div>
-                    <hr>
+                <!-- Button Bar -->
+                <div class="row">
+                    <a wicket:id="saveButton" class="btn btn-primary">Save</a>
+                    <a wicket:id="cancelButton" class="btn btn-default">Cancel</a>
                 </div>
-            </div>
-
-            <!-- Button Bar -->
-            <div class="row">
-                <a class="btn btn-primary">Save</a>
-                <a class="btn btn-default">Cancel</a>
-            </div>
+            </form>
 
         </wicket:extend>
     </body>

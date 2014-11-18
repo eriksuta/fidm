@@ -2,8 +2,10 @@ package com.esuta.fidm.gui.page;
 
 import com.esuta.fidm.gui.component.nav.RightNavigationMenu;
 import com.esuta.fidm.model.ModelService;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
@@ -20,6 +22,8 @@ public abstract class PageBase extends WebPage{
     private static final String ID_TITLE = "title";
     private static final String ID_SUBTITLE = "subtitle";
     private static final String ID_RIGHT_MENU_PANEL = "rightMenuPanel";
+    private static final String ID_FEEDBACK_CONTAINER = "feedbackContainer";
+    private static final String ID_FEEDBACK = "feedback";
 
     public PageBase(){
         this(null);
@@ -41,6 +45,11 @@ public abstract class PageBase extends WebPage{
         RightNavigationMenu rightMenu = new RightNavigationMenu(ID_RIGHT_MENU_PANEL, this.getClass());
         add(rightMenu);
 
+        WebMarkupContainer feedbackContainer = new WebMarkupContainer(ID_FEEDBACK_CONTAINER);
+        feedbackContainer.setOutputMarkupId(true);
+        add(feedbackContainer);
+
+        feedbackContainer.add(new FeedbackPanel(ID_FEEDBACK));
     }
 
     protected IModel<String> createPageTitleModel(){
@@ -61,6 +70,10 @@ public abstract class PageBase extends WebPage{
         }
 
         return modelService;
+    }
+
+    public WebMarkupContainer getFeedbackPanel(){
+        return (WebMarkupContainer) get(ID_FEEDBACK_CONTAINER);
     }
 
 
