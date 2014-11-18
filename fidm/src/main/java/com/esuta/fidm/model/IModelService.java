@@ -1,4 +1,4 @@
-package com.esuta.fidm.repository.api;
+package com.esuta.fidm.model;
 
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
@@ -10,13 +10,13 @@ import java.util.List;
 /**
  *  @author shood
  *
- *  TODO - define and implement search operations
+ *  TODO - define and implements some search capabilities
  * */
-public interface IRepositoryService {
+public interface IModelService {
 
     /**
      *  <p>
-     *      Returns the object from repository based on provided uid
+     *      Returns the object from model based on provided uid
      *  </p>
      *
      *  @param type
@@ -26,16 +26,16 @@ public interface IRepositoryService {
      *          (Unique identifier of an object, both in system and in database)
      *
      *  @return Retrieved object, a subclass of ObjectType
-     *          Returns null, if there is no object in repository with provided uid
+     *          Returns null, if there is no object in model with provided uid
      *
-     *  @throws DatabaseCommunicationException
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
      *          When communication with database is not established, or was lost
      * */
     <T extends ObjectType> T readObject(Class<T> type, String uid) throws DatabaseCommunicationException;
 
     /**
      *  <p>
-     *      Returns the object from repository based on provided name
+     *      Returns the object from model based on provided name
      *  </p>
      *
      *  @param type
@@ -45,7 +45,7 @@ public interface IRepositoryService {
      *          (Unique identifier - name - of an object, both in system and in database)
      *
      *  @return Retrieved object, a subclass of ObjectType
-     *          Returns null, if there is no object in repository with provided name
+     *          Returns null, if there is no object in model with provided name
      *
      *  @throws DatabaseCommunicationException
      *          When communication with database is not established, or was lost
@@ -54,16 +54,16 @@ public interface IRepositoryService {
 
     /**
      *  <p>
-     *      Writes a provided object to repository
+     *      Writes a provided object to model
      *  </p>
      *
      *  @param object
      *          An object, subclass of ObjectType, that is to be added
-     *          to the repository
+     *          to the model
      *
-     *  @throws ObjectAlreadyExistsException
+     *  @throws com.esuta.fidm.infra.exception.ObjectAlreadyExistsException
      *          When object that is to be added already exists
-     *          in the repository
+     *          in the model
      *
      *  @throws DatabaseCommunicationException
      *          When communication with database is not established, or was lost
@@ -73,14 +73,14 @@ public interface IRepositoryService {
 
     /**
      *  <p>
-     *      Deletes a provided object from the repository
+     *      Deletes a provided object from the model
      *  </p>
      *
      *  @param object
      *          An object, subclass of ObjectType, that is to be deleted
-     *          from the repository
+     *          from the model
      *
-     *  @throws ObjectNotFoundException
+     *  @throws com.esuta.fidm.infra.exception.ObjectNotFoundException
      *          The system could not find the requested object in the repository
      *
      *  @throws DatabaseCommunicationException
@@ -91,15 +91,15 @@ public interface IRepositoryService {
 
     /**
      *  <p>
-     *      Updates object in the repository with new attribute values
+     *      Updates object in the model with new attribute values
      *  </p>
      *
      *  @param object
      *          An object, subclass of ObjectType, that is to be modified
-     *          in the repository
+     *          in the model
      *
      *  @throws ObjectNotFoundException
-     *          The system could not find the requested object in the repository
+     *          The system could not find the requested object in the model
      *
      *  @throws DatabaseCommunicationException
      *          When communication with database is not established, or was lost
@@ -109,7 +109,7 @@ public interface IRepositoryService {
 
     /**
      *  <p>
-     *      Returns a number of objects of defined type in repository
+     *      Returns a number of objects of defined type in model
      *  </p>
      *
      *  @param type
@@ -125,14 +125,14 @@ public interface IRepositoryService {
 
     /**
      *  <p>
-     *      Returns a List of all objects of defined type from the repository
+     *      Returns a List of all objects of defined type from the model
      *  </p>
      *
      *  @param type
      *          A type of object to retrieve
      *
-     *  @return List of objects found in the repository
-     *          An empty list, if there are no objects of provided type in the repository
+     *  @return List of objects found in the model
+     *          An empty list, if there are no objects of provided type in the model
      *
      *  @throws DatabaseCommunicationException
      *          When communication with database is not established, or was lost
