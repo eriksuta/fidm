@@ -63,7 +63,7 @@ public class ModelService implements IModelService{
     }
 
     @Override
-    public <T extends ObjectType> Integer countObjects(Class<T> type) throws DatabaseCommunicationException {
+    public <T extends ObjectType> Long countObjects(Class<T> type) throws DatabaseCommunicationException {
         return repositoryService.countObjects(type);
     }
 

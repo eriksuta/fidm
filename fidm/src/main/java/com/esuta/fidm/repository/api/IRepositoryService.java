@@ -121,7 +121,7 @@ public interface IRepositoryService {
      *          When communication with database is not established, or was lost
      *
      * */
-    <T extends ObjectType> Integer countObjects(Class<T> type) throws DatabaseCommunicationException;
+    <T extends ObjectType> Long countObjects(Class<T> type) throws DatabaseCommunicationException;
 
     /**
      *  <p>

@@ -186,7 +186,7 @@ public class RepositoryService implements IRepositoryService{
     }
 
     @Override
-    public <T extends ObjectType> Integer countObjects(Class<T> type) throws DatabaseCommunicationException{
+    public <T extends ObjectType> Long countObjects(Class<T> type) throws DatabaseCommunicationException{
         if(entityManager == null){
             throw new DatabaseCommunicationException();
         }
@@ -196,7 +196,7 @@ public class RepositoryService implements IRepositoryService{
         }
 
         String typeName = type.getSimpleName();
-        TypedQuery<Integer> query = entityManager.createQuery("SELECT COUNT(o) FROM " + typeName + " o", Integer.class);
+        TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(o) FROM " + typeName + " o", Long.class);
 
         return query.getSingleResult();
     }

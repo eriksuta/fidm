@@ -19,7 +19,7 @@ public class UserType extends ObjectType{
     private String familyName;
 
     @Index
-    private String emailAdress;
+    private String emailAddress;
 
     @Index
     private String locality;
@@ -101,12 +101,12 @@ public class UserType extends ObjectType{
         this.title = title;
     }
 
-    public String getEmailAdress() {
-        return emailAdress;
+    public String getEmailAddress() {
+        return emailAddress;
     }
 
-    public void setEmailAdress(String emailAdress) {
-        this.emailAdress = emailAdress;
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
     }
 
     public String getTelephoneNumber() {
@@ -143,7 +143,7 @@ public class UserType extends ObjectType{
 
         if (additionalName != null ? !additionalName.equals(userType.additionalName) : userType.additionalName != null)
             return false;
-        if (emailAdress != null ? !emailAdress.equals(userType.emailAdress) : userType.emailAdress != null)
+        if (emailAddress != null ? !emailAddress.equals(userType.emailAddress) : userType.emailAddress != null)
             return false;
         if (familyName != null ? !familyName.equals(userType.familyName) : userType.familyName != null) return false;
         if (fullName != null ? !fullName.equals(userType.fullName) : userType.fullName != null) return false;
@@ -173,7 +173,7 @@ public class UserType extends ObjectType{
         result = 31 * result + (honorificPrefix != null ? honorificPrefix.hashCode() : 0);
         result = 31 * result + (honorificSuffix != null ? honorificSuffix.hashCode() : 0);
         result = 31 * result + (title != null ? title.hashCode() : 0);
-        result = 31 * result + (emailAdress != null ? emailAdress.hashCode() : 0);
+        result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
         result = 31 * result + (telephoneNumber != null ? telephoneNumber.hashCode() : 0);
         result = 31 * result + (locality != null ? locality.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);

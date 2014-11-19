@@ -84,7 +84,7 @@ public class PageUser extends PageBase {
         TextField nickName = new TextField<String>(ID_NICK_NAME, new PropertyModel<String>(model, "nickName"));
         mainForm.add(nickName);
 
-        TextField email = new TextField<String>(ID_EMAIL, new PropertyModel<String>(model, "emailAdress"));
+        TextField email = new TextField<String>(ID_EMAIL, new PropertyModel<String>(model, "emailAddress"));
         mainForm.add(email);
 
         TextField locality = new TextField<String>(ID_LOCALITY, new PropertyModel<String>(model, "locality"));
