@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:annotation>
+        <xsd:documentation>
+            What can be achieved using this schema (use cases):
+
+            1. Organizational unit can be local (only available on one IdP), or it can be
+               made available on several organizations in federation (see attribute federationAvailable)
+
+            2. An IdP is able to determine, if organizational unit originates from it or if it
+               is just a copy of org. unit (structure) from other IdP in federation space. This also
+               means, that one organization structure is seen differently from the perspective of identity
+               providers in federation. From org. unit perspective, it is classical OrgType. From
+               IdP that is not origin, it is seen as FederationOrgType (not included in this schema), or
+               remote org. unit. This has several implication on what can be done with such org. unit.
+               For example, when deleting org. unit from IdP, OrgType is removed from local IdP and also
+               from all other copies on other IdPs inside federation. However, if org. unit is removed
+               from other than origin IdP, only local copy is removed and original OrgType is not harmed.
+               (This behavior can be configured)
+
+            3. Origin IdP provider is able to define leader and governors of organizational unit. An org.
+               unit does not need to have any leader or governors at all. But their are necessary if actions
+               concerning org. unit need verification and confirmation.
+
+            4. Remote IdP can only define federationLeader and federationGovernors. These users are only
+               responsible for administration of local copy of org. unit and their decision should not
+               apply on origin org. unit (this can be configured otherwise). But Remote IdP is not able
+               to define leader or federationGovernor.
+
+            5. Only leader is able to completely remove org. unit from IdP. This is one capability, that
+               cannot be added to governor capabilities. However, such decision may require a confirmation
+               from a group, or all of governors.
+
+            6. IdP can configure a set of rights for leader (federation leader) and governors
+               (federation governors) (L, G, FL, FG). Some actions are:
+                    1.  add orgParent (L),
+                    2.  add federation orgParent (FL)
+                    3.  add member (L, G)
+                    4.  add federationMember (L, G, FL, FG)
+                    5.  remove orgParent (L)
+                    6.  remove federation orgParent (FL)
+                    7.  remove member (L, G)
+                    8.  remove federation member (L, FL, G, FG)
+                    9.  add inducement (L, G)
+                    10. add federation inducement (FL, FG)
+                    11. remove inducement (L, G)
+                    12. remove federation inducement (FL, FG)
+                    13. remove org. unit (L)
+
+               Also, IdP can configure, that every action need a set of confirmations made by leader,
+               governors or federation administrators - only than the action itself is carried.
+
+            7. An IdP is able to define org type provisioning in federation space. It can be either
+               Just In Time provisioning or proActive provisioning. In JIT provisioning, a change on
+               organization in one IdP is distributed to other IdPs inside federation space when defined
+               action happens. This trigger may be, for example, a user with org. unit accessing
+               federation resource. This access attempt will request org. unit synchronization and
+               if there is new version inside federation, synchronization is triggered.
+
+            8. Second is proActive provisioning. In this case, synchronization event is triggered
+               automatically in the moment, when change happens (or in defined time). Time definition
+               can be very handy. For example, when we introduce new resource inducement on org. unit
+               with 10 000 users, it may be a good decision to trigger the synchronization to night
+               hours, so the system is not halted and users can work with it.
+
+            9. IdP is able to define a list of organizations inside federation, that work with
+               current org. unit. This means that every org. unit can cooperate with different
+               identity providers. This will be handy in project oriented companies, where there
+               are several projects running and each project is a cooperation with several
+               organizations inside federation space.
+
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:complexType name="OrgType">
+        <xsd:annotation>
+            <xsd:documentation>
+                This is a schema definition for organizational unit that can be used
+                in federated identity management and federated provisioning
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of an OrgType instance.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A name of organizational unit. Must be unique in namespace defined
+                        by organizational units in single Identity Provider
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="description" type="xsd:string" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A simple textual description of organizational unit
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="displayName" type="xsd:string" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Display name of organizational unit is in schema for
+                        purposes of user interface
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="type" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Type of the org. This may specify whether it
+                        is department, division, project, team, ...
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="locality" type="xsd:string" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Primary locality of the org, the place where
+                        the org is usually placed, the country, city or
+                        building that it belongs to. The specific meaning
+                        and form of this property is deployment-specific.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="parentOrgRef" type="OrgType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A parent organization for this organizational unit
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="leader" type="UserType" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A manager, or responsive person for this instance of org. unit.
+                        This value needs to be defined only in case, when operations
+                        performed with org. unit (e.g. adding identity, adding
+                        federated identity) must be approved before application.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="governor" type="UserType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A list of governors, that held some level of responsibility
+                        for actions performed within organizational unit. What exact
+                        responsibilities these are, will be defined later - it will
+                        probably be a list of responsibilities and each governor may
+                        possess different responsibilities
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="members" type="UserType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A list of organization members
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="inducement" type="ResourceType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A list of resources, to which this organization unit has inducement.
+                        An inducement means that every user that belongs to this org. unit
+                        is expected to have accounts on defined resource.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <!-- Attributes defined below all deal with federation identity management
+                 from organizational unit point of perspective -->
+            <xsd:element name="federationAvailable" type="xsd:boolean" default="false" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        This attribute is probably the most important one from
+                        federation point of perspective. If it is set to true,
+                        it means, that this organization unit is turned into
+                        federated organization unit. With this ability, there may
+                        be added new users from different organization in federation
+                        to this use case. This org. may also be provisioned in
+                        federation space etc.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="origin" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        This attribute defines, if organization unit originates
+                        from this identity provider (true) or it originates
+                        in some other organization's identity provider (false).
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="federationOrganization" type="FederationMemberType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A list of federation organizations with whom this organization unit should
+                        cooperate (be synchronized with etc.). This list is unique with
+                        every organizational unit - this means, that every and each org. unit
+                        may cooperate with different list of organizations inside federation space.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="federationLeader" type="FederationUserType" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A manager, or responsive person for this instance of org. unit.
+                        This value needs to be defined only in case, when operations
+                        performed with org. unit (e.g. adding identity, adding
+                        federated identity) must be approved before application.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="federationGovernor" type="FederationUserType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A list of governors, that held some level of responsibility
+                        for actions performed within organizational unit. What exact
+                        responsibilities these are, will be defined later - it will
+                        probably be a list of responsibilities and each governor may
+                        possess different responsibilities
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="federationMember" type="FederationUserType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A list of organization members
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="provisioningType" type="FederationOrfProvisioningType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A type of provisioning that this organization is using
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="federationInducement" type="FederatedResourceType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A list of resources that are located on other identity provider
+                        than current, to which this organization unit has inducement.
+                        An inducement means that every user that belongs to this org. unit
+                        is expected to have accounts on defined resource in federation space.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- UserType -->
+    <xsd:complexType name="UserType">
+        <xsd:annotation>
+            <xsd:documentation>
+                This is a schema definition for user that can be used
+                in federated identity management and federated provisioning
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of an UserType instance.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A name of user. Must be unique in namespace defined
+                        by users in single Identity Provider
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- FederationUserType -->
+    <xsd:complexType name="FederationUserType">
+        <xsd:annotation>
+            <xsd:documentation>
+                This is a schema definition for user from other
+                organization inside federation space that can be used
+                in federated identity management and federated provisioning
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of an FederationUserType instance. (Should this
+                        identifier be unique inside organization or inside
+                        entire federation?)
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A name of organizational unit. Must be unique in namespace defined
+                        by users in single Identity Provider - this will probably be a copy
+                        of user's name from it's own organization
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- ResourceType -->
+    <xsd:complexType name="ResourceType">
+        <xsd:annotation>
+            <xsd:documentation>
+                This is a schema definition for resource type that can be used
+                in federated identity management and federated provisioning -
+                inducement of this resource in organization means that every
+                user having assigned this organization is expected to have
+                an account on this resource.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of an ResourceType instance.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A name of resource. Must be unique in namespace defined
+                        by resources in single Identity Provider
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- FederatedResourceType -->
+    <xsd:complexType name="FederatedResourceType">
+        <xsd:annotation>
+            <xsd:documentation>
+                This is a schema definition for federation resource type that can be used
+                in federated identity management and federated provisioning -
+                inducement of this resource in organization means that every
+                user having assigned this organization is expected to have
+                an account on this resource.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of an FederatedResourceType instance.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A name of resource. Must be unique in namespace defined
+                        by resources in single Identity Provider
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- FederationMember Type -->
+    <xsd:complexType name="FederationMemberType">
+        <xsd:annotation>
+            <xsd:documentation>
+                A member of federation, basically an organization with its
+                own Identity provider and several others relying parties
+                linked to it
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="identifier" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of an FederationMember instance - what kind of
+                        identifier that is is yet to be decided. (Should it be a unique
+                        identifier only in each IdP system or unique in entire federation?)
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="address" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Some kind of address to identify the communication interface with
+                        this federation member. May be an IP address, REST API address, WS
+                        or something else - remains to be decided.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- FederationOrfProvisioningType -->
+    <xsd:simpleType name="FederationOrfProvisioningType">
+        <xsd:annotation>
+            <xsd:documentation>
+                A type of org. unit provisioning.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="justInTime">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Organization, or organization assets (users, resources, accounts)
+                        are provisioned when the time is right - usually a defined action
+                        that triggers org. provisioning, like accessing resource in
+                        federation etc.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="proActive">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Organization and its assets are provisioned immediately when there is
+                        change in organizational unit, e.g. when adding new resource inducement,
+                        the org. unit is provisioned at that exact moment.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>
