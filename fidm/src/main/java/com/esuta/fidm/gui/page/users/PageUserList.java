@@ -2,19 +2,14 @@ package com.esuta.fidm.gui.page.users;
 
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
+import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.extensions.ajax.markup.html.repeater.data.table.AjaxFallbackDefaultDataTable;
-import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 
@@ -41,23 +36,23 @@ public class PageUserList extends PageBase {
         add(form);
 
         List<IColumn> columns = createColumns();
-        ObjectDataProvider<UserType> provider = new ObjectDataProvider<UserType>(getPage(), UserType.class);
+        ObjectDataProvider<UserType> provider = new ObjectDataProvider<>(getPage(), UserType.class);
 
-        DataTable table = new AjaxFallbackDefaultDataTable(ID_TABLE, columns, provider, 10);
+        TablePanel table = new TablePanel(ID_TABLE, provider, columns, 10);
         table.setOutputMarkupId(true);
         form.add(table);
     }
 
     private List<IColumn> createColumns(){
-        List<IColumn> columns = new ArrayList<IColumn>();
+        List<IColumn> columns = new ArrayList<>();
 
-        columns.add(new PropertyColumn<UserType, String>(new Model<String>("Name"), "name", "name"));
-        columns.add(new PropertyColumn<UserType, String>(new Model<String>("Given Name"), "givenName", "givenName"));
-        columns.add(new PropertyColumn<UserType, String>(new Model<String>("Family Name"), "familyName", "familyName"));
-        columns.add(new PropertyColumn<UserType, String>(new Model<String>("E-mail"), "emailAddress", "emailAddress"));
-        columns.add(new PropertyColumn<UserType, String>(new Model<String>("Locality"), "locality", "locality"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Given Name"), "givenName", "givenName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Family Name"), "familyName", "familyName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("E-mail"), "emailAddress", "emailAddress"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Locality"), "locality", "locality"));
 
-        columns.add(new EditDeleteButtonColumn<UserType>(new Model<String>("Actions")){
+        columns.add(new EditDeleteButtonColumn<UserType>(new Model<>("Actions")){
 
             @Override
             public void editPerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
@@ -73,8 +68,8 @@ public class PageUserList extends PageBase {
         return columns;
     }
 
-    private DataTable getDataTable(){
-        return (DataTable) get(ID_MAIN_FORM + ":" + ID_TABLE);
+    private TablePanel getTablePanel(){
+        return (TablePanel) get(ID_MAIN_FORM + ":" + ID_TABLE);
     }
 
     private void editPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
@@ -100,7 +95,8 @@ public class PageUserList extends PageBase {
             return;
         }
 
+        LOGGER.info("User '" + userName + "' was successfully deleted from the system.");
         success("User '" + userName + "' was successfully deleted from the system.");
-        target.add(getFeedbackPanel(), getDataTable());
+        target.add(getFeedbackPanel(), this);
     }
 }
