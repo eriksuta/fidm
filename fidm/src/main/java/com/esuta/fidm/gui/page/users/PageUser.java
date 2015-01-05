@@ -2,10 +2,13 @@ package com.esuta.fidm.gui.page.users;
 
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.users.dto.UserTypeDto;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
+import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.form.Form;
@@ -13,9 +16,13 @@ import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 /**
  *  @author shood
+ *
+ *  TODO - carefull with setResetPassword() on password fields - clear password value can be seen in source of page.
+ *  (Although it is not an issue in prototype)
  * */
 public class PageUser extends PageBase {
 
@@ -39,16 +46,14 @@ public class PageUser extends PageBase {
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
-    private IModel<UserType> model;
-    private String pass;
-    private String passConfirm;
+    private IModel<UserTypeDto> model;
 
     public PageUser(){
 
-        model = new LoadableModel<UserType>(false) {
+        model = new LoadableModel<UserTypeDto>(false) {
 
             @Override
-            protected UserType load() {
+            protected UserTypeDto load() {
                 return loadUser();
             }
         };
@@ -56,8 +61,27 @@ public class PageUser extends PageBase {
         initLayout();
     }
 
-    private UserType loadUser(){
-        return new UserType();
+    private UserTypeDto loadUser(){
+
+        if(!isEditingUser()){
+            return new UserTypeDto();
+        }
+
+        PageParameters parameters = getPageParameters();
+        String uid = parameters.get(UID_PAGE_PARAMETER_NAME).toString();
+        UserTypeDto dto;
+
+        try {
+            UserType user = getModelService().readObject(UserType.class, uid);
+
+            dto = new UserTypeDto(user);
+        } catch (DatabaseCommunicationException exc){
+            error("Couldn't retrieve user with oid: '" + uid + "' from the database. Reason: " + exc.getExceptionMessage());
+            LOGGER.error("Couldn't retrieve user with oid: '" + uid + "' from the database. Reason: ", exc);
+            throw new RestartResponseException(PageUserList.class);
+        }
+
+        return dto;
     }
 
     protected void initLayout(){
@@ -65,48 +89,50 @@ public class PageUser extends PageBase {
         mainForm.setOutputMarkupId(true);
         add(mainForm);
 
-        TextField name = new TextField<String>(ID_NAME, new PropertyModel<String>(model, "name"));
+        TextField name = new TextField<>(ID_NAME, new PropertyModel<String>(model, UserTypeDto.F_USER + ".name"));
         name.setRequired(true);
         mainForm.add(name);
 
-        TextField givenName = new TextField<String>(ID_GIVEN_NAME, new PropertyModel<String>(model, "givenName"));
+        TextField givenName = new TextField<>(ID_GIVEN_NAME, new PropertyModel<String>(model, UserTypeDto.F_USER + ".givenName"));
         mainForm.add(givenName);
 
-        TextField familyName = new TextField<String>(ID_FAMILY_NAME, new PropertyModel<String>(model, "familyName"));
+        TextField familyName = new TextField<>(ID_FAMILY_NAME, new PropertyModel<String>(model, UserTypeDto.F_USER + ".familyName"));
         mainForm.add(familyName);
 
-        TextField fullName = new TextField<String>(ID_FULL_NAME, new PropertyModel<String>(model, "fullName"));
+        TextField fullName = new TextField<>(ID_FULL_NAME, new PropertyModel<String>(model, UserTypeDto.F_USER + ".fullName"));
         mainForm.add(fullName);
 
-        TextField additionalName = new TextField<String>(ID_ADDITIONAL_NAME, new PropertyModel<String>(model, "additionalName"));
+        TextField additionalName = new TextField<>(ID_ADDITIONAL_NAME, new PropertyModel<String>(model, UserTypeDto.F_USER + ".additionalName"));
         mainForm.add(additionalName);
 
-        TextField nickName = new TextField<String>(ID_NICK_NAME, new PropertyModel<String>(model, "nickName"));
+        TextField nickName = new TextField<>(ID_NICK_NAME, new PropertyModel<String>(model, UserTypeDto.F_USER + ".nickName"));
         mainForm.add(nickName);
 
-        TextField email = new TextField<String>(ID_EMAIL, new PropertyModel<String>(model, "emailAddress"));
+        TextField email = new TextField<>(ID_EMAIL, new PropertyModel<String>(model, UserTypeDto.F_USER + ".emailAddress"));
         mainForm.add(email);
 
-        TextField locality = new TextField<String>(ID_LOCALITY, new PropertyModel<String>(model, "locality"));
+        TextField locality = new TextField<>(ID_LOCALITY, new PropertyModel<String>(model, UserTypeDto.F_USER + ".locality"));
         mainForm.add(locality);
 
-        TextField honorificPrefix = new TextField<String>(ID_PREFIX, new PropertyModel<String>(model, "honorificPrefix"));
+        TextField honorificPrefix = new TextField<>(ID_PREFIX, new PropertyModel<String>(model, UserTypeDto.F_USER + ".honorificPrefix"));
         mainForm.add(honorificPrefix);
 
-        TextField honorificSuffix = new TextField<String>(ID_SUFFIX, new PropertyModel<String>(model, "honorificSuffix"));
+        TextField honorificSuffix = new TextField<>(ID_SUFFIX, new PropertyModel<String>(model, UserTypeDto.F_USER + ".honorificSuffix"));
         mainForm.add(honorificSuffix);
 
-        TextField title = new TextField<String>(ID_TITLE, new PropertyModel<String>(model, "title"));
+        TextField title = new TextField<>(ID_TITLE, new PropertyModel<String>(model, UserTypeDto.F_USER + ".title"));
         mainForm.add(title);
 
-        TextField phoneNumber = new TextField<String>(ID_PHONE_NUMBER, new PropertyModel<String>(model, "telephoneNumber"));
+        TextField phoneNumber = new TextField<>(ID_PHONE_NUMBER, new PropertyModel<String>(model, UserTypeDto.F_USER + ".telephoneNumber"));
         mainForm.add(phoneNumber);
 
-        PasswordTextField password = new PasswordTextField(ID_PASS, new PropertyModel<String>(this, "pass"));
+        PasswordTextField password = new PasswordTextField(ID_PASS, new PropertyModel<String>(model, UserTypeDto.F_PASSWORD));
+        password.setResetPassword(false);
         password.setRequired(true);
         mainForm.add(password);
 
-        PasswordTextField passwordConfirm = new PasswordTextField(ID_PASS_CONFIRM, new PropertyModel<String>(this, "passConfirm"));
+        PasswordTextField passwordConfirm = new PasswordTextField(ID_PASS_CONFIRM, new PropertyModel<String>(model, UserTypeDto.F_PASSWORD_CONFIRM));
+        passwordConfirm.setResetPassword(false);
         passwordConfirm.setRequired(true);
         mainForm.add(passwordConfirm);
 
@@ -135,6 +161,11 @@ public class PageUser extends PageBase {
         mainForm.add(save);
     }
 
+    private boolean isEditingUser(){
+        PageParameters parameters = getPageParameters();
+        return !parameters.get(UID_PAGE_PARAMETER_NAME).isEmpty();
+    }
+
     public Form getMainForm(){
         return (Form) get(ID_MAIN_FORM);
     }
@@ -145,16 +176,18 @@ public class PageUser extends PageBase {
 
     private void savePerformed(AjaxRequestTarget target){
         ModelService modelService = getModelService();
+        UserTypeDto userDto;
         UserType user;
 
         if(model == null || model.getObject() == null){
             return;
         }
 
-        user = model.getObject();
+        userDto = model.getObject();
+        user = userDto.getUser();
 
-        if(pass.endsWith(passConfirm)){
-            user.setPassword(pass);
+        if(userDto.getPassword().equals(userDto.getPasswordConfirm())){
+            userDto.setPassword(userDto.getPassword());
         } else {
             info("Values in password and password confirmation fields are not the same. Please provide correct password values.");
             target.add(getFeedbackPanel());
@@ -162,13 +195,20 @@ public class PageUser extends PageBase {
         }
 
         try{
-            modelService.createObject(user);
+
+            if(!isEditingUser()){
+                modelService.createObject(user);
+            } else {
+                modelService.updateObject(user);
+            }
+
         } catch (GeneralException e){
             LOGGER.error("Can't add user: ", e);
             error("Can't add user with name: '" + user.getName() + "'. Reason: " + e.getExceptionMessage());
         }
 
         getSession().success("User '" + user.getName() + "' has been saved successfully.");
+        LOGGER.info("User '" + user.getName() + "' has been saved successfully.");
         setResponsePage(PageUserList.class);
         target.add(getFeedbackPanel());
     }

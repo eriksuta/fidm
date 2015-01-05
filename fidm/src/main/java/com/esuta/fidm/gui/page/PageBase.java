@@ -22,6 +22,9 @@ public abstract class PageBase extends WebPage{
     //Every page is able to communicate with model through this ModelService instance
     private transient ModelService modelService;
 
+    //Constant used to identify page paramater name (uid) - used when editing objects
+    public static final String UID_PAGE_PARAMETER_NAME = "uid";
+
     private static final String ID_TITLE = "title";
     private static final String ID_SUBTITLE = "subtitle";
     private static final String ID_RIGHT_MENU_PANEL = "rightMenuPanel";

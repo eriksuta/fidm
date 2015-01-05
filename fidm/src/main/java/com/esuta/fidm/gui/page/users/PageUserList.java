@@ -12,6 +12,7 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,15 @@ public class PageUserList extends PageBase {
     }
 
     private void editPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
-        //TODO
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't edit selected user. It is no longer available.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+        setResponsePage(PageUser.class, parameters);
     }
 
     private void removePerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
