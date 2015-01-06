@@ -73,6 +73,11 @@ public class PageUserList extends PageBase {
         return (TablePanel) get(ID_MAIN_FORM + ":" + ID_TABLE);
     }
 
+    private Form getMainForm(){
+        return (Form) get(ID_MAIN_FORM);
+    }
+
+
     private void editPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             error("Couldn't edit selected user. It is no longer available.");
@@ -106,6 +111,6 @@ public class PageUserList extends PageBase {
 
         LOGGER.info("User '" + userName + "' was successfully deleted from the system.");
         success("User '" + userName + "' was successfully deleted from the system.");
-        target.add(getFeedbackPanel(), this);
+        target.add(getFeedbackPanel(), getMainForm());
     }
 }
