@@ -62,7 +62,6 @@ public class PageUser extends PageBase {
     }
 
     private UserTypeDto loadUser(){
-
         if(!isEditingUser()){
             return new UserTypeDto();
         }
