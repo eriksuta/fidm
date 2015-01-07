@@ -137,17 +137,26 @@
                         </dl>
                     </div>
 
-                    <!-- Accounts and Assignments -->
+                    <!-- Accounts, Roles and Org. Units -->
                     <div class="col-lg-6">
                         <div>
                             Accounts
                         </div>
-                        <hr>
+                        <hr class="assignmentDelimiter">
+
+                        <span>Roles</span>
+                        <div style="float: right">
+                            <a class="btn btn-success btn-xs" wicket:id="addRole">
+                                <i class="fa fa-plus fa-fw" />
+                            </a>
+                        </div>
+                        <hr class="assignmentDelimiter">
+                        <table class="table table-striped table-condensed table-bordered table-hover" wicket:id="roleTable"></table>
 
                         <div>
-                            Assignments
+                            Org. Units
                         </div>
-                        <hr>
+                        <hr class="assignmentDelimiter">
                     </div>
                 </div>
 

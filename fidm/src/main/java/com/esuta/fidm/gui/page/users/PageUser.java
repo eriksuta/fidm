@@ -1,22 +1,34 @@
 package com.esuta.fidm.gui.page.users;
 
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
+import com.esuta.fidm.gui.component.data.AssignableDataProvider;
+import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
+import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.gui.page.users.dto.UserTypeDto;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.repository.schema.RoleType;
 import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  @author shood
@@ -45,6 +57,9 @@ public class PageUser extends PageBase {
     private static final String ID_PASS_CONFIRM = "passwordConfirm";
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
+
+    private static final String ID_BUTTON_ADD_ROLE = "addRole";
+    private static final String ID_TABLE_ROLES = "roleTable";
 
     private IModel<UserTypeDto> model;
 
@@ -158,6 +173,59 @@ public class PageUser extends PageBase {
             }
         };
         mainForm.add(save);
+
+        initAssignments(mainForm);
+    }
+
+    private void initAssignments(Form mainForm){
+        AjaxLink addRole = new AjaxLink(ID_BUTTON_ADD_ROLE) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                roleAdditionPerformed(target);
+            }
+        };
+        mainForm.add(addRole);
+
+        List<IColumn> roleColumns = createRoleColumns();
+        AssignableDataProvider<RoleType, UserType> roleProvider = new AssignableDataProvider<>(getPage(),
+                RoleType.class, model.getObject().getUser());
+
+        TablePanel roleTable = new TablePanel(ID_TABLE_ROLES, roleProvider, roleColumns, 10);
+        roleTable.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                if(model.getObject().getUser() == null){
+                    return false;
+                }
+
+                return !model.getObject().getUser().getRoleAssignments().isEmpty();
+            }
+        });
+        roleTable.setShowPaging(false);
+        roleTable.setOutputMarkupId(true);
+        mainForm.add(roleTable);
+    }
+
+    private List<IColumn> createRoleColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new PropertyColumn<RoleType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new EditDeleteButtonColumn<RoleType>(new Model<>("Actions")){
+
+            @Override
+            public void editPerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
+                PageUser.this.editRolePerformed(target, rowModel);
+            }
+
+            @Override
+            public void removePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
+                PageUser.this.removeRolePerformed(target, rowModel);
+            }
+        });
+
+        return columns;
     }
 
     private boolean isEditingUser(){
@@ -167,6 +235,18 @@ public class PageUser extends PageBase {
 
     public Form getMainForm(){
         return (Form) get(ID_MAIN_FORM);
+    }
+
+    private void roleAdditionPerformed(AjaxRequestTarget target){
+        //TODO
+    }
+
+    private void editRolePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel){
+        //TODO
+    }
+
+    private void removeRolePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel){
+        //TODO
     }
 
     private void cancelPerformed(){

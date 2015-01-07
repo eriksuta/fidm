@@ -45,7 +45,7 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
 
     public List<T> getData(){
         if(data == null){
-            data = new ArrayList<T>();
+            data = new ArrayList<>();
         }
 
         return data;
@@ -53,7 +53,7 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
 
     public List<T> getCurrentPageData(){
         if(currentPageData == null){
-            currentPageData = new ArrayList<T>();
+            currentPageData = new ArrayList<>();
         }
 
         return currentPageData;
@@ -71,7 +71,7 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
         throw new IllegalStateException("Provided component is nor an instance of 'PageBase' neither is it placed on page of that instance.");
     }
 
-    private ModelService getModelService() throws IllegalStateException{
+    protected ModelService getModelService() throws IllegalStateException{
         return getPageBase().getModelService();
     }
 
@@ -111,6 +111,10 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
 
     @Override
     public IModel<T> model(T object) {
-        return new Model<T>(object);
+        return new Model<>(object);
+    }
+
+    public Class<T> getType() {
+        return type;
     }
 }

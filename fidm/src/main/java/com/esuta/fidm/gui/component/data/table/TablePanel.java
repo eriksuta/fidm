@@ -26,6 +26,7 @@ public class TablePanel<T> extends Panel{
 
     private IModel<Boolean> showPaging = new Model<>(true);
     private IModel<Boolean> showCount = new Model<>(true);
+    private IModel<Boolean> showHeader = new Model<>(true);
 
     public TablePanel(String id, ISortableDataProvider dataProvider, List<IColumn<T, String>> columns, int pageSize){
         super(id);
@@ -41,6 +42,7 @@ public class TablePanel<T> extends Panel{
         table.setOutputMarkupId(true);
 
         HeadersToolbar tableHeader = new HeadersToolbar(table, dataProvider);
+        addVisibleBehaviour(tableHeader, showHeader);
         table.addTopToolbar(tableHeader);
 
         CountToolbar countToolbar = new CountToolbar(table);
@@ -71,6 +73,10 @@ public class TablePanel<T> extends Panel{
 
     public void setShowCount(boolean showCount) {
         this.showCount.setObject(showCount);
+    }
+
+    public void setShowHeader(boolean showHeader){
+        this.showHeader.setObject(showHeader);
     }
 
     public DataTable getDataTable() {

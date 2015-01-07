@@ -2,6 +2,8 @@ package com.esuta.fidm.repository.schema;
 
 import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  @author shood
@@ -34,6 +36,8 @@ public class UserType extends ObjectType{
     private String telephoneNumber;
 
     private String password;
+
+    private List<String> roleAssignments;
 
     public UserType(){}
 
@@ -133,6 +137,18 @@ public class UserType extends ObjectType{
         this.password = password;
     }
 
+    public List<String> getRoleAssignments() {
+        if(roleAssignments == null){
+            roleAssignments = new ArrayList<>();
+        }
+
+        return roleAssignments;
+    }
+
+    public void setRoleAssignments(List<String> roleAssignments) {
+        this.roleAssignments = roleAssignments;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -155,6 +171,8 @@ public class UserType extends ObjectType{
         if (locality != null ? !locality.equals(userType.locality) : userType.locality != null) return false;
         if (nickName != null ? !nickName.equals(userType.nickName) : userType.nickName != null) return false;
         if (password != null ? !password.equals(userType.password) : userType.password != null) return false;
+        if (roleAssignments != null ? !roleAssignments.equals(userType.roleAssignments) : userType.roleAssignments != null)
+            return false;
         if (telephoneNumber != null ? !telephoneNumber.equals(userType.telephoneNumber) : userType.telephoneNumber != null)
             return false;
         if (title != null ? !title.equals(userType.title) : userType.title != null) return false;
@@ -168,15 +186,16 @@ public class UserType extends ObjectType{
         result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
         result = 31 * result + (givenName != null ? givenName.hashCode() : 0);
         result = 31 * result + (familyName != null ? familyName.hashCode() : 0);
+        result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
+        result = 31 * result + (locality != null ? locality.hashCode() : 0);
         result = 31 * result + (additionalName != null ? additionalName.hashCode() : 0);
         result = 31 * result + (nickName != null ? nickName.hashCode() : 0);
         result = 31 * result + (honorificPrefix != null ? honorificPrefix.hashCode() : 0);
         result = 31 * result + (honorificSuffix != null ? honorificSuffix.hashCode() : 0);
         result = 31 * result + (title != null ? title.hashCode() : 0);
-        result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
         result = 31 * result + (telephoneNumber != null ? telephoneNumber.hashCode() : 0);
-        result = 31 * result + (locality != null ? locality.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (roleAssignments != null ? roleAssignments.hashCode() : 0);
         return result;
     }
 }
