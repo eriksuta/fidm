@@ -1,3 +1,12 @@
 hr.assignmentDelimiter{
     margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+div.modalContent{
+    margin: 5px 5px 5px 5px;
+}
+
+table.assignmentTable{
+    margin: 0 0 0 0;
 }

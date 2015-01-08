@@ -1,9 +1,11 @@
 package com.esuta.fidm.gui.component.data.column;
 
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 
 /**
  *  @author shood
@@ -12,6 +14,9 @@ public class EditDeleteButtonPanel extends Panel{
 
     private static final String ID_EDIT = "edit";
     private static final String ID_REMOVE = "remove";
+
+    private IModel<Boolean> editVisible = new Model<>(Boolean.TRUE);
+    private IModel<Boolean> removeVisible = new Model<>(Boolean.TRUE);
 
     public EditDeleteButtonPanel(String id) {
         this(id, null);
@@ -31,6 +36,13 @@ public class EditDeleteButtonPanel extends Panel{
                 editPerformed(target);
             }
         };
+        edit.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return getEditVisible();
+            }
+        });
         add(edit);
 
         AjaxLink remove = new AjaxLink(ID_REMOVE) {
@@ -40,7 +52,22 @@ public class EditDeleteButtonPanel extends Panel{
                 removePerformed(target);
             }
         };
+        remove.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return getRemoveVisible();
+            }
+        });
         add(remove);
+    }
+
+    public boolean getEditVisible(){
+        return editVisible.getObject();
+    }
+
+    public boolean getRemoveVisible(){
+        return removeVisible.getObject();
     }
 
     protected void editPerformed(AjaxRequestTarget target){

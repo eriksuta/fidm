@@ -35,7 +35,25 @@ public class EditDeleteButtonColumn<T extends Serializable> extends AbstractColu
             protected void removePerformed(AjaxRequestTarget target) {
                 EditDeleteButtonColumn.this.removePerformed(target, rowModel);
             }
+
+            @Override
+            public boolean getEditVisible() {
+                return EditDeleteButtonColumn.this.getEditVisible();
+            }
+
+            @Override
+            public boolean getRemoveVisible() {
+                return EditDeleteButtonColumn.this.getRemoveVisible();
+            }
         });
+    }
+
+    public boolean getEditVisible(){
+        return true;
+    }
+
+    public boolean getRemoveVisible(){
+        return true;
     }
 
     public void editPerformed(AjaxRequestTarget target, IModel<T> rowModel){

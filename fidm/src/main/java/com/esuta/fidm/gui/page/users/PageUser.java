@@ -4,8 +4,10 @@ import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.data.AssignableDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
+import com.esuta.fidm.gui.component.modal.AssignablePopupDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.roles.PageRole;
 import com.esuta.fidm.gui.page.users.dto.UserTypeDto;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
@@ -17,8 +19,10 @@ import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
@@ -58,8 +62,11 @@ public class PageUser extends PageBase {
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
+    private static final String ID_ROLE_CONTAINER = "roleContainer";
     private static final String ID_BUTTON_ADD_ROLE = "addRole";
     private static final String ID_TABLE_ROLES = "roleTable";
+
+    private static final String ID_ASSIGNABLE_POPUP = "assignablePopup";
 
     private IModel<UserTypeDto> model;
 
@@ -78,7 +85,7 @@ public class PageUser extends PageBase {
 
     private UserTypeDto loadUser(){
         if(!isEditingUser()){
-            return new UserTypeDto();
+            return new UserTypeDto(new UserType());
         }
 
         PageParameters parameters = getPageParameters();
@@ -174,10 +181,27 @@ public class PageUser extends PageBase {
         };
         mainForm.add(save);
 
+        initModalWindows();
         initAssignments(mainForm);
     }
 
+    private void initModalWindows(){
+        ModalWindow assignableModalRole = new AssignablePopupDialog<RoleType>(ID_ASSIGNABLE_POPUP, RoleType.class){
+
+            @Override
+            public void addPerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
+                addRoleAssignmentPerformed(target, rowModel);
+            }
+        };
+        add(assignableModalRole);
+    }
+
     private void initAssignments(Form mainForm){
+        WebMarkupContainer roleContainer = new WebMarkupContainer(ID_ROLE_CONTAINER);
+        roleContainer.setOutputMarkupId(true);
+        roleContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(roleContainer);
+
         AjaxLink addRole = new AjaxLink(ID_BUTTON_ADD_ROLE) {
 
             @Override
@@ -185,7 +209,7 @@ public class PageUser extends PageBase {
                 roleAdditionPerformed(target);
             }
         };
-        mainForm.add(addRole);
+        roleContainer.add(addRole);
 
         List<IColumn> roleColumns = createRoleColumns();
         AssignableDataProvider<RoleType, UserType> roleProvider = new AssignableDataProvider<>(getPage(),
@@ -203,9 +227,10 @@ public class PageUser extends PageBase {
                 return !model.getObject().getUser().getRoleAssignments().isEmpty();
             }
         });
+        roleTable.setShowHeader(false);
         roleTable.setShowPaging(false);
         roleTable.setOutputMarkupId(true);
-        mainForm.add(roleTable);
+        roleContainer.add(roleTable);
     }
 
     private List<IColumn> createRoleColumns(){
@@ -237,16 +262,51 @@ public class PageUser extends PageBase {
         return (Form) get(ID_MAIN_FORM);
     }
 
+    public WebMarkupContainer getRoleContainer(){
+        return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_ROLE_CONTAINER);
+    }
+
+    private void addRoleAssignmentPerformed(AjaxRequestTarget target, IModel<RoleType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            return;
+        }
+
+        RoleType role = rowModel.getObject();
+        model.getObject().getUser().getRoleAssignments().add(role.getUid());
+
+        ModalWindow dialog = (ModalWindow) get(ID_ASSIGNABLE_POPUP);
+        dialog.close(target);
+        target.add(getRoleContainer());
+    }
+
     private void roleAdditionPerformed(AjaxRequestTarget target){
-        //TODO
+        ModalWindow modal = (ModalWindow) get(ID_ASSIGNABLE_POPUP);
+        modal.show(target);
     }
 
     private void editRolePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel){
-        //TODO
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't edit selected role. It is no longer available.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+        setResponsePage(PageRole.class, parameters);
     }
 
     private void removeRolePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel){
-        //TODO
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't remove selected role assignment. Something went wrong.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        String roleUid = rowModel.getObject().getUid();
+
+        model.getObject().getUser().getRoleAssignments().remove(roleUid);
+        target.add(getRoleContainer());
     }
 
     private void cancelPerformed(){

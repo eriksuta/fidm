@@ -46,7 +46,7 @@ public class AssignableDataProvider<T extends ObjectType, S extends ObjectType> 
             LOGGER.error("Could not create an iterator object for data of type: '" + getType().getSimpleName() + "'. Could not read objects from model.");
         }
 
-        return getCurrentPageData().iterator();
+        return getData().iterator();
     }
 
     @Override

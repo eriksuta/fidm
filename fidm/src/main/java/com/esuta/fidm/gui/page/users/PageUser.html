@@ -2,6 +2,8 @@
 <html xmlns:wicket="http://wicket.apache.org">
     <body>
         <wicket:extend>
+            <div wicket:id="assignablePopup" />
+
             <form wicket:id="mainForm" class="form-horizontal inputForm">
 
                 <div class="row">
@@ -144,14 +146,16 @@
                         </div>
                         <hr class="assignmentDelimiter">
 
-                        <span>Roles</span>
-                        <div style="float: right">
-                            <a class="btn btn-success btn-xs" wicket:id="addRole">
-                                <i class="fa fa-plus fa-fw" />
-                            </a>
+                        <div wicket:id="roleContainer">
+                            <span>Roles</span>
+                            <div style="float: right">
+                                <a class="btn btn-success btn-xs" wicket:id="addRole">
+                                    <i class="fa fa-plus fa-fw" />
+                                </a>
+                            </div>
+                            <hr class="assignmentDelimiter">
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="roleTable"></table>
                         </div>
-                        <hr class="assignmentDelimiter">
-                        <table class="table table-striped table-condensed table-bordered table-hover" wicket:id="roleTable"></table>
 
                         <div>
                             Org. Units
