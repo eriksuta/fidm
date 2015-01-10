@@ -10,19 +10,19 @@ import java.util.List;
 @Entity
 public class FederationType {
 
-    private List<ObjectReferenceType> members;
+    private List<String> members;
 
     public FederationType(){}
 
-    public List<ObjectReferenceType> getMembers() {
+    public List<String> getMembers() {
         if(members == null){
-            members = new ArrayList<ObjectReferenceType>();
+            members = new ArrayList<String>();
         }
 
         return members;
     }
 
-    public void setMembers(List<ObjectReferenceType> members) {
+    public void setMembers(List<String> members) {
         this.members = members;
     }
 

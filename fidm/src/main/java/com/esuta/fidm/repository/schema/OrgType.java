@@ -18,7 +18,7 @@ public class OrgType extends ObjectType{
     @Index
     private String locality;
 
-    private List<ObjectReferenceType> parentOrgUnits;
+    private List<String> parentOrgUnits;
 
     public OrgType(){}
 
@@ -50,15 +50,15 @@ public class OrgType extends ObjectType{
         this.locality = locality;
     }
 
-    public List<ObjectReferenceType> getParentOrgUnits() {
+    public List<String> getParentOrgUnits() {
         if(parentOrgUnits == null){
-            parentOrgUnits = new ArrayList<ObjectReferenceType>();
+            parentOrgUnits = new ArrayList<String>();
         }
 
         return parentOrgUnits;
     }
 
-    public void setParentOrgUnits(List<ObjectReferenceType> parentOrgUnits) {
+    public void setParentOrgUnits(List<String> parentOrgUnits) {
         this.parentOrgUnits = parentOrgUnits;
     }
 
