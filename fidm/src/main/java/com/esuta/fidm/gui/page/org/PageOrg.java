@@ -1,5 +1,6 @@
 package com.esuta.fidm.gui.page.org;
 
+import com.esuta.fidm.gui.component.form.MultiValueTextPanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
@@ -17,6 +18,9 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
+import java.io.Serializable;
+import java.util.List;
+
 /**
  *  @author shood
  * */
@@ -29,8 +33,8 @@ public class PageOrg extends PageBase {
     private static final String ID_DISPLAY_NAME = "displayName";
     private static final String ID_DESCRIPTION = "description";
     private static final String ID_LOCALITY = "locality";
-    private static final String ID_ORG_TYPE_CONTAINER = "orgType";
-    private static final String ID_PARENT_ORG_UNIT_CONTAINER = "parentOrgUnits";
+    private static final String ID_ORG_TYPE = "orgType";
+    private static final String ID_PARENT_ORG_UNIT = "parentOrgUnits";
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
@@ -88,7 +92,23 @@ public class PageOrg extends PageBase {
         TextArea description = new TextArea<>(ID_DESCRIPTION, new PropertyModel<String>(model, "description"));
         mainForm.add(description);
 
-//        TODO - continue here
+        TextField locality = new TextField<>(ID_LOCALITY, new PropertyModel<String>(model, "locality"));
+        mainForm.add(locality);
+
+        MultiValueTextPanel orgType = new MultiValueTextPanel<String>(ID_ORG_TYPE,
+                new PropertyModel<List<String>>(model, "orgType"), null, false, true){
+
+            @Override
+            protected String createNewEmptyItem() {
+                return new String();
+            }
+
+            @Override
+            protected IModel<String> createTextModel(IModel<String> model) {
+                return model;
+            }
+        };
+        mainForm.add(orgType);
 
         AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
 
