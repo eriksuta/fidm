@@ -32,7 +32,7 @@ public class OrgType extends ObjectType{
 
     public List<String> getOrgType() {
         if(orgType == null){
-            orgType = new ArrayList<String>();
+            orgType = new ArrayList<>();
         }
 
         return orgType;
@@ -52,7 +52,7 @@ public class OrgType extends ObjectType{
 
     public List<String> getParentOrgUnits() {
         if(parentOrgUnits == null){
-            parentOrgUnits = new ArrayList<String>();
+            parentOrgUnits = new ArrayList<>();
         }
 
         return parentOrgUnits;

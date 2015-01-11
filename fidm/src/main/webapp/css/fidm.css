@@ -10,3 +10,7 @@ div.modalContent{
 table.assignmentTable{
     margin: 0 0 0 0;
 }
+
+div.multi_value{
+    margin-bottom: 5px;
+}

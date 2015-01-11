@@ -41,7 +41,7 @@ public class PageOrg extends PageBase {
     private IModel<OrgType> model;
 
     public PageOrg(){
-        model = new LoadableModel<OrgType>() {
+        model = new LoadableModel<OrgType>(false) {
             @Override
             protected OrgType load() {
                 return loadOrgUnit();
@@ -95,19 +95,8 @@ public class PageOrg extends PageBase {
         TextField locality = new TextField<>(ID_LOCALITY, new PropertyModel<String>(model, "locality"));
         mainForm.add(locality);
 
-        MultiValueTextPanel orgType = new MultiValueTextPanel<String>(ID_ORG_TYPE,
-                new PropertyModel<List<String>>(model, "orgType"), null, false, true){
-
-            @Override
-            protected String createNewEmptyItem() {
-                return new String();
-            }
-
-            @Override
-            protected IModel<String> createTextModel(IModel<String> model) {
-                return model;
-            }
-        };
+        MultiValueTextPanel orgType = new MultiValueTextPanel<>(ID_ORG_TYPE,
+                new PropertyModel<List<String>>(model, "orgType"), false);
         mainForm.add(orgType);
 
         AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {

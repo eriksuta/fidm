@@ -1,24 +1,20 @@
 package com.esuta.fidm.gui.component.form;
 
-import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
-import com.esuta.fidm.gui.component.model.LoadableModel;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AttributeAppender;
-import org.apache.wicket.feedback.ComponentFeedbackMessageFilter;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,77 +24,39 @@ import java.util.List;
 public class MultiValueTextPanel<T extends Serializable> extends Panel{
 
     private static final String ID_INPUT = "input";
-    private static final String ID_INPUT_CONTAINER = "inputContainer";
-    private static final String ID_FEEDBACK = "feedback";
     private static final String ID_REPEATER = "repeater";
     private static final String ID_ADD = "add";
     private static final String ID_REMOVE = "remove";
     private static final String ID_BUTTON_CONTAINER = "buttonContainer";
 
-    private static final String CLASS_MULTI_VALUE = "multivalue-form";
+    private static final String CSS_DISABLED = " disabled";
 
     private IModel<List<T>> model;
-    private boolean prepareIfEmpty;
 
-    public MultiValueTextPanel(String id, IModel<List<T>> model, String inputSize, boolean required) {
-        this(id, model, inputSize, required, false);
-    }
-
-    public MultiValueTextPanel(String id, IModel<List<T>> model, String inputSize, boolean required, boolean prepareIfEmpty) {
+    public MultiValueTextPanel(String id, IModel<List<T>> model, boolean required) {
         super(id);
         this.model = model;
-        this.prepareIfEmpty = prepareIfEmpty;
         setOutputMarkupId(true);
 
-        initLayout(inputSize, required);
+        initLayout(required);
     }
 
     protected IModel<List<T>> getModel(){
         return model;
     }
 
-    protected IModel<List<T>> getPreparedModel(){
-        if(model == null){
-            model = new LoadableModel<List<T>>(false) {
-
-                @Override
-                protected List<T> load() {
-                    return new ArrayList<>();
-                }
-            };
-        }
-
-        if(getModel().getObject().isEmpty() && prepareIfEmpty){
+    private void initLayout(final boolean required){
+        if(getModel().getObject() == null){
+            getModel().setObject(new ArrayList<>(Arrays.asList(createNewEmptyItem())));
+        } else if(getModel().getObject().isEmpty()){
             getModel().getObject().add(createNewEmptyItem());
         }
 
-        return model;
-    }
 
-    private void initLayout(final String inputSize, final boolean required){
-        ListView repeater = new ListView<T>(ID_REPEATER, getPreparedModel()) {
+        ListView repeater = new ListView<T>(ID_REPEATER, getModel()) {
 
             @Override
             protected void populateItem(final ListItem<T> item) {
-                WebMarkupContainer inputContainer = new WebMarkupContainer(ID_INPUT_CONTAINER);
-                inputContainer.add(AttributeAppender.prepend("class", new AbstractReadOnlyModel<String>() {
-
-                    @Override
-                    public String getObject() {
-                        StringBuilder sb = new StringBuilder();
-                        if (StringUtils.isNotEmpty(inputSize)) {
-                            sb.append(inputSize).append(' ');
-                        }
-                        if (item.getIndex() > 0 && StringUtils.isNotEmpty(getOffsetClass())) {
-                            sb.append(getOffsetClass()).append(' ');
-                            sb.append(CLASS_MULTI_VALUE);
-                        }
-
-                        return sb.toString();
-                    }
-                }));
-                item.add(inputContainer);
-
                 TextField input = new TextField<>(ID_INPUT, createTextModel(item.getModel()));
                 input.add(new AjaxFormComponentUpdatingBehavior("onblur") {
 
@@ -106,26 +64,12 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
                     protected void onUpdate(AjaxRequestTarget target) {
                     }
                 });
+                input.add(AttributeAppender.replace("placeholder", createEmptyItemPlaceholder()));
                 input.setRequired(required);
-                inputContainer.add(input);
-
-                FeedbackPanel feedback = new FeedbackPanel(ID_FEEDBACK, new ComponentFeedbackMessageFilter(input));
-                inputContainer.add(feedback);
+                item.add(input);
 
                 WebMarkupContainer buttonGroup = new WebMarkupContainer(ID_BUTTON_CONTAINER);
-                buttonGroup.add(AttributeAppender.append("class", new AbstractReadOnlyModel<String>() {
-
-                    @Override
-                    public String getObject() {
-                        if (item.getIndex() > 0 && StringUtils.isNotEmpty(getOffsetClass())) {
-                            return CLASS_MULTI_VALUE;
-                        }
-
-                        return null;
-                    }
-                }));
                 item.add(buttonGroup);
-
                 initButtons(buttonGroup, item);
             }
         };
@@ -140,13 +84,7 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
                 addValuePerformed(target, item);
             }
         };
-        add.add(new VisibleEnableBehavior() {
-
-            @Override
-            public boolean isVisible() {
-                return isAddButtonVisible(item);
-            }
-        });
+        add.add(new AttributeAppender("class", getPlusClassModifier(item)));
         buttonGroup.add(add);
 
         AjaxLink remove = new AjaxLink(ID_REMOVE) {
@@ -156,38 +94,29 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
                 removeValuePerformed(target, item);
             }
         };
-        remove.add(new VisibleEnableBehavior() {
-
-            @Override
-            public boolean isVisible() {
-                return isRemoveButtonVisible(item);
-            }
-        });
+        remove.add(new AttributeAppender("class", getMinusClassModifier()));
         buttonGroup.add(remove);
     }
 
-    protected boolean isAddButtonVisible(ListItem<T> item) {
+    protected String getPlusClassModifier(ListItem<T> item){
         int size = getModel().getObject().size();
-
         if (size <= 1) {
-            return true;
+            return "";
         }
-
         if (item.getIndex() == size - 1) {
-            return true;
+            return "";
         }
 
-        return false;
+        return CSS_DISABLED;
     }
 
-    protected boolean isRemoveButtonVisible(ListItem<T> item) {
+    protected String getMinusClassModifier(){
         int size = getModel().getObject().size();
-
         if (size > 1) {
-            return true;
+            return "";
         }
 
-        return false;
+        return CSS_DISABLED;
     }
 
     protected void addValuePerformed(AjaxRequestTarget target, ListItem<T> item) {
@@ -198,7 +127,7 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
     }
 
     protected T createNewEmptyItem() {
-        return null;
+        return (T)"";
     }
 
     protected void removeValuePerformed(AjaxRequestTarget target, ListItem<T> item) {
@@ -240,7 +169,7 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
         };
     }
 
-    protected String getOffsetClass() {
-        return "col-md-offset-4";
+    protected IModel<String> createEmptyItemPlaceholder(){
+        return new Model<>("Set value");
     }
 }
