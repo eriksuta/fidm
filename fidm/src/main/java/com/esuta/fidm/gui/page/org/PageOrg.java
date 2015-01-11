@@ -1,6 +1,8 @@
 package com.esuta.fidm.gui.page.org;
 
+import com.esuta.fidm.gui.component.form.MultiValueTextEditPanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextPanel;
+import com.esuta.fidm.gui.component.modal.ObjectChooserDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
@@ -11,14 +13,16 @@ import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,6 +41,8 @@ public class PageOrg extends PageBase {
     private static final String ID_PARENT_ORG_UNIT = "parentOrgUnits";
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
+
+    private static final String ID_PARENT_ORG_UNIT_CHOOSER = "parentOrgUnitChooser";
 
     private IModel<OrgType> model;
 
@@ -99,6 +105,26 @@ public class PageOrg extends PageBase {
                 new PropertyModel<List<String>>(model, "orgType"), false);
         mainForm.add(orgType);
 
+        MultiValueTextEditPanel parentOrgUnit = new MultiValueTextEditPanel<String>(ID_PARENT_ORG_UNIT,
+                new PropertyModel<List<String>>(model, "parentOrgUnits"), false, true){
+
+            @Override
+            protected IModel<String> createTextModel(IModel<String> model) {
+                return createParentOrgUnitDisplayModel(model);
+            }
+
+            @Override
+            protected String createNewEmptyItem() {
+                return "";
+            }
+
+            @Override
+            protected void editPerformed(AjaxRequestTarget target, String object) {
+                PageOrg.this.editParentOrgUnitPerformed(target);
+            }
+        };
+        mainForm.add(parentOrgUnit);
+
         AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
 
             @Override
@@ -122,6 +148,97 @@ public class PageOrg extends PageBase {
             }
         };
         mainForm.add(save);
+
+        initModalWindows();
+    }
+
+    private void initModalWindows(){
+        ModalWindow parentOrgUnitChooser = new ObjectChooserDialog<OrgType>(ID_PARENT_ORG_UNIT_CHOOSER, OrgType.class){
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                parentOrgUnitChoosePerformed(target, rowModel);
+            }
+
+            @Override
+            public String getChooserTitle() {
+                return "Choose parent org. unit";
+            }
+
+            @Override
+            public List<OrgType> applyObjectFilter(List<OrgType> list) {
+                return applyParentOrgChooserFilter(list);
+            }
+        };
+        add(parentOrgUnitChooser);
+    }
+
+    private Form getMainForm(){
+        return (Form) get(ID_MAIN_FORM);
+    }
+
+    private IModel<String> createParentOrgUnitDisplayModel(final IModel<String> uidModel){
+        return new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                if(uidModel == null || uidModel.getObject() == null){
+                    return null;
+                }
+
+                String uid = uidModel.getObject();
+                OrgType parent = null;
+
+                try {
+                    parent = getModelService().readObject(OrgType.class, uid);
+                } catch (DatabaseCommunicationException e) {
+                    LOGGER.error("Parent org. unit with uid: '" + uid + "' does not exist.");
+                    error("Parent org. unit with uid: '" + uid + "' does not exist.");
+                }
+
+                if(parent == null){
+                    return null;
+                }
+
+                return parent.getDisplayName();
+            }
+        };
+    }
+
+    /**
+     *  TODO - filter org. unit that can be chosen as parents, some cases:
+     *      * itself (currently edited org. unit)
+     *      * it's parent
+     *      * any org. unit from sub-tree (to prevent cycles in org. unit hierarchy)
+     * */
+    private List<OrgType> applyParentOrgChooserFilter(List<OrgType> list){
+        return list;
+    }
+
+    private void editParentOrgUnitPerformed(AjaxRequestTarget target){
+        ModalWindow modal = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
+        modal.show(target);
+    }
+
+    private void parentOrgUnitChoosePerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Chosen value is not a valid org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        if(model == null || model.getObject() == null){
+            error("Couldn't add parent org. to this org. unit. Invalid org. unit model, please refresh this page.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        String uid = rowModel.getObject().getUid();
+        model.getObject().getParentOrgUnits().add(uid);
+
+        ModalWindow dialog = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
+        dialog.close(target);
+        target.add(getMainForm());
     }
 
     private void cancelPerformed(){
@@ -133,13 +250,30 @@ public class PageOrg extends PageBase {
         OrgType orgUnit;
 
         if(model == null || model.getObject() == null){
+            error("Couldn't save org. unit.");
+            target.add(getFeedbackPanel());
             return;
         }
 
         orgUnit = model.getObject();
 
-        try{
+        //Filtering empty org. unit types
+        List<String> orgTypes = new ArrayList<>(orgUnit.getOrgType());
+        for(String type: orgTypes){
+            if(type == null || type.isEmpty()){
+                orgUnit.getOrgType().remove(type);
+            }
+        }
 
+        //Filtering empty org. unit parents
+        List<String> orgUnitParents = new ArrayList<>(orgUnit.getParentOrgUnits());
+        for(String parent: orgUnitParents){
+            if(parent == null || parent.isEmpty()){
+                orgUnit.getParentOrgUnits().remove(parent);
+            }
+        }
+
+        try{
             if(!isEditingOrgUnit()){
                 modelService.createObject(orgUnit);
             } else {

@@ -237,6 +237,8 @@ public class PageUser extends PageBase {
         List<IColumn> columns = new ArrayList<>();
 
         columns.add(new PropertyColumn<RoleType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<RoleType, String>(new Model<>("Display Name"), "displayName", "displayName"));
+        columns.add(new PropertyColumn<RoleType, String>(new Model<>("Role Type"), "roleType", "roleType"));
         columns.add(new EditDeleteButtonColumn<RoleType>(new Model<>("Actions")){
 
             @Override

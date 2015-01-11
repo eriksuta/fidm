@@ -83,6 +83,7 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
 
         try {
             dataList = getModelService().getAllObjectsOfType(type);
+            dataList = applyDataFilter(dataList);
 
             for(T o: dataList){
                 getData().add(o);
@@ -94,6 +95,13 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
         }
 
         return getCurrentPageData().iterator();
+    }
+
+    /**
+     *  Override to provide a custom filter
+     * */
+    public List<T> applyDataFilter(List<T> list){
+        return list;
     }
 
     @Override

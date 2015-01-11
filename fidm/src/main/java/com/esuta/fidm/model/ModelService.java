@@ -44,7 +44,7 @@ public class ModelService implements IModelService{
 
     @Override
     public <T extends ObjectType> T readObjectByName(Class<T> type, String name) throws DatabaseCommunicationException {
-        return readObjectByName(type, name);
+        return repositoryService.readObjectByName(type, name);
     }
 
     @Override
