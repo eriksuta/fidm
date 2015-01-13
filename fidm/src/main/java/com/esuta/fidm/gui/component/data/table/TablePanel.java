@@ -1,6 +1,7 @@
 package com.esuta.fidm.gui.component.data.table;
 
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
+import com.esuta.fidm.repository.schema.ObjectType;
 import org.apache.commons.lang3.Validate;
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
@@ -19,7 +20,7 @@ import java.util.List;
  *  implementation based on TablePanel implementation by lazyman,
  *  https://github.com/Evolveum/midpoint/blob/master/gui/admin-gui/src/main/java/com/evolveum/midpoint/web/component/data/TablePanel.java
  * */
-public class TablePanel<T> extends Panel{
+public class TablePanel<T extends ObjectType> extends Panel{
 
     private static final String ID_TABLE = "table";
     private static final String ID_PAGINATION = "pagination";

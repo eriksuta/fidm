@@ -80,16 +80,17 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
         getData().clear();
         getCurrentPageData().clear();
         List<T> dataList;
+        List<T> filteredDataList = new ArrayList<>();
 
         try {
             dataList = getModelService().getAllObjectsOfType(type);
-            dataList = applyDataFilter(dataList);
+            filteredDataList = applyDataFilter(dataList);
 
-            for(T o: dataList){
+            for(T o: filteredDataList){
                 getData().add(o);
             }
 
-            getCurrentPageData().addAll(getData().subList((int)first, (int)(first+count)));
+            getCurrentPageData().addAll(getData().subList((int)first, (int)(first + count)));
         } catch (Exception e){
             LOGGER.error("Could not create an iterator object for data of type: '" + type.getSimpleName() + "'. Could not read objects from model.");
         }
@@ -109,7 +110,9 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
         long count = 0;
 
         try {
-            count = getModelService().countObjects(type);
+            List<T> dataList = getModelService().getAllObjectsOfType(type);
+            List<T> filteredDataList = applyDataFilter(dataList);
+            count = filteredDataList.size();
         } catch (Exception e){
             LOGGER.error("Couldn't count the number of objects of type '" + type.getSimpleName() + "' in the model. Reason: ", e);
         }

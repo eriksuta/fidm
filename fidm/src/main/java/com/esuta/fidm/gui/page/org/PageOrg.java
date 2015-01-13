@@ -17,7 +17,6 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -178,10 +177,10 @@ public class PageOrg extends PageBase {
     }
 
     private IModel<String> createParentOrgUnitDisplayModel(final IModel<String> uidModel){
-        return new AbstractReadOnlyModel<String>() {
+        return new LoadableModel<String>() {
 
             @Override
-            public String getObject() {
+            protected String load() {
                 if(uidModel == null || uidModel.getObject() == null){
                     return null;
                 }
