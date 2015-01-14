@@ -71,6 +71,11 @@ public class PageUser extends PageBase {
     private IModel<UserTypeDto> model;
 
     public PageUser(){
+        this(null);
+    }
+
+    public PageUser(PageParameters parameters){
+        super(parameters);
 
         model = new LoadableModel<UserTypeDto>(false) {
 

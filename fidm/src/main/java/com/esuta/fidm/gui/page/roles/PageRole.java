@@ -35,6 +35,12 @@ public class PageRole extends PageBase {
     private IModel<RoleType> model;
 
     public PageRole(){
+        this(null);
+    }
+
+    public PageRole(PageParameters parameters){
+        super(parameters);
+
         model = new LoadableModel<RoleType>(false) {
             @Override
             protected RoleType load() {

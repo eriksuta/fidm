@@ -46,6 +46,12 @@ public class PageOrg extends PageBase {
     private IModel<OrgType> model;
 
     public PageOrg(){
+        this(null);
+    }
+
+    public PageOrg(PageParameters parameters){
+        super(parameters);
+
         model = new LoadableModel<OrgType>(false) {
             @Override
             protected OrgType load() {

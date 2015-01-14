@@ -4,6 +4,8 @@ import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
+import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.org.PageOrg;
 import com.esuta.fidm.gui.page.org.component.data.OrgTreeDataProvider;
 import com.esuta.fidm.gui.page.org.component.data.SelectableFolderContent;
 import com.esuta.fidm.gui.page.org.component.data.TreeStateSet;
@@ -13,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.tree.ISortableTreeProvider;
@@ -28,6 +31,7 @@ import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,7 +49,8 @@ public class OrgUnitTreePanel extends Panel {
     private static final Logger LOGGER = Logger.getLogger(OrgUnitTreePanel.class);
 
     private static final String ID_TREE_HEADER = "treeHeader";
-//    private static final String ID_TREE_MENU = "treeMenu";
+    private static final String ID_BUTTON_EXPAND_TREE = "treeExpand";
+    private static final String ID_BUTTON_COLLAPSE_TREE = "treeCollapse";
     private static final String ID_TREE_CONTAINER = "treeContainer";
     private static final String ID_TREE = "tree";
     private static final String ID_FORM = "form";
@@ -72,7 +77,23 @@ public class OrgUnitTreePanel extends Panel {
         treeHeader.setOutputMarkupId(true);
         add(treeHeader);
 
-        //TODO  - add buttons to collapse/expand to header
+        AjaxLink treeExpand = new AjaxLink(ID_BUTTON_EXPAND_TREE) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                treeExpandPerformed(target);
+            }
+        };
+        treeHeader.add(treeExpand);
+
+        AjaxLink treeCollapse = new AjaxLink(ID_BUTTON_COLLAPSE_TREE) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                treeCollapsePerformed(target);
+            }
+        };
+        treeHeader.add(treeCollapse);
 
         ISortableTreeProvider provider = new OrgTreeDataProvider(this, rootOidModel);
         List<IColumn<OrgType, String>> columns = new ArrayList<>();
@@ -160,12 +181,12 @@ public class OrgUnitTreePanel extends Panel {
 
             @Override
             public void editPerformed(AjaxRequestTarget target, IModel<ObjectType> rowModel) {
-//                OrgUnitTreePanel.this.editObjectTypePerformed(target, rowModel);
+                OrgUnitTreePanel.this.editObjectTypePerformed(target, rowModel);
             }
 
             @Override
-            public void removePerformed(AjaxRequestTarget target, IModel<ObjectType> rowModel) {
-//                OrgUnitTreePanel.this.removeObjectTypePerformed(target, rowModel);
+            public boolean getRemoveVisible() {
+                return false;
             }
         });
 
@@ -213,6 +234,42 @@ public class OrgUnitTreePanel extends Panel {
         table.setCurrentPage(0);
 
         target.add(table);
+    }
+
+    private void treeCollapsePerformed(AjaxRequestTarget target){
+        TableTree tree = getTree();
+        TreeStateModel model = (TreeStateModel) tree.getDefaultModel();
+        model.collapseAll();
+
+        target.add(tree);
+    }
+
+    private void treeExpandPerformed(AjaxRequestTarget target){
+        TableTree tree = getTree();
+        TreeStateModel model = (TreeStateModel) tree.getDefaultModel();
+        model.expandAll();
+
+        target.add(tree);
+    }
+
+    /**
+     *  TODO - currently, we are handling only OrgType objects. Add handling for users, roles later.
+     * */
+    private void editObjectTypePerformed(AjaxRequestTarget target, IModel<ObjectType> rowModel){
+        PageBase pageBase = (PageBase) getPage();
+
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't edit selected object. It is no longer available.");
+            target.add(pageBase.getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(PageBase.UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+
+        if(rowModel.getObject() instanceof OrgType){
+            setResponsePage(PageOrg.class, parameters);
+        }
     }
 
     private static class TreeStateModel extends AbstractReadOnlyModel<Set<OrgType>> {

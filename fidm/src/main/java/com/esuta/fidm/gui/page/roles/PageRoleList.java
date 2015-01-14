@@ -85,7 +85,7 @@ public class PageRoleList extends PageBase {
 
         PageParameters parameters = new PageParameters();
         parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
-        setResponsePage(PageRole.class, parameters);
+        setResponsePage(new PageRole(parameters));
     }
 
     private void removePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel){

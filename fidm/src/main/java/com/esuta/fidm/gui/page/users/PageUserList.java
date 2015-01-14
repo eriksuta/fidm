@@ -77,7 +77,6 @@ public class PageUserList extends PageBase {
         return (Form) get(ID_MAIN_FORM);
     }
 
-
     private void editPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             error("Couldn't edit selected user. It is no longer available.");
@@ -87,7 +86,7 @@ public class PageUserList extends PageBase {
 
         PageParameters parameters = new PageParameters();
         parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
-        setResponsePage(PageUser.class, parameters);
+        setResponsePage(new PageUser(parameters));
     }
 
     private void removePerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
