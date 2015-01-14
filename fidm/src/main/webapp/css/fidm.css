@@ -14,3 +14,91 @@ table.assignmentTable{
 div.multi_value{
     margin-bottom: 5px;
 }
+
+div.tree-subtree {
+    margin: 0 0 0 18px;
+    padding: 0;
+}
+
+div.tree-branch {
+    margin: 0;
+    padding: 0;
+}
+
+div.tree-branch-mid {
+    background: url(../img/tree.gif) repeat-y -54px center;
+}
+
+div.tree-branch-last {}
+
+span.tree-junction {
+    display: block;
+    float: left;
+    width: 18px;
+    background: url(../img/tree.gif) no-repeat -36px center;
+}
+
+a.tree-junction-expanded {
+    display: block;
+    float: left;
+    width: 18px;
+    background: url(../img/tree.gif) no-repeat -18px center;
+    text-decoration: none;
+}
+
+a.tree-junction-collapsed {
+    display: block;
+    float: left;
+    width: 18px;
+    background: url(../img/tree.gif) no-repeat 0 center;
+    text-decoration: none;
+}
+
+span.tree-content {
+    display: block;
+    margin-left: 18px;
+}
+
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+tr.selected {
+    background-color: #0000ee;
+    color: #FFFFFF;
+}
+
+td {
+    margin: 0;
+    padding: 0;
+}
+
+span.tree-content a {
+    color: black;
+    text-decoration: none;
+}
+
+span.tree-content a:hover {
+    text-decoration: underline;
+}
+
+span.tree-content .selected span.tree-label {
+    background-color: #0000ee;
+    color: #FFFFFF;
+}
+
+.tree-folder-closed {
+    padding-left: 18px;
+    background: url(../img/folder-closed.gif) no-repeat 0 50%;
+}
+
+.tree-folder-open {
+    padding-left: 18px;
+    background: url(../img/folder-open.gif) no-repeat 0 50%;
+}
+
+.tree-folder-other {
+    padding-left: 18px;
+    background: url(../img/folder-other.gif) no-repeat 0 50%;
+}

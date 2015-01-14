@@ -80,7 +80,7 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
         getData().clear();
         getCurrentPageData().clear();
         List<T> dataList;
-        List<T> filteredDataList = new ArrayList<>();
+        List<T> filteredDataList;
 
         try {
             dataList = getModelService().getAllObjectsOfType(type);

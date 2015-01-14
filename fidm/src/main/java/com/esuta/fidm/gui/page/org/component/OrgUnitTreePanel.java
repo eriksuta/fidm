@@ -180,9 +180,10 @@ public class OrgUnitTreePanel extends Panel {
         String selectedOrgUid = selected.getObject().getUid();
 
         for(ObjectType objectType: list){
+
             if(objectType instanceof OrgType){
                 OrgType org = (OrgType) objectType;
-                if(selectedOrgUid.equals(org.getUid())){
+                if(org.getParentOrgUnits().contains(selectedOrgUid)){
                     filteredList.add(objectType);
                 }
             }
@@ -213,7 +214,6 @@ public class OrgUnitTreePanel extends Panel {
 
         target.add(table);
     }
-
 
     private static class TreeStateModel extends AbstractReadOnlyModel<Set<OrgType>> {
 

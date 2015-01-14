@@ -77,7 +77,7 @@ public class OrgTreeDataProvider extends SortableTreeProvider<OrgType, String>{
                 }
             }
 
-            LOGGER.info("Found " + children.size() + " children org. units for org. unit with uid: '" + nodeUid + "'.");
+            LOGGER.debug("Found " + children.size() + " children org. units for org. unit with uid: '" + nodeUid + "'.");
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Couldn't retrieve children org. units for org. unit with oid: '" + nodeUid + "' from the repository");
         }
