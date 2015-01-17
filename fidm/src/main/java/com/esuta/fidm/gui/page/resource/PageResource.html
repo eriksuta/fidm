@@ -1,8 +1,55 @@
 <!DOCTYPE html>
 <html xmlns:wicket="http://wicket.apache.org">
-<body>
-<wicket:extend>
+    <body>
+        <wicket:extend>
+            <form wicket:id="mainForm" class="form-horizontal inputForm">
 
-</wicket:extend>
-</body>
+                <!-- Resource attributes -->
+                <div class="col-lg-6">
+                    <dl class="dl-horizontal">
+                        <dt>
+                            <label>Name</label>
+                        </dt>
+                        <dd>
+                            <input wicket:id="name" type="text" class="form-control input-sm"/>
+                        </dd>
+                    </dl>
+
+                    <dl class="dl-horizontal">
+                        <dt>
+                            <label>Description</label>
+                        </dt>
+                        <dd>
+                            <textarea wicket:id="description" rows="2" class="form-control input-sm"></textarea>
+                        </dd>
+                    </dl>
+
+                    <dl class="dl-horizontal">
+                        <dt>
+                            <label>Type</label>
+                        </dt>
+                        <dd>
+                            <input wicket:id="type" type="text" class="form-control input-sm"/>
+                        </dd>
+                    </dl>
+
+                    <!-- Accounts, Roles and Org. Units -->
+                    <div class="col-lg-6">
+                        <div>
+                            Accounts
+                        </div>
+                        <!-- TODO - add account section of the resource -->
+                        <hr class="assignmentDelimiter">
+                    </div>
+
+                    <!-- Button Bar -->
+                    <div class="row main-button-bar">
+                        <input type="submit" wicket:id="saveButton" class="btn btn-primary" value="Save"/>
+                        <input type="submit" wicket:id="cancelButton" class="btn btn-default" value="Cancel"/>
+                    </div>
+                </div>
+
+            </form>
+        </wicket:extend>
+    </body>
 </html>
