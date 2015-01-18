@@ -102,13 +102,13 @@ public class RepositoryService implements IRepositoryService{
     }
 
     @Override
-    public <T extends ObjectType> void createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException {
+    public <T extends ObjectType> T createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException {
         if(entityManager == null){
             throw new DatabaseCommunicationException();
         }
 
         if(object == null){
-            return;
+            return null;
         }
 
         T objectInRepository;
@@ -131,6 +131,8 @@ public class RepositoryService implements IRepositoryService{
         entityManager.getTransaction().begin();
         entityManager.persist(object);
         entityManager.getTransaction().commit();
+
+        return object;
     }
 
     @Override

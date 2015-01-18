@@ -12,22 +12,25 @@ import com.esuta.fidm.gui.page.roles.PageRole;
 import com.esuta.fidm.gui.page.users.dto.UserTypeDto;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
+import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.repository.schema.OrgType;
-import com.esuta.fidm.repository.schema.RoleType;
-import com.esuta.fidm.repository.schema.UserType;
+import com.esuta.fidm.repository.schema.*;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
@@ -72,8 +75,13 @@ public class PageUser extends PageBase {
     private static final String ID_BUTTON_ADD_ORG = "addOrgUnit";
     private static final String ID_TABLE_ORG = "orgUnitTable";
 
+    private static final String ID_ACCOUNT_CONTAINER = "accountContainer";
+    private static final String ID_BUTTON_ADD_ACCOUNT = "addAccount";
+    private static final String ID_TABLE_ACCOUNTS = "accountTable";
+
     private static final String ID_ROLE_ASSIGNABLE_POPUP = "roleAssignPopup";
     private static final String ID_ORG_ASSIGNABLE_POPUP = "orgAssignPopup";
+    private static final String ID_ACCOUNT_POPUP = "accountPopup";
 
     private IModel<UserTypeDto> model;
 
@@ -215,6 +223,15 @@ public class PageUser extends PageBase {
             }
         };
         add(assignableModalOrgUnit);
+
+        ModalWindow assignableAccount = new AssignablePopupDialog<ResourceType>(ID_ACCOUNT_POPUP, ResourceType.class){
+
+            @Override
+            public void addPerformed(AjaxRequestTarget target, IModel<ResourceType> rowModel) {
+                addAccountPerformed(target, rowModel);
+            }
+        };
+        add(assignableAccount);
     }
 
     private void initAssignments(Form mainForm){
@@ -290,6 +307,43 @@ public class PageUser extends PageBase {
         orgUnitTable.setShowPaging(false);
         orgUnitTable.setOutputMarkupId(true);
         orgUnitContainer.add(orgUnitTable);
+
+        //Init Account Assignments
+        WebMarkupContainer accountContainer = new WebMarkupContainer(ID_ACCOUNT_CONTAINER);
+        accountContainer.setOutputMarkupId(true);
+        accountContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(accountContainer);
+
+        AjaxLink addAccount = new AjaxLink(ID_BUTTON_ADD_ACCOUNT) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                accountAdditionPerformed(target);
+            }
+        };
+        accountContainer.add(addAccount);
+
+        List<IColumn> accountColumns = createAccountColumns();
+
+        AssignableDataProvider<AccountType, UserType> accountProvider = new AssignableDataProvider<>(getPage(),
+                AccountType.class, model.getObject().getUser());
+
+        TablePanel accountTable = new TablePanel(ID_TABLE_ACCOUNTS, accountProvider, accountColumns, 10);
+        accountTable.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                if(model.getObject().getUser() == null){
+                    return false;
+                }
+
+                return !model.getObject().getUser().getAccounts().isEmpty();
+            }
+        });
+        accountTable.setShowHeader(false);
+        accountTable.setShowPaging(false);
+        accountTable.setOutputMarkupId(true);
+        accountContainer.add(accountTable);
     }
 
     private List<IColumn> createRoleColumns(){
@@ -337,6 +391,50 @@ public class PageUser extends PageBase {
         return columns;
     }
 
+    private List<IColumn> createAccountColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new PropertyColumn<AccountType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new AbstractColumn<AccountType, String>(new Model<>("Resource")) {
+
+
+            @Override
+            public void populateItem(Item<ICellPopulator<AccountType>> cellItem, String componentId, IModel<AccountType> rowModel) {
+                if(rowModel == null || rowModel.getObject() == null){
+                    return;
+                }
+
+                AccountType account = rowModel.getObject();
+                String resourceUid = account.getResource();
+
+                ResourceType resource;
+
+                try {
+                    resource = getModelService().readObject(ResourceType.class, resourceUid);
+                    cellItem.add(new Label(componentId, resource.getName()));
+                } catch (DatabaseCommunicationException exc) {
+                    error("Couldn't retrieve resource with oid: '" + resourceUid + "' from the database. Reason: " + exc.getExceptionMessage());
+                    LOGGER.error("Couldn't retrieve resource with oid: '" + resourceUid + "' from the database. Reason: ", exc);
+                }
+            }
+        });
+
+        columns.add(new EditDeleteButtonColumn<AccountType>(new Model<>("Actions")){
+
+            @Override
+            public void editPerformed(AjaxRequestTarget target, IModel<AccountType> rowModel) {
+                PageUser.this.editAccountPerformed(target, rowModel);
+            }
+
+            @Override
+            public void removePerformed(AjaxRequestTarget target, IModel<AccountType> rowModel) {
+                PageUser.this.removeAccountAssignmentPerformed(target, rowModel);
+            }
+        });
+
+        return columns;
+    }
+
     private boolean isEditingUser(){
         PageParameters parameters = getPageParameters();
         return !parameters.get(UID_PAGE_PARAMETER_NAME).isEmpty();
@@ -352,6 +450,10 @@ public class PageUser extends PageBase {
 
     public WebMarkupContainer getOrgContainer(){
         return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_ORG_CONTAINER);
+    }
+
+    public WebMarkupContainer getAccountContainer(){
+        return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_ACCOUNT_CONTAINER);
     }
 
     private void addRoleAssignmentPerformed(AjaxRequestTarget target, IModel<RoleType> rowModel){
@@ -380,6 +482,35 @@ public class PageUser extends PageBase {
         target.add(getOrgContainer());
     }
 
+    private void addAccountPerformed(AjaxRequestTarget target, IModel<ResourceType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            return;
+        }
+
+        ResourceType resource = rowModel.getObject();
+        AccountType account = new AccountType();
+        account.setOwner(model.getObject().getUser().getUid());
+        account.setResource(resource.getUid());
+
+        try {
+            account = getModelService().createObject(account);
+
+        } catch (ObjectAlreadyExistsException e) {
+            LOGGER.error("Can't add account to user.: ", e);
+            error("Can't add account to user. Account already exists. Reason: " + e.getExceptionMessage());
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Can't add account to user: ", e);
+            error("Can't add account to the user. Reason: " + e.getExceptionMessage());
+        }
+
+        model.getObject().getUser().getAccounts().add(account.getUid());
+        LOGGER.info("Account " + account.getUid() + " added to the user.");
+
+        ModalWindow dialog = (ModalWindow) get(ID_ACCOUNT_POPUP);
+        dialog.close(target);
+        target.add(getAccountContainer());
+    }
+
     private void roleAdditionPerformed(AjaxRequestTarget target){
         ModalWindow modal = (ModalWindow) get(ID_ROLE_ASSIGNABLE_POPUP);
         modal.show(target);
@@ -387,6 +518,11 @@ public class PageUser extends PageBase {
 
     private void orgUnitAdditionPerformed(AjaxRequestTarget target){
         ModalWindow modal = (ModalWindow) get(ID_ORG_ASSIGNABLE_POPUP);
+        modal.show(target);
+    }
+
+    private void accountAdditionPerformed(AjaxRequestTarget target){
+        ModalWindow modal = (ModalWindow) get(ID_ACCOUNT_POPUP);
         modal.show(target);
     }
 
@@ -438,6 +574,34 @@ public class PageUser extends PageBase {
 
         model.getObject().getUser().getOrgUnitAssignments().remove(orgUid);
         target.add(getOrgContainer());
+    }
+
+    private void editAccountPerformed(AjaxRequestTarget target, IModel<AccountType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't edit selected account. It is no longer available.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+        setResponsePage(PageAccount.class, parameters);
+    }
+
+    /**
+     *  TODO - provide user with option to remove only assignment, or to archive/disable account etc.
+     * */
+    private void removeAccountAssignmentPerformed(AjaxRequestTarget target, IModel<AccountType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't remove selected account assignment. Something went wrong.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        String accountUid = rowModel.getObject().getUid();
+
+        model.getObject().getUser().getAccounts().remove(accountUid);
+        target.add(getAccountContainer());
     }
 
     private void cancelPerformed(){

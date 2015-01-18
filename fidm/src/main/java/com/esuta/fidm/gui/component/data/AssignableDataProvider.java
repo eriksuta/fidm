@@ -1,9 +1,6 @@
 package com.esuta.fidm.gui.component.data;
 
-import com.esuta.fidm.repository.schema.ObjectType;
-import com.esuta.fidm.repository.schema.OrgType;
-import com.esuta.fidm.repository.schema.RoleType;
-import com.esuta.fidm.repository.schema.UserType;
+import com.esuta.fidm.repository.schema.*;
 import org.apache.log4j.Logger;
 import org.apache.wicket.Component;
 
@@ -45,6 +42,11 @@ public class AssignableDataProvider<T extends ObjectType, S extends ObjectType> 
                         OrgType org = getModelService().readObject(OrgType.class, uid);
                         getData().add((T)org);
                     }
+                } else if (getType().equals(AccountType.class)){
+                    for(String uid: user.getAccounts()){
+                        AccountType account = getModelService().readObject(AccountType.class, uid);
+                        getData().add((T)account);
+                    }
                 }
             }
 
@@ -64,6 +66,8 @@ public class AssignableDataProvider<T extends ObjectType, S extends ObjectType> 
                 return user.getRoleAssignments().size();
             } else if(getType().equals(OrgType.class)){
                 return user.getOrgUnitAssignments().size();
+            } else if(getType().equals(AccountType.class)){
+                return user.getAccounts().size();
             }
         }
 

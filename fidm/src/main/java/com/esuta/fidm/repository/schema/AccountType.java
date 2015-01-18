@@ -21,7 +21,7 @@ public class AccountType extends ObjectType{
 
     private boolean _protected;
 
-    private AccountType(){}
+    public AccountType(){}
 
     public String getResource() {
         return resource;

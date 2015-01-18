@@ -61,6 +61,10 @@ public interface IModelService {
      *          An object, subclass of ObjectType, that is to be added
      *          to the model
      *
+     *  @return T object
+     *          returns created object, if creation operation
+     *          was successful
+     *
      *  @throws com.esuta.fidm.infra.exception.ObjectAlreadyExistsException
      *          When object that is to be added already exists
      *          in the model
@@ -69,7 +73,7 @@ public interface IModelService {
      *          When communication with database is not established, or was lost
      *
      * */
-    <T extends ObjectType> void createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException;
+    <T extends ObjectType> T createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException;
 
     /**
      *  <p>

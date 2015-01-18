@@ -61,6 +61,10 @@ public interface IRepositoryService {
      *          An object, subclass of ObjectType, that is to be added
      *          to the repository
      *
+     *  @return T object
+     *          returns created object, if the create operation
+     *          was successful
+     *
      *  @throws ObjectAlreadyExistsException
      *          When object that is to be added already exists
      *          in the repository
@@ -69,7 +73,7 @@ public interface IRepositoryService {
      *          When communication with database is not established, or was lost
      *
      * */
-    <T extends ObjectType> void createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException;
+    <T extends ObjectType> T createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException;
 
     /**
      *  <p>

@@ -4,6 +4,7 @@
         <wicket:extend>
             <div wicket:id="roleAssignPopup" />
             <div wicket:id="orgAssignPopup" />
+            <div wicket:id="accountPopup" />
 
             <form wicket:id="mainForm" class="form-horizontal inputForm">
 
@@ -142,8 +143,15 @@
 
                     <!-- Accounts, Roles and Org. Units -->
                     <div class="col-lg-6">
-                        <div>
-                            Accounts
+                        <div wicket:id="accountContainer">
+                            <span>Accounts</span>
+                            <div style="float: right">
+                                <a class="btn btn-success btn-xs" wicket:id="addAccount">
+                                    <i class="fa fa-plus fa-fw" />
+                                </a>
+                            </div>
+                            <hr class="assignmentDelimiter">
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="accountTable"></table>
                         </div>
                         <hr class="assignmentDelimiter">
 

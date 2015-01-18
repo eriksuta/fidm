@@ -39,6 +39,7 @@ public class UserType extends ObjectType{
 
     private List<String> roleAssignments;
     private List<String> orgUnitAssignments;
+    private List<String> accounts;
 
     public UserType(){}
 
@@ -162,6 +163,18 @@ public class UserType extends ObjectType{
         this.orgUnitAssignments = orgUnitAssignments;
     }
 
+    public List<String> getAccounts() {
+        if(accounts == null){
+            accounts = new ArrayList<>();
+        }
+
+        return accounts;
+    }
+
+    public void setAccounts(List<String> accounts) {
+        this.accounts = accounts;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -170,6 +183,7 @@ public class UserType extends ObjectType{
 
         UserType userType = (UserType) o;
 
+        if (accounts != null ? !accounts.equals(userType.accounts) : userType.accounts != null) return false;
         if (additionalName != null ? !additionalName.equals(userType.additionalName) : userType.additionalName != null)
             return false;
         if (emailAddress != null ? !emailAddress.equals(userType.emailAddress) : userType.emailAddress != null)
@@ -212,6 +226,7 @@ public class UserType extends ObjectType{
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (roleAssignments != null ? roleAssignments.hashCode() : 0);
         result = 31 * result + (orgUnitAssignments != null ? orgUnitAssignments.hashCode() : 0);
+        result = 31 * result + (accounts != null ? accounts.hashCode() : 0);
         return result;
     }
 }

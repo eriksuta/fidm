@@ -48,8 +48,8 @@ public class ModelService implements IModelService{
     }
 
     @Override
-    public <T extends ObjectType> void createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException {
-        repositoryService.createObject(object);
+    public <T extends ObjectType> T createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException {
+        return repositoryService.createObject(object);
     }
 
     @Override
