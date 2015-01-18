@@ -7,11 +7,13 @@ import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.modal.AssignablePopupDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.org.PageOrg;
 import com.esuta.fidm.gui.page.roles.PageRole;
 import com.esuta.fidm.gui.page.users.dto.UserTypeDto;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.repository.schema.OrgType;
 import com.esuta.fidm.repository.schema.RoleType;
 import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
@@ -66,7 +68,12 @@ public class PageUser extends PageBase {
     private static final String ID_BUTTON_ADD_ROLE = "addRole";
     private static final String ID_TABLE_ROLES = "roleTable";
 
-    private static final String ID_ASSIGNABLE_POPUP = "assignablePopup";
+    private static final String ID_ORG_CONTAINER = "orgUnitContainer";
+    private static final String ID_BUTTON_ADD_ORG = "addOrgUnit";
+    private static final String ID_TABLE_ORG = "orgUnitTable";
+
+    private static final String ID_ROLE_ASSIGNABLE_POPUP = "roleAssignPopup";
+    private static final String ID_ORG_ASSIGNABLE_POPUP = "orgAssignPopup";
 
     private IModel<UserTypeDto> model;
 
@@ -191,7 +198,7 @@ public class PageUser extends PageBase {
     }
 
     private void initModalWindows(){
-        ModalWindow assignableModalRole = new AssignablePopupDialog<RoleType>(ID_ASSIGNABLE_POPUP, RoleType.class){
+        ModalWindow assignableModalRole = new AssignablePopupDialog<RoleType>(ID_ROLE_ASSIGNABLE_POPUP, RoleType.class){
 
             @Override
             public void addPerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
@@ -199,9 +206,19 @@ public class PageUser extends PageBase {
             }
         };
         add(assignableModalRole);
+
+        ModalWindow assignableModalOrgUnit = new AssignablePopupDialog<OrgType>(ID_ORG_ASSIGNABLE_POPUP, OrgType.class){
+
+            @Override
+            public void addPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                addOrgUnitPerformed(target, rowModel);
+            }
+        };
+        add(assignableModalOrgUnit);
     }
 
     private void initAssignments(Form mainForm){
+        //Init Role Container
         WebMarkupContainer roleContainer = new WebMarkupContainer(ID_ROLE_CONTAINER);
         roleContainer.setOutputMarkupId(true);
         roleContainer.setOutputMarkupPlaceholderTag(true);
@@ -236,6 +253,43 @@ public class PageUser extends PageBase {
         roleTable.setShowPaging(false);
         roleTable.setOutputMarkupId(true);
         roleContainer.add(roleTable);
+
+        //Init Org. Unit Container
+        WebMarkupContainer orgUnitContainer = new WebMarkupContainer(ID_ORG_CONTAINER);
+        orgUnitContainer.setOutputMarkupId(true);
+        orgUnitContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(orgUnitContainer);
+
+        AjaxLink addOrgUnit = new AjaxLink(ID_BUTTON_ADD_ORG) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                orgUnitAdditionPerformed(target);
+            }
+        };
+        orgUnitContainer.add(addOrgUnit);
+
+        List<IColumn> orgUnitColumns = createOrgUnitColumns();
+
+        AssignableDataProvider<OrgType, UserType> orgUnitProvider = new AssignableDataProvider<>(getPage(),
+                OrgType.class, model.getObject().getUser());
+
+        TablePanel orgUnitTable = new TablePanel(ID_TABLE_ORG, orgUnitProvider, orgUnitColumns, 10);
+        orgUnitTable.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                if(model.getObject().getUser() == null){
+                    return false;
+                }
+
+                return !model.getObject().getUser().getOrgUnitAssignments().isEmpty();
+            }
+        });
+        orgUnitTable.setShowHeader(false);
+        orgUnitTable.setShowPaging(false);
+        orgUnitTable.setOutputMarkupId(true);
+        orgUnitContainer.add(orgUnitTable);
     }
 
     private List<IColumn> createRoleColumns(){
@@ -260,6 +314,29 @@ public class PageUser extends PageBase {
         return columns;
     }
 
+    private List<IColumn> createOrgUnitColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Display Name"), "displayName", "displayName"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Org. Type"), "orgType", "orgType"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Locality"), "locality", "locality"));
+        columns.add(new EditDeleteButtonColumn<OrgType>(new Model<>("Actions")){
+
+            @Override
+            public void editPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                PageUser.this.editOrgUnitPerformed(target, rowModel);
+            }
+
+            @Override
+            public void removePerformed(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                PageUser.this.removeOrgUnitPerformed(target, rowModel);
+            }
+        });
+
+        return columns;
+    }
+
     private boolean isEditingUser(){
         PageParameters parameters = getPageParameters();
         return !parameters.get(UID_PAGE_PARAMETER_NAME).isEmpty();
@@ -273,6 +350,10 @@ public class PageUser extends PageBase {
         return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_ROLE_CONTAINER);
     }
 
+    public WebMarkupContainer getOrgContainer(){
+        return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_ORG_CONTAINER);
+    }
+
     private void addRoleAssignmentPerformed(AjaxRequestTarget target, IModel<RoleType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             return;
@@ -281,13 +362,31 @@ public class PageUser extends PageBase {
         RoleType role = rowModel.getObject();
         model.getObject().getUser().getRoleAssignments().add(role.getUid());
 
-        ModalWindow dialog = (ModalWindow) get(ID_ASSIGNABLE_POPUP);
+        ModalWindow dialog = (ModalWindow) get(ID_ROLE_ASSIGNABLE_POPUP);
         dialog.close(target);
         target.add(getRoleContainer());
     }
 
+    private void addOrgUnitPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            return;
+        }
+
+        OrgType org = rowModel.getObject();
+        model.getObject().getUser().getOrgUnitAssignments().add(org.getUid());
+
+        ModalWindow dialog = (ModalWindow) get(ID_ORG_ASSIGNABLE_POPUP);
+        dialog.close(target);
+        target.add(getOrgContainer());
+    }
+
     private void roleAdditionPerformed(AjaxRequestTarget target){
-        ModalWindow modal = (ModalWindow) get(ID_ASSIGNABLE_POPUP);
+        ModalWindow modal = (ModalWindow) get(ID_ROLE_ASSIGNABLE_POPUP);
+        modal.show(target);
+    }
+
+    private void orgUnitAdditionPerformed(AjaxRequestTarget target){
+        ModalWindow modal = (ModalWindow) get(ID_ORG_ASSIGNABLE_POPUP);
         modal.show(target);
     }
 
@@ -314,6 +413,31 @@ public class PageUser extends PageBase {
 
         model.getObject().getUser().getRoleAssignments().remove(roleUid);
         target.add(getRoleContainer());
+    }
+
+    private void editOrgUnitPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't edit selected org. unit. It is no longer available.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+        setResponsePage(PageOrg.class, parameters);
+    }
+
+    private void removeOrgUnitPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't remove selected org. unit assignment. Something went wrong.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        String orgUid = rowModel.getObject().getUid();
+
+        model.getObject().getUser().getOrgUnitAssignments().remove(orgUid);
+        target.add(getOrgContainer());
     }
 
     private void cancelPerformed(){

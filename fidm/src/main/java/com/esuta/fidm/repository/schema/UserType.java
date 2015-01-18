@@ -38,6 +38,7 @@ public class UserType extends ObjectType{
     private String password;
 
     private List<String> roleAssignments;
+    private List<String> orgUnitAssignments;
 
     public UserType(){}
 
@@ -149,6 +150,18 @@ public class UserType extends ObjectType{
         this.roleAssignments = roleAssignments;
     }
 
+    public List<String> getOrgUnitAssignments() {
+        if(orgUnitAssignments == null){
+            orgUnitAssignments = new ArrayList<>();
+        }
+
+        return orgUnitAssignments;
+    }
+
+    public void setOrgUnitAssignments(List<String> orgUnitAssignments) {
+        this.orgUnitAssignments = orgUnitAssignments;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -170,6 +183,8 @@ public class UserType extends ObjectType{
             return false;
         if (locality != null ? !locality.equals(userType.locality) : userType.locality != null) return false;
         if (nickName != null ? !nickName.equals(userType.nickName) : userType.nickName != null) return false;
+        if (orgUnitAssignments != null ? !orgUnitAssignments.equals(userType.orgUnitAssignments) : userType.orgUnitAssignments != null)
+            return false;
         if (password != null ? !password.equals(userType.password) : userType.password != null) return false;
         if (roleAssignments != null ? !roleAssignments.equals(userType.roleAssignments) : userType.roleAssignments != null)
             return false;
@@ -196,6 +211,7 @@ public class UserType extends ObjectType{
         result = 31 * result + (telephoneNumber != null ? telephoneNumber.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (roleAssignments != null ? roleAssignments.hashCode() : 0);
+        result = 31 * result + (orgUnitAssignments != null ? orgUnitAssignments.hashCode() : 0);
         return result;
     }
 }
