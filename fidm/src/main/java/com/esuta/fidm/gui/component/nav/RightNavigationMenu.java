@@ -13,6 +13,7 @@ import com.esuta.fidm.gui.page.resource.PageResource;
 import com.esuta.fidm.gui.page.resource.PageResourceList;
 import com.esuta.fidm.gui.page.roles.PageRole;
 import com.esuta.fidm.gui.page.roles.PageRoleList;
+import com.esuta.fidm.gui.page.users.PageAccount;
 import com.esuta.fidm.gui.page.users.PageUser;
 import com.esuta.fidm.gui.page.users.PageUserList;
 import org.apache.wicket.behavior.AttributeAppender;
@@ -54,7 +55,7 @@ public class RightNavigationMenu extends Panel {
     }
 
     public List<NavigationMenuTopLevelItem> createMenuItemList(){
-        List<NavigationMenuTopLevelItem> menuItemList = new ArrayList<NavigationMenuTopLevelItem>();
+        List<NavigationMenuTopLevelItem> menuItemList = new ArrayList<>();
 
         //init Dashboard
         menuItemList.add(new NavigationMenuTopLevelItem(createStringResource("page.link.dashboard"), "fa fa-dashboard fa-fw", PageDashboard.class));
@@ -63,6 +64,7 @@ public class RightNavigationMenu extends Panel {
         NavigationMenuTopLevelItem userSection = new NavigationMenuTopLevelItem(createStringResource("page.link.user"), "fa fa-users fa-fw", null);
         userSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.user.new"), PageUser.class));
         userSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.user.list"), PageUserList.class));
+        userSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.user.account"), PageAccount.class));
         menuItemList.add(userSection);
 
         //init Resource section
