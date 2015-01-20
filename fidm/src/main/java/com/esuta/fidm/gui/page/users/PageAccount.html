@@ -2,6 +2,7 @@
 <html xmlns:wicket="http://wicket.apache.org">
     <body>
         <wicket:extend>
+            <div wicket:id="ownerChooser" />
 
             <form wicket:id="mainForm" class="form-horizontal inputForm">
                 <div class="row">
@@ -30,7 +31,15 @@
                                 <label>Owner</label>
                             </dt>
                             <dd>
-                                 <!--<div wicket:id="owner" />-->
+                                 <div class="input-group">
+                                     <input wicket:id="ownerInput" type="text" class="form-control input-sm" />
+
+                                     <div class="input-group-btn">
+                                         <a wicket:id="ownerEdit" class="btn btn-sm btn-primary" title="Edit">
+                                             <i class="fa fa-pencil-square-o"/>
+                                         </a>
+                                     </div>
+                                 </div>
                             </dd>
                         </dl>
 

@@ -1,17 +1,23 @@
 package com.esuta.fidm.gui.page.users;
 
+import com.esuta.fidm.gui.component.modal.ObjectChooserDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.AccountType;
+import com.esuta.fidm.repository.schema.ObjectType;
 import com.esuta.fidm.repository.schema.ResourceType;
 import com.esuta.fidm.repository.schema.UserType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -33,12 +39,15 @@ public class PageAccount extends PageBase{
     private static final String ID_MAIN_FORM = "mainForm";
     private static final String ID_NAME = "name";
     private static final String ID_DESCRIPTION = "description";
-    private static final String ID_OWNER = "owner";
+    private static final String ID_OWNER_INPUT = "ownerInput";
+    private static final String ID_OWNER_EDIT = "ownerEdit";
     private static final String ID_RESOURCE = "resource";
     private static final String ID_PASSWORD = "password";
     private static final String ID_PROTECTED = "protected";
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
+
+    private static final String ID_OWNER_CHOOSER_MODAL = "ownerChooser";
 
     private IModel<AccountType> model;
 
@@ -96,7 +105,21 @@ public class PageAccount extends PageBase{
         TextArea description = new TextArea<>(ID_DESCRIPTION, new PropertyModel<String>(model, "description"));
         mainForm.add(description);
 
-        //TODO - add UI control for owner
+        TextField ownerInput = new TextField<>(ID_OWNER_INPUT, createOwnerInputModel());
+        ownerInput.setRequired(true);
+        ownerInput.setOutputMarkupId(true);
+        ownerInput.add(AttributeAppender.replace("placeholder", "Add owner"));
+        ownerInput.setEnabled(false);
+        mainForm.add(ownerInput);
+
+        AjaxLink ownerEdit = new AjaxLink(ID_OWNER_EDIT) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+               ownerEditPerformed(target);
+            }
+        };
+        mainForm.add(ownerEdit);
 
         DropDownChoice resource = new DropDownChoice<>(ID_RESOURCE, new PropertyModel<String>(model, "resource"),
 
@@ -152,6 +175,42 @@ public class PageAccount extends PageBase{
             }
         };
         mainForm.add(save);
+
+        initModals();
+    }
+
+    private void initModals(){
+        ModalWindow ownerChooser = new ObjectChooserDialog<UserType>(ID_OWNER_CHOOSER_MODAL, UserType.class){
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
+                ownerChoosePerformed(target, rowModel);
+            }
+        };
+        add(ownerChooser);
+    }
+
+    private IModel<String> createOwnerInputModel(){
+        return new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                if(model.getObject() != null && model.getObject().getOwner() != null &&
+                        StringUtils.isNotEmpty(model.getObject().getOwner())){
+                    String ownerUid = model.getObject().getOwner();
+
+                    try {
+                        UserType owner = getModelService().readObject(UserType.class, ownerUid);
+
+                        return owner.getName();
+                    } catch (DatabaseCommunicationException e) {
+                        LOGGER.error("Can't load owner for account with uid: '" + model.getObject().getUid() + "'. Reason: " + e);
+                    }
+                }
+
+                return null;
+            }
+        };
     }
 
     private List<String> getResourceNames(){
@@ -168,6 +227,28 @@ public class PageAccount extends PageBase{
         }
 
         return resourceNames;
+    }
+
+    private void ownerEditPerformed(AjaxRequestTarget target){
+        ModalWindow window = (ModalWindow) get(ID_OWNER_CHOOSER_MODAL);
+        window.show(target);
+    }
+
+    private void ownerChoosePerformed(AjaxRequestTarget target, IModel<UserType> userModel){
+        if(userModel == null || userModel.getObject() == null){
+            return;
+        }
+
+        if(model.getObject() == null){
+            return;
+        }
+
+        String userUid = userModel.getObject().getUid();
+        model.getObject().setOwner(userUid);
+
+        ModalWindow window = (ModalWindow) get(ID_OWNER_CHOOSER_MODAL);
+        window.close(target);
+        target.add(get(ID_MAIN_FORM + ":" + ID_OWNER_INPUT));
     }
 
     private void cancelPerformed(){
@@ -194,16 +275,14 @@ public class PageAccount extends PageBase{
                 modelService.updateObject(account);
             }
 
-            //TODO - finish this after UI widget for owner selection is completed
-            //Add account to the user if it already does not have such account
             if(account.getOwner() == null || account.getOwner().isEmpty()){
                 String ownerUid = account.getOwner();
 
-//                UserType user = modelService.readObject(UserType.class, ownerUid);
+                UserType user = modelService.readObject(UserType.class, ownerUid);
 
-//                if(!user.getAccounts().contains(account.getUid())){
-//                    user.getAccounts().add(account.getUid());
-//                }
+                if(!user.getAccounts().contains(account.getUid())){
+                    user.getAccounts().add(account.getUid());
+                }
             }
 
         } catch (GeneralException e){

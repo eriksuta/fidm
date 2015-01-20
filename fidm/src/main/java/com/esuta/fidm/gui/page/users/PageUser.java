@@ -13,6 +13,7 @@ import com.esuta.fidm.gui.page.users.dto.UserTypeDto;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.*;
 import org.apache.log4j.Logger;
@@ -599,6 +600,17 @@ public class PageUser extends PageBase {
         }
 
         String accountUid = rowModel.getObject().getUid();
+
+        //remove owner from affected account as well
+        try {
+            AccountType acc = getModelService().readObject(AccountType.class, accountUid);
+            acc.setOwner(null);
+
+            getModelService().updateObject(acc);
+        } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
+            LOGGER.error("Could not retrieve account with uid: '" + accountUid + "' of user with uid: '" + model.getObject().getUser().getUid() + "'.");
+            target.add(getFeedbackPanel());
+        }
 
         model.getObject().getUser().getAccounts().remove(accountUid);
         target.add(getAccountContainer());
