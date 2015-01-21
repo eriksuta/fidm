@@ -25,6 +25,10 @@ public abstract class PageBase extends WebPage{
     //Constant used to identify page paramater name (uid) - used when editing objects
     public static final String UID_PAGE_PARAMETER_NAME = "uid";
 
+    //Other page parameter constants
+    public static final String PAGE_ACCOUNT_RESOURCE_UID = "pageAccResourceUid";
+
+
     private static final String ID_TITLE = "title";
     private static final String ID_SUBTITLE = "subtitle";
     private static final String ID_RIGHT_MENU_PANEL = "rightMenuPanel";

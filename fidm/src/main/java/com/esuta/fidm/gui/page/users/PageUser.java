@@ -395,7 +395,7 @@ public class PageUser extends PageBase {
     private List<IColumn> createAccountColumns(){
         List<IColumn> columns = new ArrayList<>();
 
-        columns.add(new PropertyColumn<AccountType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<AccountType, String>(new Model<>("Name"), "accountName", "accountName"));
         columns.add(new AbstractColumn<AccountType, String>(new Model<>("Resource")) {
 
 

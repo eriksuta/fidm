@@ -70,7 +70,15 @@ public class PageAccount extends PageBase{
 
     private AccountType loadAccount(){
         if(!isEditingAccount()){
-            return new AccountType();
+            AccountType newAccount = new AccountType();
+
+            if(!getPageParameters().get(PAGE_ACCOUNT_RESOURCE_UID).isEmpty()){
+                PageParameters parameters = getPageParameters();
+                String resourceUid = parameters.get(PAGE_ACCOUNT_RESOURCE_UID).toString();
+                newAccount.setResource(resourceUid);
+            }
+
+            return newAccount;
         }
 
         PageParameters parameters = getPageParameters();

@@ -5,41 +5,48 @@
             <form wicket:id="mainForm" class="form-horizontal inputForm">
 
                 <!-- Resource attributes -->
-                <div class="col-lg-6">
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Name</label>
-                        </dt>
-                        <dd>
-                            <input wicket:id="name" type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="name" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Description</label>
-                        </dt>
-                        <dd>
-                            <textarea wicket:id="description" rows="2" class="form-control input-sm"></textarea>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Description</label>
+                            </dt>
+                            <dd>
+                                <textarea wicket:id="description" rows="2" class="form-control input-sm"></textarea>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Type</label>
-                        </dt>
-                        <dd>
-                            <input wicket:id="type" type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Type</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="type" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
+                    </div>
 
                     <!-- Accounts, Roles and Org. Units -->
                     <div class="col-lg-6">
-                        <div>
-                            Accounts
+                        <div wicket:id="accountContainer">
+                            <span>Accounts</span>
+                            <div style="float: right">
+                                <a class="btn btn-success btn-xs" wicket:id="addAccount">
+                                    <i class="fa fa-plus fa-fw" />
+                                </a>
+                            </div>
+                            <hr class="assignmentDelimiter">
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="accountTable"></table>
                         </div>
-                        <!-- TODO - add account section of the resource -->
-                        <hr class="assignmentDelimiter">
                     </div>
 
                     <!-- Button Bar -->
@@ -47,6 +54,7 @@
                         <input type="submit" wicket:id="saveButton" class="btn btn-primary" value="Save"/>
                         <input type="submit" wicket:id="cancelButton" class="btn btn-default" value="Cancel"/>
                     </div>
+
                 </div>
 
             </form>
