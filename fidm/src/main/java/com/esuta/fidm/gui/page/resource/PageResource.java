@@ -170,8 +170,6 @@ public class PageResource extends PageBase {
         };
 
         TablePanel accountTable = new TablePanel(ID_TABLE_ACCOUNTS, accountProvider, accountColumns, 10);
-        accountTable.setShowHeader(false);
-        accountTable.setShowPaging(false);
         accountTable.setOutputMarkupId(true);
         accountContainer.add(accountTable);
     }
@@ -294,7 +292,7 @@ public class PageResource extends PageBase {
 
     private void accountOwnerEditPerformed(AjaxRequestTarget target, IModel<AccountType> rowModel){
         PageParameters parameters = new PageParameters();
-        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getOwner());
         setResponsePage(new PageUser(parameters));
     }
 

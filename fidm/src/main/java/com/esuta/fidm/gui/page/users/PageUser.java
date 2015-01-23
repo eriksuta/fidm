@@ -267,8 +267,6 @@ public class PageUser extends PageBase {
                 return !model.getObject().getUser().getRoleAssignments().isEmpty();
             }
         });
-        roleTable.setShowHeader(false);
-        roleTable.setShowPaging(false);
         roleTable.setOutputMarkupId(true);
         roleContainer.add(roleTable);
 
@@ -304,8 +302,6 @@ public class PageUser extends PageBase {
                 return !model.getObject().getUser().getOrgUnitAssignments().isEmpty();
             }
         });
-        orgUnitTable.setShowHeader(false);
-        orgUnitTable.setShowPaging(false);
         orgUnitTable.setOutputMarkupId(true);
         orgUnitContainer.add(orgUnitTable);
 
@@ -341,8 +337,6 @@ public class PageUser extends PageBase {
                 return !model.getObject().getUser().getAccounts().isEmpty();
             }
         });
-        accountTable.setShowHeader(false);
-        accountTable.setShowPaging(false);
         accountTable.setOutputMarkupId(true);
         accountContainer.add(accountTable);
     }
