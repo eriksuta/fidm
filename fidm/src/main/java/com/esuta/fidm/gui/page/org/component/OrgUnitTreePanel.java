@@ -2,6 +2,7 @@ package com.esuta.fidm.gui.page.org.component;
 
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
+import com.esuta.fidm.gui.component.data.column.LinkColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
@@ -9,8 +10,10 @@ import com.esuta.fidm.gui.page.org.PageOrg;
 import com.esuta.fidm.gui.page.org.component.data.OrgTreeDataProvider;
 import com.esuta.fidm.gui.page.org.component.data.SelectableFolderContent;
 import com.esuta.fidm.gui.page.org.component.data.TreeStateSet;
-import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.gui.page.users.PageUser;
+import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.repository.schema.OrgType;
+import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
@@ -43,6 +46,8 @@ import java.util.Set;
  *
  *  based on implementation by lazyman, see
  *  (https://github.com/Evolveum/midpoint/blob/0f5c644324da0f574f084dfc2ede306f2538a053/gui/admin-gui/src/main/java/com/evolveum/midpoint/web/page/admin/users/component/TreeTablePanel.java)
+ *
+ *  TODO - add option to delete root
  * */
 public class OrgUnitTreePanel extends Panel {
 
@@ -54,7 +59,8 @@ public class OrgUnitTreePanel extends Panel {
     private static final String ID_TREE_CONTAINER = "treeContainer";
     private static final String ID_TREE = "tree";
     private static final String ID_FORM = "form";
-    private static final String ID_TABLE = "table";
+    private static final String ID_CHILDREN_TABLE = "childrenTable";
+    private static final String ID_MEMBER_TABLE = "memberTable";
 
     private IModel<String> rootOidModel;
     private IModel<OrgType> selected = new LoadableModel<OrgType>() {
@@ -70,6 +76,10 @@ public class OrgUnitTreePanel extends Panel {
         this.rootOidModel = rootOid;
 
         initLayout();
+    }
+
+    private PageBase getPaheBase(){
+        return (PageBase) getPage();
     }
 
     protected void initLayout() {
@@ -151,62 +161,123 @@ public class OrgUnitTreePanel extends Panel {
         tree.getTable().add(AttributeModifier.replace("class", "table table-striped table-condensed"));
         treeContainer.add(tree);
 
-        initTable();
-    }
-
-    private void initTable() {
         Form form = new Form(ID_FORM);
         form.setOutputMarkupId(true);
         add(form);
 
-        ObjectDataProvider tableProvider = new ObjectDataProvider<ObjectType>(this, ObjectType.class) {
+        initChildrenTable(form);
+        initMemberTable(form);
+    }
+
+    private void initChildrenTable(Form form) {
+        ObjectDataProvider tableProvider = new ObjectDataProvider<OrgType>(this, OrgType.class) {
 
             @Override
-            public List<ObjectType> applyDataFilter(List<ObjectType> list) {
-                return createTableFilter(list);
+            public List<OrgType> applyDataFilter(List<OrgType> list) {
+                return createChildrenTableFilter(list);
             }
         };
 
-        List<IColumn<ObjectType, String>> tableColumns = createTableColumns();
-        TablePanel table = new TablePanel(ID_TABLE, tableProvider, tableColumns, 10);
+        List<IColumn<OrgType, String>> tableColumns = createChildrenTableColumns();
+        TablePanel table = new TablePanel(ID_CHILDREN_TABLE, tableProvider, tableColumns, 10);
         table.setOutputMarkupId(true);
         form.add(table);
     }
 
-    private List<IColumn<ObjectType, String>> createTableColumns() {
-        List<IColumn<ObjectType, String>> columns = new ArrayList<>();
+    private List<IColumn<OrgType, String>> createChildrenTableColumns() {
+        List<IColumn<OrgType, String>> columns = new ArrayList<>();
 
-        columns.add(new PropertyColumn<ObjectType, String>(new Model<>("Name"), "name", "name"));
-        columns.add(new EditDeleteButtonColumn<ObjectType>(new Model<>("Actions")){
+        columns.add(new LinkColumn<OrgType>(new Model<>("Name"), "name", "name"){
+            @Override
+            public void onClick(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                OrgUnitTreePanel.this.editChildrenPerformed(target, rowModel);
+            }
+        });
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Display Name"), "displayName", "displayName"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Type"), "orgType", "orgType"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Locality"), "locality", "locality"));
+        columns.add(new EditDeleteButtonColumn<OrgType>(new Model<>("Actions")){
 
             @Override
-            public void editPerformed(AjaxRequestTarget target, IModel<ObjectType> rowModel) {
-                OrgUnitTreePanel.this.editObjectTypePerformed(target, rowModel);
+            public void editPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                OrgUnitTreePanel.this.editChildrenPerformed(target, rowModel);
             }
 
             @Override
-            public boolean getRemoveVisible() {
-                return false;
+            public void removePerformed(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                OrgUnitTreePanel.this.removeChildrenPerformed(target, rowModel);
             }
         });
 
         return columns;
     }
 
-    /**
-     *  TODO - right now, we are just working with OrgType objects, add other objects later
-     * */
-    private List<ObjectType> createTableFilter(List<ObjectType> list){
-        List<ObjectType> filteredList = new ArrayList<>();
+    private List<OrgType> createChildrenTableFilter(List<OrgType> list){
+        List<OrgType> filteredList = new ArrayList<>();
         String selectedOrgUid = selected.getObject().getUid();
 
-        for(ObjectType objectType: list){
+        for(OrgType org: list){
+            if(org.getParentOrgUnits().contains(selectedOrgUid)){
+                filteredList.add(org);
+            }
 
-            if(objectType instanceof OrgType){
-                OrgType org = (OrgType) objectType;
-                if(org.getParentOrgUnits().contains(selectedOrgUid)){
-                    filteredList.add(objectType);
-                }
+        }
+
+        return filteredList;
+    }
+
+    private void initMemberTable(Form form) {
+        ObjectDataProvider tableProvider = new ObjectDataProvider<UserType>(this, UserType.class) {
+
+            @Override
+            public List<UserType> applyDataFilter(List<UserType> list) {
+                return crateMemberTableFilter(list);
+            }
+        };
+
+        List<IColumn<UserType, String>> tableColumns = createMemberTableColumns();
+        TablePanel table = new TablePanel(ID_MEMBER_TABLE, tableProvider, tableColumns, 10);
+        table.setOutputMarkupId(true);
+        form.add(table);
+    }
+
+    private List<IColumn<UserType, String>> createMemberTableColumns() {
+        List<IColumn<UserType, String>> columns = new ArrayList<>();
+
+        columns.add(new LinkColumn<UserType>(new Model<>("Name"), "name", "name"){
+
+            @Override
+            public void onClick(AjaxRequestTarget target, IModel<UserType> rowModel) {
+                OrgUnitTreePanel.this.editMemberPerformed(target, rowModel);
+            }
+        });
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Given Name"), "givenName", "givenName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Family Name"), "familyName", "familyName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("E-mail Address"), "emailAddress", "emailAddress"));
+
+        columns.add(new EditDeleteButtonColumn<UserType>(new Model<>("Actions")){
+
+            @Override
+            public void editPerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
+                OrgUnitTreePanel.this.editMemberPerformed(target, rowModel);
+            }
+
+            @Override
+            public void removePerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
+                OrgUnitTreePanel.this.removeMemberPerformed(target, rowModel);
+            }
+        });
+
+        return columns;
+    }
+
+    private List<UserType> crateMemberTableFilter(List<UserType> list){
+        List<UserType> filteredList = new ArrayList<>();
+        String selectedOrgUid = selected.getObject().getUid();
+
+        for(UserType user: list){
+            if(user.getOrgUnitAssignments().contains(selectedOrgUid)){
+                filteredList.add(user);
             }
         }
 
@@ -217,8 +288,12 @@ public class OrgUnitTreePanel extends Panel {
         return (TableTree) get(ID_TREE_CONTAINER + ":" + ID_TREE);
     }
 
-    private TablePanel getTable(){
-        return (TablePanel) get(ID_FORM + ":" + ID_TABLE);
+    private TablePanel getChildrenTable(){
+        return (TablePanel) get(ID_FORM + ":" + ID_CHILDREN_TABLE);
+    }
+
+    private TablePanel getMemberTable(){
+        return (TablePanel) get(ID_FORM + ":" + ID_MEMBER_TABLE);
     }
 
     private OrgType getRootOrgUnitFromProvider() {
@@ -230,10 +305,13 @@ public class OrgUnitTreePanel extends Panel {
     }
 
     private void selectTreeItemPerformed(AjaxRequestTarget target) {
-        TablePanel table = getTable();
-        table.setCurrentPage(0);
+        TablePanel childrenTable = getChildrenTable();
+        childrenTable.setCurrentPage(0);
 
-        target.add(table);
+        TablePanel memberTable = getMemberTable();
+        memberTable.setCurrentPage(0);
+
+        target.add(childrenTable, memberTable);
     }
 
     private void treeCollapsePerformed(AjaxRequestTarget target){
@@ -252,24 +330,78 @@ public class OrgUnitTreePanel extends Panel {
         target.add(tree);
     }
 
-    /**
-     *  TODO - currently, we are handling only OrgType objects. Add handling for users, roles later.
-     * */
-    private void editObjectTypePerformed(AjaxRequestTarget target, IModel<ObjectType> rowModel){
-        PageBase pageBase = (PageBase) getPage();
-
+    private void editChildrenPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
-            error("Couldn't edit selected object. It is no longer available.");
-            target.add(pageBase.getFeedbackPanel());
+            error("Couldn't edit selected org. unit. It is no longer available.");
+            target.add(getPaheBase().getFeedbackPanel());
             return;
         }
 
         PageParameters parameters = new PageParameters();
         parameters.add(PageBase.UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
 
-        if(rowModel.getObject() instanceof OrgType){
-            setResponsePage(PageOrg.class, parameters);
+        setResponsePage(PageOrg.class, parameters);
+    }
+
+    private void editMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't edit selected user. It is no longer available.");
+            target.add(getPaheBase().getFeedbackPanel());
+            return;
         }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(PageBase.UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+
+        setResponsePage(PageUser.class, parameters);
+    }
+
+    private void removeChildrenPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Object selected to delete does not exist.");
+            target.add(getPaheBase().getFeedbackPanel());
+            return;
+        }
+
+        OrgType org = rowModel.getObject();
+        String orgName = org.getName();
+
+        try {
+            getPaheBase().getModelService().deleteObject(org);
+        } catch (GeneralException e){
+            LOGGER.error("Could not delete org. unit: '" + orgName + "'. Reason: ", e);
+            error("Could not delete org. unit: '" + orgName + "'. Reason: " + e.getExceptionMessage());
+            target.add(getPaheBase().getFeedbackPanel());
+            return;
+        }
+
+        LOGGER.info("Org. unit '" + orgName + "' was successfully deleted from the system.");
+        success("Org. unit '" + orgName + "' was successfully deleted from the system.");
+        target.add(getPaheBase().getFeedbackPanel(), getChildrenTable());
+    }
+
+    private void removeMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Object selected to delete does not exist.");
+            target.add(getPaheBase().getFeedbackPanel());
+            return;
+        }
+
+        UserType user = rowModel.getObject();
+        String userName = user.getName();
+
+        try {
+            getPaheBase().getModelService().deleteObject(user);
+        } catch (GeneralException e){
+            LOGGER.error("Could not delete user: '" + userName + "'. Reason: ", e);
+            error("Could not delete user: '" + userName + "'. Reason: " + e.getExceptionMessage());
+            target.add(getPaheBase().getFeedbackPanel());
+            return;
+        }
+
+        LOGGER.info("User '" + userName + "' was successfully deleted from the system.");
+        success("User '" + userName + "' was successfully deleted from the system.");
+        target.add(getPaheBase().getFeedbackPanel(), getMemberTable());
     }
 
     private static class TreeStateModel extends AbstractReadOnlyModel<Set<OrgType>> {

@@ -102,3 +102,7 @@ span.tree-content .selected span.tree-label {
     padding-left: 18px;
     background: url(../img/folder-other.gif) no-repeat 0 50%;
 }
+
+div.org-table-header {
+    margin: 10px 3px 3px; font-weight: bold;
+}
