@@ -260,11 +260,8 @@ public class PageUser extends PageBase {
 
             @Override
             public boolean isVisible() {
-                if(model.getObject().getUser() == null){
-                    return false;
-                }
+                return model.getObject().getUser() != null && !model.getObject().getUser().getRoleAssignments().isEmpty();
 
-                return !model.getObject().getUser().getRoleAssignments().isEmpty();
             }
         });
         roleTable.setOutputMarkupId(true);
@@ -295,11 +292,8 @@ public class PageUser extends PageBase {
 
             @Override
             public boolean isVisible() {
-                if(model.getObject().getUser() == null){
-                    return false;
-                }
+                return model.getObject().getUser() != null && !model.getObject().getUser().getOrgUnitAssignments().isEmpty();
 
-                return !model.getObject().getUser().getOrgUnitAssignments().isEmpty();
             }
         });
         orgUnitTable.setOutputMarkupId(true);
@@ -330,11 +324,8 @@ public class PageUser extends PageBase {
 
             @Override
             public boolean isVisible() {
-                if(model.getObject().getUser() == null){
-                    return false;
-                }
+                return model.getObject().getUser() != null && !model.getObject().getUser().getAccounts().isEmpty();
 
-                return !model.getObject().getUser().getAccounts().isEmpty();
             }
         });
         accountTable.setOutputMarkupId(true);
@@ -627,7 +618,7 @@ public class PageUser extends PageBase {
         user = userDto.getUser();
 
         if(userDto.getPassword().equals(userDto.getPasswordConfirm())){
-            userDto.setPassword(userDto.getPassword());
+            user.setPassword(userDto.getPassword());
         } else {
             info("Values in password and password confirmation fields are not the same. Please provide correct password values.");
             target.add(getFeedbackPanel());
