@@ -7,11 +7,15 @@ import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.gui.page.org.PageOrg;
+import com.esuta.fidm.gui.page.org.PageOrgList;
 import com.esuta.fidm.gui.page.org.component.data.OrgTreeDataProvider;
 import com.esuta.fidm.gui.page.org.component.data.SelectableFolderContent;
 import com.esuta.fidm.gui.page.org.component.data.TreeStateSet;
 import com.esuta.fidm.gui.page.users.PageUser;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
+import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.OrgType;
 import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
@@ -56,6 +60,7 @@ public class OrgUnitTreePanel extends Panel {
     private static final String ID_TREE_HEADER = "treeHeader";
     private static final String ID_BUTTON_EXPAND_TREE = "treeExpand";
     private static final String ID_BUTTON_COLLAPSE_TREE = "treeCollapse";
+    private static final String ID_BUTTON_DELETE_ROOT = "deleteRoot";
     private static final String ID_TREE_CONTAINER = "treeContainer";
     private static final String ID_TREE = "tree";
     private static final String ID_FORM = "form";
@@ -74,11 +79,12 @@ public class OrgUnitTreePanel extends Panel {
     public OrgUnitTreePanel(String id, IModel<String> rootOid) {
         super(id);
         this.rootOidModel = rootOid;
+        setOutputMarkupId(true);
 
         initLayout();
     }
 
-    private PageBase getPaheBase(){
+    private PageBase getPageBase(){
         return (PageBase) getPage();
     }
 
@@ -86,6 +92,15 @@ public class OrgUnitTreePanel extends Panel {
         WebMarkupContainer treeHeader = new WebMarkupContainer(ID_TREE_HEADER);
         treeHeader.setOutputMarkupId(true);
         add(treeHeader);
+
+        AjaxLink deleteRoot = new AjaxLink(ID_BUTTON_DELETE_ROOT) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                deleteRootPerformed(target);
+            }
+        };
+        treeHeader.add(deleteRoot);
 
         AjaxLink treeExpand = new AjaxLink(ID_BUTTON_EXPAND_TREE) {
 
@@ -304,6 +319,31 @@ public class OrgUnitTreePanel extends Panel {
         return iterator.hasNext() ? iterator.next() : null;
     }
 
+    private void deleteRootPerformed(AjaxRequestTarget target){
+        String rootOrgOid = rootOidModel.getObject();
+        ModelService modelService = getPageBase().getModelService();
+
+        try {
+            OrgType root = modelService.readObject(OrgType.class, rootOrgOid);
+
+            if(root == null){
+                LOGGER.error("Could not find root org. unit to delete.");
+                error("Could not find root org. unit to delete.");
+                target.add(getPageBase().getFeedbackPanel());
+                return;
+            }
+
+            modelService.deleteObject(root);
+            LOGGER.info("Root org. unit with uid: '" + rootOrgOid + "' was deleted.");
+
+        } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
+            LOGGER.error("Could not delete root org. unit with uid: '" + rootOrgOid + "'.");
+            error("Could not delete root org. unit with uid: '" + rootOrgOid + "'.");
+        }
+
+        setResponsePage(PageOrgList.class);
+    }
+
     private void selectTreeItemPerformed(AjaxRequestTarget target) {
         TablePanel childrenTable = getChildrenTable();
         childrenTable.setCurrentPage(0);
@@ -333,7 +373,7 @@ public class OrgUnitTreePanel extends Panel {
     private void editChildrenPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             error("Couldn't edit selected org. unit. It is no longer available.");
-            target.add(getPaheBase().getFeedbackPanel());
+            target.add(getPageBase().getFeedbackPanel());
             return;
         }
 
@@ -346,7 +386,7 @@ public class OrgUnitTreePanel extends Panel {
     private void editMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             error("Couldn't edit selected user. It is no longer available.");
-            target.add(getPaheBase().getFeedbackPanel());
+            target.add(getPageBase().getFeedbackPanel());
             return;
         }
 
@@ -359,7 +399,7 @@ public class OrgUnitTreePanel extends Panel {
     private void removeChildrenPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             error("Object selected to delete does not exist.");
-            target.add(getPaheBase().getFeedbackPanel());
+            target.add(getPageBase().getFeedbackPanel());
             return;
         }
 
@@ -367,23 +407,23 @@ public class OrgUnitTreePanel extends Panel {
         String orgName = org.getName();
 
         try {
-            getPaheBase().getModelService().deleteObject(org);
+            getPageBase().getModelService().deleteObject(org);
         } catch (GeneralException e){
             LOGGER.error("Could not delete org. unit: '" + orgName + "'. Reason: ", e);
             error("Could not delete org. unit: '" + orgName + "'. Reason: " + e.getExceptionMessage());
-            target.add(getPaheBase().getFeedbackPanel());
+            target.add(getPageBase().getFeedbackPanel());
             return;
         }
 
         LOGGER.info("Org. unit '" + orgName + "' was successfully deleted from the system.");
         success("Org. unit '" + orgName + "' was successfully deleted from the system.");
-        target.add(getPaheBase().getFeedbackPanel(), getChildrenTable());
+        target.add(getPageBase().getFeedbackPanel(), getChildrenTable());
     }
 
     private void removeMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             error("Object selected to delete does not exist.");
-            target.add(getPaheBase().getFeedbackPanel());
+            target.add(getPageBase().getFeedbackPanel());
             return;
         }
 
@@ -391,17 +431,17 @@ public class OrgUnitTreePanel extends Panel {
         String userName = user.getName();
 
         try {
-            getPaheBase().getModelService().deleteObject(user);
+            getPageBase().getModelService().deleteObject(user);
         } catch (GeneralException e){
             LOGGER.error("Could not delete user: '" + userName + "'. Reason: ", e);
             error("Could not delete user: '" + userName + "'. Reason: " + e.getExceptionMessage());
-            target.add(getPaheBase().getFeedbackPanel());
+            target.add(getPageBase().getFeedbackPanel());
             return;
         }
 
         LOGGER.info("User '" + userName + "' was successfully deleted from the system.");
         success("User '" + userName + "' was successfully deleted from the system.");
-        target.add(getPaheBase().getFeedbackPanel(), getMemberTable());
+        target.add(getPageBase().getFeedbackPanel(), getMemberTable());
     }
 
     private static class TreeStateModel extends AbstractReadOnlyModel<Set<OrgType>> {
