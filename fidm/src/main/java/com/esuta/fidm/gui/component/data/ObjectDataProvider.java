@@ -128,4 +128,8 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
     public Class<T> getType() {
         return type;
     }
+
+    public void setType(Class<T> type) {
+        this.type = type;
+    }
 }

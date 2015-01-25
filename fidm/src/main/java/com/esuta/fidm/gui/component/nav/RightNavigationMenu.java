@@ -2,6 +2,7 @@ package com.esuta.fidm.gui.component.nav;
 
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.page.config.PageAbout;
+import com.esuta.fidm.gui.page.config.PageDebugList;
 import com.esuta.fidm.gui.page.config.PageSystemConfiguration;
 import com.esuta.fidm.gui.page.dashboard.PageDashboard;
 import com.esuta.fidm.gui.page.federation.PageFederation;
@@ -97,6 +98,7 @@ public class RightNavigationMenu extends Panel {
         //init Configuration section
         NavigationMenuTopLevelItem configSection = new NavigationMenuTopLevelItem(createStringResource("page.link.config"), "fa fa-wrench fa-fw", null);
         configSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.config.basic"), PageSystemConfiguration.class));
+        configSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.config.debug"), PageDebugList.class));
         configSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.config.about"), PageAbout.class));
         menuItemList.add(configSection);
 

@@ -1,0 +1,20 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+    <body>
+        <wicket:extend>
+
+            <div class="clearfix">
+                <form class="form-inline pull-right search-form">
+                    <div class="form-group">
+                        <label>Select Object Type</label>
+                        <select class="form-control input-sm" wicket:id="objectTypeChoice"/>
+                    </div>
+                </form>
+            </div>
+
+            <form wicket:id="mainForm" class="clearfix form-horizontal">
+                <div wicket:id="objectTable"/>
+            </form>
+
+        </wicket:extend>
+    </body>
+</html>
