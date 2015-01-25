@@ -149,15 +149,15 @@ public class PageDebugList extends PageBase{
         parameters.add(UID_PAGE_PARAMETER_NAME, object.getUid());
 
         if(object instanceof AccountType){
-            setResponsePage(new PageAccount(parameters));
+            setResponsePage(new PageDebugObject(parameters, AccountType.class));
         } else if(object instanceof OrgType){
-            setResponsePage(new PageOrg(parameters));
+            setResponsePage(new PageDebugObject(parameters, OrgType.class));
         } else if(object instanceof ResourceType){
-            setResponsePage(new PageResource(parameters));
+            setResponsePage(new PageDebugObject(parameters, ResourceType.class));
         } else if(object instanceof RoleType){
-            setResponsePage(new PageRole(parameters));
+            setResponsePage(new PageDebugObject(parameters, RoleType.class));
         } else if(object instanceof UserType){
-            setResponsePage(new PageUser(parameters));
+            setResponsePage(new PageDebugObject(parameters, UserType.class));
         }
     }
 
