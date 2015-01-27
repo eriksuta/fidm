@@ -1,6 +1,6 @@
 package com.esuta.fidm.gui.component;
 
-import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.repository.schema.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -58,6 +58,11 @@ public final class WebMiscUtil {
         }
 
         XStream xStream = new XStream(new StaxDriver());
+        xStream.alias("account", AccountType.class);
+        xStream.alias("orgUnit", OrgType.class);
+        xStream.alias("resource", ResourceType.class);
+        xStream.alias("role", RoleType.class);
+        xStream.alias("user", UserType.class);
         String uglyXml = xStream.toXML(object);
 
         Document document = DocumentBuilderFactory.newInstance()
