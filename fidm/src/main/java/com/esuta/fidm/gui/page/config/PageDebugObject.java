@@ -4,6 +4,7 @@ import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.schema.ObjectType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -165,11 +166,31 @@ public class PageDebugObject extends PageBase{
         target.add(getMainForm());
     }
 
-    /**
-     *  TODO - finish this
-     * */
     private void savePerformed(AjaxRequestTarget target){
-        warn("Not implemented yet");
+        ObjectType objectToSave = null;
+
+        if(ObjectFormat.XML.equals(objectFormat)){
+            objectToSave = WebMiscUtil.xmlToObject(objectRepresentation.getObject());
+        } else if(ObjectFormat.JSON.equals(objectFormat)){
+            objectToSave = WebMiscUtil.jsonToObject(objectRepresentation.getObject(), type);
+        }
+
+        try {
+            if(objectToSave != null){
+                getModelService().updateObject(objectToSave);
+            }
+        } catch (ObjectNotFoundException | DatabaseCommunicationException e) {
+            LOGGER.error("Could not save object with uid: '" + objectToSave.getUid() + "' to repository.");
+            error("Could not save object with uid: '" + objectToSave.getUid() + "' to repository.");
+            target.add(getFeedbackPanel());
+        }
+
+        if(objectToSave != null){
+            getSession().success("Object with uid: '" + objectToSave.getUid() + "' saved.");
+            LOGGER.info("Object with uid: '" + objectToSave.getUid() + "' saved.");
+        }
+
+        setResponsePage(PageDebugList.class);
         target.add(getFeedbackPanel());
     }
 }

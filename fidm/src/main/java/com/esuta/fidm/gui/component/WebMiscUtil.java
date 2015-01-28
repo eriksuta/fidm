@@ -57,12 +57,7 @@ public final class WebMiscUtil {
             return "Result is NOT valid";
         }
 
-        XStream xStream = new XStream(new StaxDriver());
-        xStream.alias("account", AccountType.class);
-        xStream.alias("orgUnit", OrgType.class);
-        xStream.alias("resource", ResourceType.class);
-        xStream.alias("role", RoleType.class);
-        xStream.alias("user", UserType.class);
+        XStream xStream = prepareXStream();
         String uglyXml = xStream.toXML(object);
 
         Document document = DocumentBuilderFactory.newInstance()
@@ -93,6 +88,22 @@ public final class WebMiscUtil {
         return  stringWriter.toString();
     }
 
+    private static XStream prepareXStream(){
+        XStream xStream = new XStream(new StaxDriver());
+        xStream.alias("account", AccountType.class);
+        xStream.alias("orgUnit", OrgType.class);
+        xStream.alias("resource", ResourceType.class);
+        xStream.alias("role", RoleType.class);
+        xStream.alias("user", UserType.class);
+        return xStream;
+    }
+
+    public static ObjectType xmlToObject(String xmlObject){
+        XStream xStream = prepareXStream();
+
+        return (ObjectType) xStream.fromXML(xmlObject);
+    }
+
     public static String prepareObjectTypeInJson(ObjectType object){
         if(object == null){
             return "Result is NOT valid";
@@ -107,5 +118,23 @@ public final class WebMiscUtil {
         JsonElement je = jp.parse(uglyJson);
 
         return gson.toJson(je);
+    }
+
+    public static ObjectType jsonToObject(String jsonObject, Class<? extends ObjectType> clazz){
+        Gson gson = new Gson();
+
+        if(clazz.equals(AccountType.class)){
+            return gson.fromJson(jsonObject, AccountType.class);
+        } else if(clazz.equals(OrgType.class)){
+            return gson.fromJson(jsonObject, OrgType.class);
+        } else if(clazz.equals(ResourceType.class)){
+            return gson.fromJson(jsonObject, ResourceType.class);
+        } else if(clazz.equals(RoleType.class)){
+            return gson.fromJson(jsonObject, ResourceType.class);
+        } else if(clazz.equals(UserType.class)){
+            return gson.fromJson(jsonObject, UserType.class);
+        }
+
+        return gson.fromJson(jsonObject, ObjectType.class);
     }
 }
