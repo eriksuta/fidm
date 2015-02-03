@@ -6,6 +6,7 @@ import com.esuta.fidm.gui.page.config.PageDebugList;
 import com.esuta.fidm.gui.page.config.PageSystemConfiguration;
 import com.esuta.fidm.gui.page.dashboard.PageDashboard;
 import com.esuta.fidm.gui.page.federation.PageFederation;
+import com.esuta.fidm.gui.page.federation.PageFederationList;
 import com.esuta.fidm.gui.page.org.PageOrg;
 import com.esuta.fidm.gui.page.org.PageOrgList;
 import com.esuta.fidm.gui.page.project.PageProject;
@@ -93,7 +94,10 @@ public class RightNavigationMenu extends Panel {
         menuItemList.add(projectSection);
 
         //init Federation section
-        menuItemList.add(new NavigationMenuTopLevelItem(createStringResource("page.link.federation"), "fa fa-institution fa-fw", PageFederation.class));
+        NavigationMenuTopLevelItem federationSection = new NavigationMenuTopLevelItem(createStringResource("page.link.federation"), "fa fa-institution fa-fw", null);
+        federationSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.federation.new"), PageFederation.class));
+        federationSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.federation.list"), PageFederationList.class));
+        menuItemList.add(federationSection);
 
         //init Configuration section
         NavigationMenuTopLevelItem configSection = new NavigationMenuTopLevelItem(createStringResource("page.link.config"), "fa fa-wrench fa-fw", null);

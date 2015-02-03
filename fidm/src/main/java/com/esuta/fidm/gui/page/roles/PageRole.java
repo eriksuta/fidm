@@ -63,8 +63,8 @@ public class PageRole extends PageBase {
         try {
             role = getModelService().readObject(RoleType.class, uid);
         } catch (DatabaseCommunicationException exc){
-            error("Couldn't retrieve role with oid: '" + uid + "' from the repository. Reason: " + exc.getExceptionMessage());
-            LOGGER.error("Couldn't retrieve role with oid: '" + uid + "' from the repository. Reason: ", exc);
+            error("Couldn't retrieve role with uid: '" + uid + "' from the repository. Reason: " + exc.getExceptionMessage());
+            LOGGER.error("Couldn't retrieve role with uid: '" + uid + "' from the repository. Reason: ", exc);
             throw new RestartResponseException(PageRoleList.class);
         }
 
