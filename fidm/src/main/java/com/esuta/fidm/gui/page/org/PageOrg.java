@@ -1,23 +1,32 @@
 package com.esuta.fidm.gui.page.org;
 
+import com.esuta.fidm.gui.component.data.ObjectDataProvider;
+import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
+import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextEditPanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextPanel;
 import com.esuta.fidm.gui.component.modal.ObjectChooserDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.users.PageUser;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.OrgType;
+import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
@@ -40,6 +49,8 @@ public class PageOrg extends PageBase {
     private static final String ID_PARENT_ORG_UNIT = "parentOrgUnits";
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
+    private static final String ID_MEMBERS_CONTAINER = "memberContainer";
+    private static final String ID_MEMBERS_TABLE = "membersTable";
 
     private static final String ID_PARENT_ORG_UNIT_CHOOSER = "parentOrgUnitChooser";
 
@@ -155,6 +166,7 @@ public class PageOrg extends PageBase {
         mainForm.add(save);
 
         initModalWindows();
+        initContainers(mainForm);
     }
 
     private void initModalWindows(){
@@ -178,8 +190,69 @@ public class PageOrg extends PageBase {
         add(parentOrgUnitChooser);
     }
 
+    private void initContainers(Form mainForm){
+        WebMarkupContainer roleContainer = new WebMarkupContainer(ID_MEMBERS_CONTAINER);
+        roleContainer.setOutputMarkupId(true);
+        roleContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(roleContainer);
+
+        List<IColumn> membersColumns = createMemberColumns();
+        ObjectDataProvider membersProvider = new ObjectDataProvider<UserType>(getPage(), UserType.class){
+
+            @Override
+            public List<UserType> applyDataFilter(List<UserType> list) {
+                List<UserType> memberList = new ArrayList<>();
+
+                if(model != null && model.getObject() != null){
+                    String orgUid = model.getObject().getUid();
+
+                    for(UserType user: list){
+                        if(user.getOrgUnitAssignments().contains(orgUid)){
+                            memberList.add(user);
+                        }
+                    }
+                }
+
+                return memberList;
+            }
+        };
+
+        TablePanel roleTable = new TablePanel(ID_MEMBERS_TABLE, membersProvider, membersColumns, 10);
+        roleTable.setOutputMarkupId(true);
+        roleContainer.add(roleTable);
+    }
+
+    private List<IColumn> createMemberColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Given Name"), "givenName", "givenName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Family Name"), "familyName", "familyName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("E-mail"), "emailAddress", "emailAddress"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Locality"), "locality", "locality"));
+
+        columns.add(new EditDeleteButtonColumn<UserType>(new Model<>("Actions")){
+
+            @Override
+            public void editPerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
+                PageOrg.this.editMemberPerformed(target, rowModel);
+            }
+
+            @Override
+            public boolean getRemoveVisible() {
+                return false;
+            }
+        });
+
+        return columns;
+    }
+
     private Form getMainForm(){
         return (Form) get(ID_MAIN_FORM);
+    }
+
+    private WebMarkupContainer getMembersContainer(){
+        return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_MEMBERS_CONTAINER);
     }
 
     private IModel<String> createParentOrgUnitDisplayModel(final IModel<String> uidModel){
@@ -294,5 +367,17 @@ public class PageOrg extends PageBase {
         LOGGER.info("Org. Unit '" + orgUnit.getName() + "' has been saved successfully.");
         setResponsePage(PageOrgList.class);
         target.add(getFeedbackPanel());
+    }
+
+    private void editMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't edit selected user. It is no longer available.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+        setResponsePage(new PageUser(parameters));
     }
 }
