@@ -1,5 +1,6 @@
 package com.esuta.fidm.gui.page.org;
 
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
@@ -197,7 +198,7 @@ public class PageOrg extends PageBase {
         mainForm.add(roleContainer);
 
         List<IColumn> membersColumns = createMemberColumns();
-        ObjectDataProvider membersProvider = new ObjectDataProvider<UserType>(getPage(), UserType.class){
+        final ObjectDataProvider membersProvider = new ObjectDataProvider<UserType>(getPage(), UserType.class){
 
             @Override
             public List<UserType> applyDataFilter(List<UserType> list) {
@@ -217,9 +218,16 @@ public class PageOrg extends PageBase {
             }
         };
 
-        TablePanel roleTable = new TablePanel(ID_MEMBERS_TABLE, membersProvider, membersColumns, 10);
-        roleTable.setOutputMarkupId(true);
-        roleContainer.add(roleTable);
+        TablePanel membersTable = new TablePanel(ID_MEMBERS_TABLE, membersProvider, membersColumns, 10);
+        membersTable.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return membersProvider.size() > 0;
+            }
+        });
+        membersTable.setOutputMarkupId(true);
+        roleContainer.add(membersTable);
     }
 
     private List<IColumn> createMemberColumns(){
