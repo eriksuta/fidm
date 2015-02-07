@@ -19,6 +19,7 @@ public class OrgType extends ObjectType{
     private String locality;
 
     private List<String> parentOrgUnits;
+    private List<String> governors;
 
     public OrgType(){}
 
@@ -62,6 +63,18 @@ public class OrgType extends ObjectType{
         this.parentOrgUnits = parentOrgUnits;
     }
 
+    public List<String> getGovernors() {
+        if(governors == null){
+            governors = new ArrayList<>();
+        }
+
+        return governors;
+    }
+
+    public void setGovernors(List<String> governors) {
+        this.governors = governors;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -72,6 +85,7 @@ public class OrgType extends ObjectType{
 
         if (displayName != null ? !displayName.equals(orgType1.displayName) : orgType1.displayName != null)
             return false;
+        if (governors != null ? !governors.equals(orgType1.governors) : orgType1.governors != null) return false;
         if (locality != null ? !locality.equals(orgType1.locality) : orgType1.locality != null) return false;
         if (orgType != null ? !orgType.equals(orgType1.orgType) : orgType1.orgType != null) return false;
         if (parentOrgUnits != null ? !parentOrgUnits.equals(orgType1.parentOrgUnits) : orgType1.parentOrgUnits != null)
@@ -87,6 +101,7 @@ public class OrgType extends ObjectType{
         result = 31 * result + (orgType != null ? orgType.hashCode() : 0);
         result = 31 * result + (locality != null ? locality.hashCode() : 0);
         result = 31 * result + (parentOrgUnits != null ? parentOrgUnits.hashCode() : 0);
+        result = 31 * result + (governors != null ? governors.hashCode() : 0);
         return result;
     }
 }

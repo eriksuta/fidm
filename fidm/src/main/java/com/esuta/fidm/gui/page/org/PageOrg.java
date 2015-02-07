@@ -18,6 +18,7 @@ import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
@@ -52,8 +53,12 @@ public class PageOrg extends PageBase {
     private static final String ID_BUTTON_CANCEL = "cancelButton";
     private static final String ID_MEMBERS_CONTAINER = "memberContainer";
     private static final String ID_MEMBERS_TABLE = "membersTable";
+    private static final String ID_GOVERNORS_CONTAINER = "governorsContainer";
+    private static final String ID_BUTTON_ADD_GOVERNOR = "addGovernor";
+    private static final String ID_GOVERNORS_TABLE = "governorsTable";
 
     private static final String ID_PARENT_ORG_UNIT_CHOOSER = "parentOrgUnitChooser";
+    private static final String ID_GOVERNOR_CHOOSER = "governorChooser";
 
     private IModel<OrgType> model;
 
@@ -189,13 +194,33 @@ public class PageOrg extends PageBase {
             }
         };
         add(parentOrgUnitChooser);
+
+        ModalWindow governorChooser = new ObjectChooserDialog<UserType>(ID_GOVERNOR_CHOOSER, UserType.class){
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
+                governorChoosePerformed(target, rowModel);
+            }
+
+            @Override
+            public String getChooserTitle() {
+                return "Choose parent org. unit";
+            }
+
+            @Override
+            public List<UserType> applyObjectFilter(List<UserType> list) {
+                return applyGovernorChooserFilter(list);
+            }
+        };
+        add(governorChooser);
     }
 
     private void initContainers(Form mainForm){
-        WebMarkupContainer roleContainer = new WebMarkupContainer(ID_MEMBERS_CONTAINER);
-        roleContainer.setOutputMarkupId(true);
-        roleContainer.setOutputMarkupPlaceholderTag(true);
-        mainForm.add(roleContainer);
+        //Members Container
+        WebMarkupContainer membersContainer = new WebMarkupContainer(ID_MEMBERS_CONTAINER);
+        membersContainer.setOutputMarkupId(true);
+        membersContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(membersContainer);
 
         List<IColumn> membersColumns = createMemberColumns();
         final ObjectDataProvider membersProvider = new ObjectDataProvider<UserType>(getPage(), UserType.class){
@@ -227,7 +252,54 @@ public class PageOrg extends PageBase {
             }
         });
         membersTable.setOutputMarkupId(true);
-        roleContainer.add(membersTable);
+        membersContainer.add(membersTable);
+
+        //Governors Container
+        WebMarkupContainer governorsContainer = new WebMarkupContainer(ID_GOVERNORS_CONTAINER);
+        governorsContainer.setOutputMarkupId(true);
+        governorsContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(governorsContainer);
+
+        AjaxLink addOrgUnit = new AjaxLink(ID_BUTTON_ADD_GOVERNOR) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                addGovernorPerformed(target);
+            }
+        };
+        governorsContainer.add(addOrgUnit);
+
+        List<IColumn> governorsColumn = createGovernorColumns();
+        final ObjectDataProvider governorsProvider = new ObjectDataProvider<UserType>(getPage(), UserType.class){
+
+            @Override
+            public List<UserType> applyDataFilter(List<UserType> list) {
+                List<UserType> managersList = new ArrayList<>();
+
+                if(model != null && model.getObject() != null){
+                    List<String> managersUid = model.getObject().getGovernors();
+
+                    for(UserType user: list){
+                        if(managersUid.contains(user.getUid())){
+                            managersList.add(user);
+                        }
+                    }
+                }
+
+                return managersList;
+            }
+        };
+
+        TablePanel governorsTable = new TablePanel(ID_GOVERNORS_TABLE, governorsProvider, governorsColumn, 10);
+        governorsTable.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return governorsProvider.size() > 0;
+            }
+        });
+        governorsTable.setOutputMarkupId(true);
+        governorsContainer.add(governorsTable);
     }
 
     private List<IColumn> createMemberColumns(){
@@ -255,12 +327,41 @@ public class PageOrg extends PageBase {
         return columns;
     }
 
+    private List<IColumn> createGovernorColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Given Name"), "givenName", "givenName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Family Name"), "familyName", "familyName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("E-mail"), "emailAddress", "emailAddress"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Locality"), "locality", "locality"));
+
+        columns.add(new EditDeleteButtonColumn<UserType>(new Model<>("Actions")){
+
+            @Override
+            public void editPerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
+                PageOrg.this.editGovernorPerformed(target, rowModel);
+            }
+
+            @Override
+            public void removePerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
+                PageOrg.this.removeGovernorPerformed(target, rowModel);
+            }
+        });
+
+        return columns;
+    }
+
     private Form getMainForm(){
         return (Form) get(ID_MAIN_FORM);
     }
 
     private WebMarkupContainer getMembersContainer(){
         return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_MEMBERS_CONTAINER);
+    }
+
+    private WebMarkupContainer getGovernorsContainer(){
+        return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_GOVERNORS_CONTAINER);
     }
 
     private IModel<String> createParentOrgUnitDisplayModel(final IModel<String> uidModel){
@@ -291,14 +392,62 @@ public class PageOrg extends PageBase {
         };
     }
 
+    private void governorChoosePerformed(AjaxRequestTarget target, IModel<UserType> governorModel){
+        if(governorModel == null || governorModel.getObject() == null){
+            return;
+        }
+
+        if(model.getObject() == null){
+            return;
+        }
+
+        String governorUid = governorModel.getObject().getUid();
+        model.getObject().getGovernors().add(governorUid);
+
+        ModalWindow window = (ModalWindow) get(ID_GOVERNOR_CHOOSER);
+        window.close(target);
+        target.add(getGovernorsContainer());
+    }
+
     /**
      *  TODO - filter org. unit that can be chosen as parents, some cases:
-     *      * itself (currently edited org. unit)
-     *      * it's parent
      *      * any org. unit from sub-tree (to prevent cycles in org. unit hierarchy)
      * */
     private List<OrgType> applyParentOrgChooserFilter(List<OrgType> list){
-        return list;
+        List<OrgType> newOrgList = new ArrayList<>();
+
+        if(model.getObject() == null){
+            return list;
+        }
+
+        List<String> parentOrgUnits = model.getObject().getParentOrgUnits();
+        String currentOrgUid = model.getObject().getUid();
+
+        for(OrgType org: list){
+            if(!parentOrgUnits.contains(org.getUid()) && !currentOrgUid.equals(org.getUid())){
+                newOrgList.add(org);
+            }
+        }
+
+        return newOrgList;
+    }
+
+    private List<UserType> applyGovernorChooserFilter(List<UserType> list){
+        List<UserType> newUserList = new ArrayList<>();
+
+        if(model.getObject() == null){
+            return list;
+        }
+
+        List<String> currentGovernors = model.getObject().getGovernors();
+
+        for(UserType user: list){
+            if(!currentGovernors.contains(user.getUid())){
+                newUserList.add(user);
+            }
+        }
+
+        return newUserList;
     }
 
     private void editParentOrgUnitPerformed(AjaxRequestTarget target){
@@ -325,6 +474,43 @@ public class PageOrg extends PageBase {
         ModalWindow dialog = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
         dialog.close(target);
         target.add(getMainForm());
+    }
+
+    private void editMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't edit selected user. It is no longer available.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+        setResponsePage(new PageUser(parameters));
+    }
+
+    /*
+    *   Since governor is also a UserType, we can use editMemberPerformed() method
+    * */
+    private void editGovernorPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
+        editMemberPerformed(target, rowModel);
+    }
+
+    private void addGovernorPerformed(AjaxRequestTarget target){
+        ModalWindow modal = (ModalWindow) get(ID_GOVERNOR_CHOOSER);
+        modal.show(target);
+    }
+
+    private void removeGovernorPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            error("Couldn't remove selected governor assignment. Something went wrong.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        String governorUid = rowModel.getObject().getUid();
+        model.getObject().getGovernors().remove(governorUid);
+        success("Governor with uid: '" + governorUid + "' was removed successfully");
+        target.add(getGovernorsContainer(), getFeedbackPanel());
     }
 
     private void cancelPerformed(){
@@ -375,17 +561,5 @@ public class PageOrg extends PageBase {
         LOGGER.info("Org. Unit '" + orgUnit.getName() + "' has been saved successfully.");
         setResponsePage(PageOrgList.class);
         target.add(getFeedbackPanel());
-    }
-
-    private void editMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
-        if(rowModel == null || rowModel.getObject() == null){
-            error("Couldn't edit selected user. It is no longer available.");
-            target.add(getFeedbackPanel());
-            return;
-        }
-
-        PageParameters parameters = new PageParameters();
-        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
-        setResponsePage(new PageUser(parameters));
     }
 }
