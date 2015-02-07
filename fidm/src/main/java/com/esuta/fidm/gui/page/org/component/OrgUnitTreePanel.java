@@ -61,13 +61,14 @@ public class OrgUnitTreePanel extends Panel {
     private static final String ID_BUTTON_EXPAND_TREE = "treeExpand";
     private static final String ID_BUTTON_COLLAPSE_TREE = "treeCollapse";
     private static final String ID_BUTTON_DELETE_ROOT = "deleteRoot";
+    private static final String ID_BUTTON_EDIT_ROOT = "editRoot";
     private static final String ID_TREE_CONTAINER = "treeContainer";
     private static final String ID_TREE = "tree";
     private static final String ID_FORM = "form";
     private static final String ID_CHILDREN_TABLE = "childrenTable";
     private static final String ID_MEMBER_TABLE = "memberTable";
 
-    private IModel<String> rootOidModel;
+    private IModel<String> rootUidModel;
     private IModel<OrgType> selected = new LoadableModel<OrgType>() {
 
         @Override
@@ -78,7 +79,7 @@ public class OrgUnitTreePanel extends Panel {
 
     public OrgUnitTreePanel(String id, IModel<String> rootOid) {
         super(id);
-        this.rootOidModel = rootOid;
+        this.rootUidModel = rootOid;
         setOutputMarkupId(true);
 
         initLayout();
@@ -92,6 +93,16 @@ public class OrgUnitTreePanel extends Panel {
         WebMarkupContainer treeHeader = new WebMarkupContainer(ID_TREE_HEADER);
         treeHeader.setOutputMarkupId(true);
         add(treeHeader);
+
+
+        AjaxLink editRoot = new AjaxLink(ID_BUTTON_EDIT_ROOT) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                editRootPerformed(target);
+            }
+        };
+        treeHeader.add(editRoot);
 
         AjaxLink deleteRoot = new AjaxLink(ID_BUTTON_DELETE_ROOT) {
 
@@ -120,7 +131,7 @@ public class OrgUnitTreePanel extends Panel {
         };
         treeHeader.add(treeCollapse);
 
-        ISortableTreeProvider provider = new OrgTreeDataProvider(this, rootOidModel);
+        ISortableTreeProvider provider = new OrgTreeDataProvider(this, rootUidModel);
         List<IColumn<OrgType, String>> columns = new ArrayList<>();
         columns.add(new TreeColumn<OrgType, String>(new Model<>("Org. Unit Hierarchy")));
 
@@ -319,12 +330,26 @@ public class OrgUnitTreePanel extends Panel {
         return iterator.hasNext() ? iterator.next() : null;
     }
 
+    private void editRootPerformed(AjaxRequestTarget target){
+        if(rootUidModel == null){
+            error("Could not edit root org. unit.");
+            target.add(getPageBase().getFeedbackPanel());
+            return;
+        }
+
+        String rootOrgUid = rootUidModel.getObject();
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(PageBase.UID_PAGE_PARAMETER_NAME, rootOrgUid);
+        setResponsePage(PageOrg.class, parameters);
+    }
+
     private void deleteRootPerformed(AjaxRequestTarget target){
-        String rootOrgOid = rootOidModel.getObject();
+        String rootOrgUid = rootUidModel.getObject();
         ModelService modelService = getPageBase().getModelService();
 
         try {
-            OrgType root = modelService.readObject(OrgType.class, rootOrgOid);
+            OrgType root = modelService.readObject(OrgType.class, rootOrgUid);
 
             if(root == null){
                 LOGGER.error("Could not find root org. unit to delete.");
@@ -334,11 +359,11 @@ public class OrgUnitTreePanel extends Panel {
             }
 
             modelService.deleteObject(root);
-            LOGGER.info("Root org. unit with uid: '" + rootOrgOid + "' was deleted.");
+            LOGGER.info("Root org. unit with uid: '" + rootOrgUid + "' was deleted.");
 
         } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
-            LOGGER.error("Could not delete root org. unit with uid: '" + rootOrgOid + "'.");
-            error("Could not delete root org. unit with uid: '" + rootOrgOid + "'.");
+            LOGGER.error("Could not delete root org. unit with uid: '" + rootOrgUid + "'.");
+            error("Could not delete root org. unit with uid: '" + rootOrgUid + "'.");
         }
 
         setResponsePage(PageOrgList.class);
