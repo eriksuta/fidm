@@ -23,6 +23,8 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.tree.ISortableTreeProvider;
@@ -32,6 +34,7 @@ import org.apache.wicket.extensions.markup.html.repeater.tree.table.TreeColumn;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.Item;
@@ -50,8 +53,6 @@ import java.util.Set;
  *
  *  based on implementation by lazyman, see
  *  (https://github.com/Evolveum/midpoint/blob/0f5c644324da0f574f084dfc2ede306f2538a053/gui/admin-gui/src/main/java/com/evolveum/midpoint/web/page/admin/users/component/TreeTablePanel.java)
- *
- *  TODO - add option to delete root
  * */
 public class OrgUnitTreePanel extends Panel {
 
@@ -222,6 +223,32 @@ public class OrgUnitTreePanel extends Panel {
         columns.add(new PropertyColumn<OrgType, String>(new Model<>("Display Name"), "displayName", "displayName"));
         columns.add(new PropertyColumn<OrgType, String>(new Model<>("Type"), "orgType", "orgType"));
         columns.add(new PropertyColumn<OrgType, String>(new Model<>("Locality"), "locality", "locality"));
+        columns.add(new AbstractColumn<OrgType, String>(new Model<>("Governors")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<OrgType>> cellItem, String componentId, final IModel<OrgType> rowModel) {
+                cellItem.add(new Label(componentId, new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return Integer.toString(rowModel.getObject().getGovernors().size());
+                    }
+                }));
+            }
+        });
+        columns.add(new AbstractColumn<OrgType, String>(new Model<>("Members")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<OrgType>> cellItem, String componentId, final IModel<OrgType> rowModel) {
+                cellItem.add(new Label(componentId, new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return Integer.toString(getNumberOfOrgUnitMembers(rowModel));
+                    }
+                }));
+            }
+        });
         columns.add(new EditDeleteButtonColumn<OrgType>(new Model<>("Actions")){
 
             @Override
@@ -236,6 +263,30 @@ public class OrgUnitTreePanel extends Panel {
         });
 
         return columns;
+    }
+
+    private int getNumberOfOrgUnitMembers(IModel<OrgType> orgModel){
+        int count = 0;
+        if(orgModel == null || orgModel.getObject() == null){
+            return 0;
+        }
+
+        String orgUid = orgModel.getObject().getUid();
+
+        try {
+            List<UserType> userList = getPageBase().getModelService().getAllObjectsOfType(UserType.class);
+
+            for(UserType user: userList){
+                if(user.getOrgUnitAssignments().contains(orgUid)){
+                    count++;
+                }
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not retrieve all Org. units from the repository.");
+        }
+
+        return count;
     }
 
     private List<OrgType> createChildrenTableFilter(List<OrgType> list){
