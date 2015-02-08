@@ -21,6 +21,9 @@ public class OrgType extends ObjectType{
     private List<String> parentOrgUnits;
     private List<String> governors;
 
+    private List<String> resourceInducements;
+    private List<String> roleInducements;
+
     public OrgType(){}
 
     public String getDisplayName() {
@@ -75,6 +78,30 @@ public class OrgType extends ObjectType{
         this.governors = governors;
     }
 
+    public List<String> getResourceInducements() {
+        if(resourceInducements == null){
+            resourceInducements = new ArrayList<>();
+        }
+
+        return resourceInducements;
+    }
+
+    public void setResourceInducements(List<String> resourceInducements) {
+        this.resourceInducements = resourceInducements;
+    }
+
+    public List<String> getRoleInducements() {
+        if(roleInducements == null){
+            roleInducements = new ArrayList<>();
+        }
+
+        return roleInducements;
+    }
+
+    public void setRoleInducements(List<String> roleInducements) {
+        this.roleInducements = roleInducements;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -90,6 +117,10 @@ public class OrgType extends ObjectType{
         if (orgType != null ? !orgType.equals(orgType1.orgType) : orgType1.orgType != null) return false;
         if (parentOrgUnits != null ? !parentOrgUnits.equals(orgType1.parentOrgUnits) : orgType1.parentOrgUnits != null)
             return false;
+        if (resourceInducements != null ? !resourceInducements.equals(orgType1.resourceInducements) : orgType1.resourceInducements != null)
+            return false;
+        if (roleInducements != null ? !roleInducements.equals(orgType1.roleInducements) : orgType1.roleInducements != null)
+            return false;
 
         return true;
     }
@@ -102,6 +133,8 @@ public class OrgType extends ObjectType{
         result = 31 * result + (locality != null ? locality.hashCode() : 0);
         result = 31 * result + (parentOrgUnits != null ? parentOrgUnits.hashCode() : 0);
         result = 31 * result + (governors != null ? governors.hashCode() : 0);
+        result = 31 * result + (resourceInducements != null ? resourceInducements.hashCode() : 0);
+        result = 31 * result + (roleInducements != null ? roleInducements.hashCode() : 0);
         return result;
     }
 }

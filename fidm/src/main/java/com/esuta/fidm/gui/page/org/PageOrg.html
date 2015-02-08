@@ -4,6 +4,8 @@
         <wicket:extend>
             <div wicket:id="parentOrgUnitChooser" />
             <div wicket:id="governorChooser" />
+            <div wicket:id="resourceInducementChooser" />
+            <div wicket:id="roleInducementChooser" />
 
             <form wicket:id="mainForm" class="form-horizontal inputForm">
 
@@ -64,10 +66,28 @@
                         </dl>
                     </div>
 
-                    <!-- TODO - Inducements, Managers, Members -->
                     <div class="col-lg-6">
-                        <span>Inducements</span>
-                        <hr class="assignmentDelimiter">
+                        <div wicket:id="resourceInducementsContainer">
+                            <span>Inducements (Resource)</span>
+                            <div style="float: right">
+                                <a class="btn btn-success btn-xs" wicket:id="addResourceInducement">
+                                    <i class="fa fa-plus fa-fw" />
+                                </a>
+                            </div>
+                            <hr class="assignmentDelimiter">
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="resourceInducementsTable"></table>
+                        </div>
+
+                        <div wicket:id="roleInducementsContainer">
+                            <span>Inducements (Role)</span>
+                            <div style="float: right">
+                                <a class="btn btn-success btn-xs" wicket:id="addRoleInducement">
+                                    <i class="fa fa-plus fa-fw" />
+                                </a>
+                            </div>
+                            <hr class="assignmentDelimiter">
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="roleInducementsTable"></table>
+                        </div>
 
                         <div wicket:id="governorsContainer">
                             <span>Governors</span>

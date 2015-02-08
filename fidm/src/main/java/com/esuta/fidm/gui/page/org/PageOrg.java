@@ -9,11 +9,15 @@ import com.esuta.fidm.gui.component.form.MultiValueTextPanel;
 import com.esuta.fidm.gui.component.modal.ObjectChooserDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.resource.PageResource;
+import com.esuta.fidm.gui.page.roles.PageRole;
 import com.esuta.fidm.gui.page.users.PageUser;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.OrgType;
+import com.esuta.fidm.repository.schema.ResourceType;
+import com.esuta.fidm.repository.schema.RoleType;
 import com.esuta.fidm.repository.schema.UserType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -51,6 +55,13 @@ public class PageOrg extends PageBase {
     private static final String ID_PARENT_ORG_UNIT = "parentOrgUnits";
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
+
+    private static final String ID_RESOURCE_IND_CONTAINER = "resourceInducementsContainer";
+    private static final String ID_RESOURCE_IND_BUTTON_ADD = "addResourceInducement";
+    private static final String ID_RESOURCE_IND_TABLE = "resourceInducementsTable";
+    private static final String ID_ROLE_IND_CONTAINER = "roleInducementsContainer";
+    private static final String ID_ROLE_IND_BUTTON_ADD = "addRoleInducement";
+    private static final String ID_ROLE_IND_TABLE = "roleInducementsTable";
     private static final String ID_MEMBERS_CONTAINER = "memberContainer";
     private static final String ID_MEMBERS_TABLE = "membersTable";
     private static final String ID_GOVERNORS_CONTAINER = "governorsContainer";
@@ -59,6 +70,8 @@ public class PageOrg extends PageBase {
 
     private static final String ID_PARENT_ORG_UNIT_CHOOSER = "parentOrgUnitChooser";
     private static final String ID_GOVERNOR_CHOOSER = "governorChooser";
+    private static final String ID_RESOURCE_INDUCEMENT_CHOOSER = "resourceInducementChooser";
+    private static final String ID_ROLE_INDUCEMENT_CHOOSER = "roleInducementChooser";
 
     private IModel<OrgType> model;
 
@@ -172,10 +185,49 @@ public class PageOrg extends PageBase {
         mainForm.add(save);
 
         initModalWindows();
+        initInducements(mainForm);
         initContainers(mainForm);
     }
 
     private void initModalWindows(){
+        ModalWindow resourceInducementChooser = new ObjectChooserDialog<ResourceType>(ID_RESOURCE_INDUCEMENT_CHOOSER, ResourceType.class){
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<ResourceType> rowModel) {
+                resourceInducementChoosePerformed(target, rowModel);
+            }
+
+            @Override
+            public String getChooserTitle() {
+                return "Choose Resource Inducement";
+            }
+
+            @Override
+            public List<ResourceType> applyObjectFilter(List<ResourceType> list) {
+                return applyResourceInducementChooserFilter(list);
+            }
+        };
+        add(resourceInducementChooser);
+
+        ModalWindow roleInducementChooser = new ObjectChooserDialog<RoleType>(ID_ROLE_INDUCEMENT_CHOOSER, RoleType.class){
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
+                roleInducementChoosePerformed(target, rowModel);
+            }
+
+            @Override
+            public String getChooserTitle() {
+                return "Choose Role Inducement";
+            }
+
+            @Override
+            public List<RoleType> applyObjectFilter(List<RoleType> list) {
+                return applyRoleInducementChooserFilter(list);
+            }
+        };
+        add(roleInducementChooser);
+
         ModalWindow parentOrgUnitChooser = new ObjectChooserDialog<OrgType>(ID_PARENT_ORG_UNIT_CHOOSER, OrgType.class){
 
             @Override
@@ -213,6 +265,147 @@ public class PageOrg extends PageBase {
             }
         };
         add(governorChooser);
+    }
+
+    private void initInducements(Form mainForm){
+        //Resource Inducements Container
+        WebMarkupContainer resourceInducementsContainer = new WebMarkupContainer(ID_RESOURCE_IND_CONTAINER);
+        resourceInducementsContainer.setOutputMarkupId(true);
+        resourceInducementsContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(resourceInducementsContainer);
+
+        AjaxLink addResourceInducement = new AjaxLink(ID_RESOURCE_IND_BUTTON_ADD) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                addResourceInducementPerformed(target);
+            }
+        };
+        resourceInducementsContainer.add(addResourceInducement);
+
+        List<IColumn> resourceInducementColumns = createResourceInducementColumns();
+        final ObjectDataProvider resourceInducementsProvider = new ObjectDataProvider<ResourceType>(getPage(), ResourceType.class){
+
+            @Override
+            public List<ResourceType> applyDataFilter(List<ResourceType> list) {
+                List<ResourceType> resourceInducementList = new ArrayList<>();
+
+                if(model != null && model.getObject() != null){
+                    OrgType org = model.getObject();
+
+                    for(ResourceType resource: list){
+                        if(org.getResourceInducements().contains(resource.getUid())){
+                            resourceInducementList.add(resource);
+                        }
+                    }
+                }
+
+                return resourceInducementList;
+            }
+        };
+
+        TablePanel resourceInducementsTable = new TablePanel(ID_RESOURCE_IND_TABLE, resourceInducementsProvider, resourceInducementColumns, 10);
+        resourceInducementsTable.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return resourceInducementsProvider.size() > 0;
+            }
+        });
+        resourceInducementsTable.setShowPaging(false);
+        resourceInducementsTable.setOutputMarkupId(true);
+        resourceInducementsContainer.add(resourceInducementsTable);
+
+        //Role Inducements Container
+        WebMarkupContainer roleInducementsContainer = new WebMarkupContainer(ID_ROLE_IND_CONTAINER);
+        roleInducementsContainer.setOutputMarkupId(true);
+        roleInducementsContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(roleInducementsContainer);
+
+        AjaxLink addRoleInducement = new AjaxLink(ID_ROLE_IND_BUTTON_ADD) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                addRoleInducementPerformed(target);
+            }
+        };
+        roleInducementsContainer.add(addRoleInducement);
+
+        List<IColumn> roleInducementColumns = createRoleInducementColumns();
+        final ObjectDataProvider roleInducementsProvider = new ObjectDataProvider<RoleType>(getPage(), RoleType.class){
+
+            @Override
+            public List<RoleType> applyDataFilter(List<RoleType> list) {
+                List<RoleType> roleInducementList = new ArrayList<>();
+
+                if(model != null && model.getObject() != null){
+                    OrgType org = model.getObject();
+
+                    for(RoleType role: list){
+                        if(org.getRoleInducements().contains(role.getUid())){
+                            roleInducementList.add(role);
+                        }
+                    }
+                }
+
+                return roleInducementList;
+            }
+        };
+
+        TablePanel roleInducementsTable = new TablePanel(ID_ROLE_IND_TABLE, roleInducementsProvider, roleInducementColumns, 10);
+        roleInducementsTable.add(new VisibleEnableBehavior() {
+
+            @Override
+            public boolean isVisible() {
+                return roleInducementsProvider.size() > 0;
+            }
+        });
+        roleInducementsTable.setOutputMarkupId(true);
+        roleInducementsTable.setShowPaging(false);
+        roleInducementsContainer.add(roleInducementsTable);
+    }
+
+    private List<IColumn> createResourceInducementColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new PropertyColumn<ResourceType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<ResourceType, String>(new Model<>("Type"), "resourceType", "resourceType"));
+        columns.add(new EditDeleteButtonColumn<ResourceType>(new Model<>("Actions")){
+
+            @Override
+            public void editPerformed(AjaxRequestTarget target, IModel<ResourceType> rowModel) {
+                PageOrg.this.editResourceInducementPerformed(target, rowModel);
+            }
+
+            @Override
+            public void removePerformed(AjaxRequestTarget target, IModel<ResourceType> rowModel) {
+                PageOrg.this.removeResourceInducementPerformed(target, rowModel);
+            }
+        });
+
+        return columns;
+    }
+
+    private List<IColumn> createRoleInducementColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new PropertyColumn<RoleType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<RoleType, String>(new Model<>("DisplayName"), "displayName", "displayName"));
+        columns.add(new PropertyColumn<RoleType, String>(new Model<>("Type"), "roleType", "roleType"));
+        columns.add(new EditDeleteButtonColumn<RoleType>(new Model<>("Actions")){
+
+            @Override
+            public void editPerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
+                PageOrg.this.editRoleInducementPerformed(target, rowModel);
+            }
+
+            @Override
+            public void removePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
+                PageOrg.this.removeRoleInducementPerformed(target, rowModel);
+            }
+        });
+
+        return columns;
     }
 
     private void initContainers(Form mainForm){
@@ -356,6 +549,14 @@ public class PageOrg extends PageBase {
         return (Form) get(ID_MAIN_FORM);
     }
 
+    private WebMarkupContainer getResourceInducementsContainer(){
+        return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_RESOURCE_IND_CONTAINER);
+    }
+
+    private WebMarkupContainer getRoleInducementsContainer(){
+        return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_ROLE_IND_CONTAINER);
+    }
+
     private WebMarkupContainer getMembersContainer(){
         return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_MEMBERS_CONTAINER);
     }
@@ -392,6 +593,40 @@ public class PageOrg extends PageBase {
         };
     }
 
+    private void resourceInducementChoosePerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel){
+        if(resourceModel == null || resourceModel.getObject() == null){
+            return;
+        }
+
+        if(model.getObject() == null){
+            return;
+        }
+
+        String resourceUid = resourceModel.getObject().getUid();
+        model.getObject().getResourceInducements().add(resourceUid);
+
+        ModalWindow window = (ModalWindow) get(ID_RESOURCE_INDUCEMENT_CHOOSER);
+        window.close(target);
+        target.add(getResourceInducementsContainer());
+    }
+
+    private void roleInducementChoosePerformed(AjaxRequestTarget target, IModel<RoleType> roleModel){
+        if(roleModel == null || roleModel.getObject() == null){
+            return;
+        }
+
+        if(model.getObject() == null){
+            return;
+        }
+
+        String roleUid = roleModel.getObject().getUid();
+        model.getObject().getRoleInducements().add(roleUid);
+
+        ModalWindow window = (ModalWindow) get(ID_ROLE_INDUCEMENT_CHOOSER);
+        window.close(target);
+        target.add(getRoleInducementsContainer());
+    }
+
     private void governorChoosePerformed(AjaxRequestTarget target, IModel<UserType> governorModel){
         if(governorModel == null || governorModel.getObject() == null){
             return;
@@ -416,7 +651,7 @@ public class PageOrg extends PageBase {
     private List<OrgType> applyParentOrgChooserFilter(List<OrgType> list){
         List<OrgType> newOrgList = new ArrayList<>();
 
-        if(model.getObject() == null){
+        if(model.getObject() == null || !isEditingOrgUnit()){
             return list;
         }
 
@@ -430,6 +665,42 @@ public class PageOrg extends PageBase {
         }
 
         return newOrgList;
+    }
+
+    private List<ResourceType> applyResourceInducementChooserFilter(List<ResourceType> list){
+        List<ResourceType> newResourceList = new ArrayList<>();
+
+        if(model.getObject() == null){
+            return list;
+        }
+
+        List<String> currentResourceInducements = model.getObject().getResourceInducements();
+
+        for(ResourceType resource: list){
+            if(!currentResourceInducements.contains(resource.getUid())){
+                newResourceList.add(resource);
+            }
+        }
+
+        return newResourceList;
+    }
+
+    private List<RoleType> applyRoleInducementChooserFilter(List<RoleType> list){
+        List<RoleType> newRoleList = new ArrayList<>();
+
+        if(model.getObject() == null){
+            return list;
+        }
+
+        List<String> currentRoleInducements = model.getObject().getRoleInducements();
+
+        for(RoleType role: list){
+            if(!currentRoleInducements.contains(role.getUid())){
+                newRoleList.add(role);
+            }
+        }
+
+        return newRoleList;
     }
 
     private List<UserType> applyGovernorChooserFilter(List<UserType> list){
@@ -476,6 +747,30 @@ public class PageOrg extends PageBase {
         target.add(getMainForm());
     }
 
+    private void editResourceInducementPerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel){
+        if(resourceModel == null || resourceModel.getObject() == null){
+            error("Couldn't edit selected resource inducement. It is no longer available.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, resourceModel.getObject().getUid());
+        setResponsePage(new PageResource(parameters));
+    }
+
+    private void editRoleInducementPerformed(AjaxRequestTarget target, IModel<RoleType> roleModel){
+        if(roleModel == null || roleModel.getObject() == null){
+            error("Couldn't edit selected role inducement. It is no longer available.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, roleModel.getObject().getUid());
+        setResponsePage(new PageRole(parameters));
+    }
+
     private void editMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             error("Couldn't edit selected user. It is no longer available.");
@@ -495,6 +790,16 @@ public class PageOrg extends PageBase {
         editMemberPerformed(target, rowModel);
     }
 
+    private void addResourceInducementPerformed(AjaxRequestTarget target){
+        ModalWindow modal = (ModalWindow) get(ID_RESOURCE_INDUCEMENT_CHOOSER);
+        modal.show(target);
+    }
+
+    private void addRoleInducementPerformed(AjaxRequestTarget target){
+        ModalWindow modal = (ModalWindow) get(ID_ROLE_INDUCEMENT_CHOOSER);
+        modal.show(target);
+    }
+
     private void addGovernorPerformed(AjaxRequestTarget target){
         ModalWindow modal = (ModalWindow) get(ID_GOVERNOR_CHOOSER);
         modal.show(target);
@@ -509,8 +814,34 @@ public class PageOrg extends PageBase {
 
         String governorUid = rowModel.getObject().getUid();
         model.getObject().getGovernors().remove(governorUid);
-        success("Governor with uid: '" + governorUid + "' was removed successfully");
+        success("Governor with uid: '" + governorUid + "' was removed successfully.");
         target.add(getGovernorsContainer(), getFeedbackPanel());
+    }
+
+    private void removeResourceInducementPerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel){
+        if(resourceModel == null || resourceModel.getObject() == null){
+            error("Couldn't remove selected resource inducement. Something went wrong.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        String resourceInducementUid = resourceModel.getObject().getUid();
+        model.getObject().getResourceInducements().remove(resourceInducementUid);
+        success("Resource inducement with to resource with uid: '" + resourceInducementUid + "' was removed successfully.");
+        target.add(getResourceInducementsContainer(), getFeedbackPanel());
+    }
+
+    private void removeRoleInducementPerformed(AjaxRequestTarget target, IModel<RoleType> roleModel){
+        if(roleModel == null || roleModel.getObject() == null){
+            error("Couldn't remove selected role inducement. Something went wrong.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        String roleInducementUid = roleModel.getObject().getUid();
+        model.getObject().getRoleInducements().remove(roleInducementUid);
+        success("Role inducement with to resource with uid: '" + roleInducementUid + "' was removed successfully.");
+        target.add(getRoleInducementsContainer(), getFeedbackPanel());
     }
 
     private void cancelPerformed(){
