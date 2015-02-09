@@ -47,4 +47,10 @@ public class FederatedIDMApplication extends WebApplication
 
         //TODO - add initial configuration here
 	}
+
+    @Override
+    protected void onDestroy() {
+        //Clearing the resources (database connection) when wicket servlet is destroyed
+        RepositoryService.getInstance().closeConnection();
+    }
 }

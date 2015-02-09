@@ -5,21 +5,23 @@ import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.api.RepositoryService;
 import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.repository.schema.UserType;
 
 import java.util.List;
 
 /**
  *  @author shood
  *
- *  TODO - This implementation is only a simple RepositoryService wrapper. This will change in the future.
+ *  TODO - add logging to model service
  * */
 public class ModelService implements IModelService{
 
     /**
-     *  Single RepositoryService instance
+     *  Single ModelService instance
      * */
     private static ModelService instance = null;
     private RepositoryService repositoryService;
+    private InducementProcessor inducementProcessor;
 
     private ModelService(){
         initModelService();
@@ -34,7 +36,12 @@ public class ModelService implements IModelService{
     }
 
     private void initModelService(){
+        // init repository service
         repositoryService = RepositoryService.getInstance();
+
+        // init inducement processor
+        inducementProcessor = InducementProcessor.getInstance();
+        inducementProcessor.pushModelService(this);
     }
 
     @Override
@@ -49,6 +56,10 @@ public class ModelService implements IModelService{
 
     @Override
     public <T extends ObjectType> T createObject(T object) throws ObjectAlreadyExistsException, DatabaseCommunicationException {
+        if(object instanceof UserType){
+            inducementProcessor.handleUserInducements((UserType)object);
+        }
+
         return repositoryService.createObject(object);
     }
 
@@ -59,6 +70,10 @@ public class ModelService implements IModelService{
 
     @Override
     public <T extends ObjectType> void updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException {
+        if(object instanceof UserType){
+            inducementProcessor.handleUserInducements((UserType) object);
+        }
+
         repositoryService.updateObject(object);
     }
 

@@ -6,6 +6,7 @@ import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.schema.ObjectType;
 import com.esuta.fidm.repository.schema.SystemConfigurationType;
 import com.objectdb.o._NoResultException;
+import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -18,6 +19,8 @@ import java.util.UUID;
  *  @author shood
  * */
 public class RepositoryService implements IRepositoryService{
+
+    private static final transient Logger LOGGER = Logger.getLogger(RepositoryService.class);
 
     /**
      *  Single RepositoryService instance
@@ -70,7 +73,7 @@ public class RepositoryService implements IRepositoryService{
             TypedQuery<T> query = entityManager.createQuery("SELECT o FROM " + typeName + " o WHERE o.uid='" + uid + "'", type);
             object = query.getSingleResult();
         } catch (_NoResultException e){
-            //TODO - log message to some log
+            LOGGER.error("Could not retrieve object with uid: '" + uid + "' from the repository.", e);
             object = null;
         }
 
@@ -94,7 +97,7 @@ public class RepositoryService implements IRepositoryService{
             TypedQuery<T> query = entityManager.createQuery("SELECT o FROM " + typeName + " o WHERE o.name='" + name + "'", type);
             object = query.getSingleResult();
         } catch (_NoResultException e){
-            //TODO - log message to some log
+            LOGGER.error("Could not retrieve object with name: '" + name + "' from the repository.", e);
             object = null;
         }
 
@@ -112,12 +115,7 @@ public class RepositoryService implements IRepositoryService{
         }
 
         T objectInRepository;
-        try {
-            objectInRepository = (T)readObjectByName(object.getClass(), object.getName());
-        } catch (DatabaseCommunicationException de){
-            //TODO - log message to some log
-            throw de;
-        }
+        objectInRepository = (T)readObjectByName(object.getClass(), object.getName());
 
         if(objectInRepository != null){
             throw new ObjectAlreadyExistsException("Can't create object.", null, null, object.getName());
@@ -130,6 +128,8 @@ public class RepositoryService implements IRepositoryService{
 
         entityManager.getTransaction().begin();
         entityManager.persist(object);
+        LOGGER.debug("New object of type: '" + object.getClass().getSimpleName() +
+                "' created with uid: '" + object.getUid() + "'.");
         entityManager.getTransaction().commit();
 
         return object;
