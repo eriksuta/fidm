@@ -121,7 +121,6 @@ public class RepositoryService implements IRepositoryService{
             throw new ObjectAlreadyExistsException("Can't create object.", null, null, object.getName());
         }
 
-        //TODO - consider moving this to model layer
         if(object.getUid() == null){
             object.setUid(UUID.randomUUID().toString());
         }
