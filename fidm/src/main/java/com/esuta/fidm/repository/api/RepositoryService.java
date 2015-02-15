@@ -97,7 +97,7 @@ public class RepositoryService implements IRepositoryService{
             TypedQuery<T> query = entityManager.createQuery("SELECT o FROM " + typeName + " o WHERE o.name='" + name + "'", type);
             object = query.getSingleResult();
         } catch (_NoResultException e){
-            LOGGER.error("Could not retrieve object with name: '" + name + "' from the repository.", e);
+            //We do not need to log this exception. In many cases, this is expected behavior.
             object = null;
         }
 
