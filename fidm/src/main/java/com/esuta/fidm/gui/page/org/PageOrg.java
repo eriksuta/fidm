@@ -19,6 +19,7 @@ import com.esuta.fidm.repository.schema.OrgType;
 import com.esuta.fidm.repository.schema.ResourceType;
 import com.esuta.fidm.repository.schema.RoleType;
 import com.esuta.fidm.repository.schema.UserType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -570,7 +571,7 @@ public class PageOrg extends PageBase {
 
             @Override
             protected String load() {
-                if(uidModel == null || uidModel.getObject() == null){
+                if(uidModel == null || uidModel.getObject() == null || StringUtils.isEmpty(uidModel.getObject())){
                     return null;
                 }
 
