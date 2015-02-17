@@ -65,7 +65,9 @@ public class PageUser extends PageBase {
     private static final String ID_PHONE_NUMBER = "telephoneNumber";
     private static final String ID_PASS = "password";
     private static final String ID_PASS_CONFIRM = "passwordConfirm";
+
     private static final String ID_BUTTON_SAVE = "saveButton";
+    private static final String ID_BUTTON_RECOMPUTE = "recomputeButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
     private static final String ID_ROLE_CONTAINER = "roleContainer";
@@ -187,6 +189,27 @@ public class PageUser extends PageBase {
         };
         cancel.setDefaultFormProcessing(false);
         mainForm.add(cancel);
+
+        AjaxSubmitLink recompute = new AjaxSubmitLink(ID_BUTTON_RECOMPUTE) {
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                recomputePerformed(target);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.add(getFeedbackPanel());
+            }
+        };
+        recompute.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return isEditingUser();
+            }
+        });
+        mainForm.add(recompute);
 
         AjaxSubmitLink save = new AjaxSubmitLink(ID_BUTTON_SAVE) {
 
@@ -603,6 +626,29 @@ public class PageUser extends PageBase {
 
     private void cancelPerformed(){
         setResponsePage(PageUserList.class);
+    }
+
+    private void recomputePerformed(AjaxRequestTarget target){
+        if(model == null || model.getObject() == null){
+            return;
+        }
+
+        UserTypeDto userDto = model.getObject();
+        UserType user = userDto.getUser();
+
+        if(isEditingUser()){
+            try {
+                getModelService().recomputeUser(user);
+                success("Recompute operation on user: '" + user.getName() + "'(" + user.getUid() + ") was successful.");
+            } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
+                LOGGER.error("Can't recompute user: ", e);
+                error("Can't recompute user with name: '" + user.getName() + "'. Reason: " + e.getExceptionMessage());
+           }
+        } else {
+            warn("It is not possible to recompute user that is not created yet.");
+        }
+
+        target.add(this, getFeedbackPanel());
     }
 
     private void savePerformed(AjaxRequestTarget target){

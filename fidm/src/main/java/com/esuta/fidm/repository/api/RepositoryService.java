@@ -161,13 +161,13 @@ public class RepositoryService implements IRepositoryService{
      *  ASAP
      * */
     @Override
-    public <T extends ObjectType> void updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException {
+    public <T extends ObjectType> T updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException {
         if(entityManager == null){
             throw new DatabaseCommunicationException();
         }
 
         if(object == null){
-            return;
+            return null;
         }
 
         T retrievedObject = (T)readObject(object.getClass(), object.getUid());
@@ -178,11 +178,14 @@ public class RepositoryService implements IRepositoryService{
 
         deleteObject(retrievedObject);
 
+        T objectToReturn = null;
         try {
-            createObject(object);
+            objectToReturn = createObject(object);
         } catch (ObjectAlreadyExistsException e){
             //this should not happen
         }
+
+        return objectToReturn;
     }
 
     @Override

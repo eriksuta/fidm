@@ -98,7 +98,8 @@ public interface IRepositoryService {
      *      Updates object in the repository with new attribute values
      *  </p>
      *
-     *  @param object
+     *
+     * @param object
      *          An object, subclass of ObjectType, that is to be modified
      *          in the repository
      *
@@ -109,7 +110,7 @@ public interface IRepositoryService {
      *          When communication with database is not established, or was lost
      *
      * */
-    <T extends ObjectType> void updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException;
+    <T extends ObjectType> T updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException;
 
     /**
      *  <p>

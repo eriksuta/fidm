@@ -5,6 +5,7 @@ import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.api.RepositoryService;
 import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.repository.schema.OrgType;
 import com.esuta.fidm.repository.schema.UserType;
 
 import java.util.List;
@@ -69,12 +70,12 @@ public class ModelService implements IModelService{
     }
 
     @Override
-    public <T extends ObjectType> void updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException {
+    public <T extends ObjectType> T updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException {
         if(object instanceof UserType){
             inducementProcessor.handleUserInducements((UserType) object);
         }
 
-        repositoryService.updateObject(object);
+        return repositoryService.updateObject(object);
     }
 
     @Override
@@ -85,5 +86,15 @@ public class ModelService implements IModelService{
     @Override
     public <T extends ObjectType> List<T> getAllObjectsOfType(Class<T> type) throws DatabaseCommunicationException {
         return repositoryService.getAllObjectsOfType(type);
+    }
+
+    @Override
+    public UserType recomputeUser(UserType user) throws DatabaseCommunicationException, ObjectNotFoundException {
+        return updateObject(user);
+    }
+
+    @Override
+    public void recomputeOrganizationalUnit(OrgType orgUnit) throws DatabaseCommunicationException {
+//        TODO
     }
 }

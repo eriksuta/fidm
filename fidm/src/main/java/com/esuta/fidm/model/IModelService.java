@@ -4,13 +4,14 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.repository.schema.OrgType;
+import com.esuta.fidm.repository.schema.UserType;
 
 import java.util.List;
 
 /**
  *  @author shood
  *
- *  TODO - define and implements some search capabilities
  * */
 public interface IModelService {
 
@@ -47,7 +48,7 @@ public interface IModelService {
      *  @return Retrieved object, a subclass of ObjectType
      *          Returns null, if there is no object in model with provided name
      *
-     *  @throws DatabaseCommunicationException
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
      *          When communication with database is not established, or was lost
      * */
     <T extends ObjectType> T readObjectByName(Class<T> type, String name) throws DatabaseCommunicationException;
@@ -69,7 +70,7 @@ public interface IModelService {
      *          When object that is to be added already exists
      *          in the model
      *
-     *  @throws DatabaseCommunicationException
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
      *          When communication with database is not established, or was lost
      *
      * */
@@ -87,7 +88,7 @@ public interface IModelService {
      *  @throws com.esuta.fidm.infra.exception.ObjectNotFoundException
      *          The system could not find the requested object in the repository
      *
-     *  @throws DatabaseCommunicationException
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
      *          When communication with database is not established, or was lost
      *
      * */
@@ -98,18 +99,19 @@ public interface IModelService {
      *      Updates object in the model with new attribute values
      *  </p>
      *
-     *  @param object
+     *
+     * @param object
      *          An object, subclass of ObjectType, that is to be modified
      *          in the model
      *
-     *  @throws ObjectNotFoundException
+     *  @throws com.esuta.fidm.infra.exception.ObjectNotFoundException
      *          The system could not find the requested object in the model
      *
-     *  @throws DatabaseCommunicationException
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
      *          When communication with database is not established, or was lost
      *
      * */
-    <T extends ObjectType> void updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException;
+    <T extends ObjectType> T updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException;
 
     /**
      *  <p>
@@ -121,7 +123,7 @@ public interface IModelService {
      *
      *  @return a number of objects found
      *
-     *  @throws DatabaseCommunicationException
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
      *          When communication with database is not established, or was lost
      *
      * */
@@ -138,9 +140,39 @@ public interface IModelService {
      *  @return List of objects found in the model
      *          An empty list, if there are no objects of provided type in the model
      *
-     *  @throws DatabaseCommunicationException
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
      *          When communication with database is not established, or was lost
      *
      * */
     <T extends ObjectType> List<T> getAllObjectsOfType(Class<T> type) throws DatabaseCommunicationException;
+
+    /**
+     *  <p>
+     *      Performs a recompute operation on UserType object
+     *  </p>
+     *
+     *  @param user
+     *      a UserType object that needs to be recomputed
+     *
+     *  @return user, object of UserType type,
+     *          a recomputed object
+     *
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
+     *      When communication with database is not established, or was lost
+     * */
+    UserType recomputeUser(UserType user) throws DatabaseCommunicationException, ObjectNotFoundException;
+
+    /**
+     *  <p>
+     *      Performs a recompute operation on organizational unit,
+     *      i.e. on members of organizational unit provided as paramater
+     *  </p>
+     *
+     *  @param orgUnit
+     *      an OrgType object that needs to be recomputed
+     *
+     *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
+     *        When communication with database is not established, or was lost
+     * */
+    void recomputeOrganizationalUnit(OrgType orgUnit) throws DatabaseCommunicationException;
 }
