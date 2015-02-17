@@ -111,7 +111,11 @@
 
                 <!-- Button Bar -->
                 <div class="row main-button-bar">
-                    <input type="submit" wicket:id="saveButton" class="btn btn-primary" value="Save"/>
+                    <div class="btn-group">
+                        <input type="submit" wicket:id="saveButton" class="btn btn-primary" value="Save"/>
+                        <input type="submit" wicket:id="recomputeButton" class="btn btn-info" value="Recompute"/>
+                    </div>
+
                     <input type="submit" wicket:id="cancelButton" class="btn btn-default" value="Cancel"/>
                 </div>
             </form>

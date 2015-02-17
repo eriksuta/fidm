@@ -174,5 +174,5 @@ public interface IModelService {
      *  @throws com.esuta.fidm.infra.exception.DatabaseCommunicationException
      *        When communication with database is not established, or was lost
      * */
-    void recomputeOrganizationalUnit(OrgType orgUnit) throws DatabaseCommunicationException;
+    void recomputeOrganizationalUnit(OrgType orgUnit) throws DatabaseCommunicationException, ObjectNotFoundException;
 }

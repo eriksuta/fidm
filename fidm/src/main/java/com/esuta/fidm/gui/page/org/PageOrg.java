@@ -14,6 +14,7 @@ import com.esuta.fidm.gui.page.roles.PageRole;
 import com.esuta.fidm.gui.page.users.PageUser;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.OrgType;
 import com.esuta.fidm.repository.schema.ResourceType;
@@ -54,7 +55,9 @@ public class PageOrg extends PageBase {
     private static final String ID_LOCALITY = "locality";
     private static final String ID_ORG_TYPE = "orgType";
     private static final String ID_PARENT_ORG_UNIT = "parentOrgUnits";
+
     private static final String ID_BUTTON_SAVE = "saveButton";
+    private static final String ID_BUTTON_RECOMPUTE = "recomputeButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
     private static final String ID_RESOURCE_IND_CONTAINER = "resourceInducementsContainer";
@@ -184,6 +187,27 @@ public class PageOrg extends PageBase {
             }
         };
         mainForm.add(save);
+
+        AjaxSubmitLink recompute = new AjaxSubmitLink(ID_BUTTON_RECOMPUTE) {
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                recomputePerformed(target);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.add(getFeedbackPanel());
+            }
+        };
+        recompute.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return isEditingOrgUnit();
+            }
+        });
+        mainForm.add(recompute);
 
         initModalWindows();
         initInducements(mainForm);
@@ -849,6 +873,32 @@ public class PageOrg extends PageBase {
         setResponsePage(PageOrgList.class);
     }
 
+    private void recomputePerformed(AjaxRequestTarget target){
+        if(model == null || model.getObject() == null){
+            error("Couldn't recompute org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        OrgType orgUnit = model.getObject();
+
+        if(!isEditingOrgUnit()){
+            warn("Can't recompute org. unit not yet saved in repository.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        try {
+            getModelService().recomputeOrganizationalUnit(orgUnit);
+            success("Org. unit: '" + orgUnit.getName() + "'(" + orgUnit.getUid() + ") RECOMPUTE was successful.");
+        } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
+            LOGGER.error("Can't recompute org. unit: ", e);
+            error("Can't recompute org. unit with name: '" + orgUnit.getName() + "'. Reason: " + e.getExceptionMessage());
+        }
+
+        target.add(this, getFeedbackPanel());
+    }
+
     private void savePerformed(AjaxRequestTarget target){
         ModelService modelService = getModelService();
         OrgType orgUnit;
@@ -862,7 +912,7 @@ public class PageOrg extends PageBase {
         orgUnit = model.getObject();
 
         //Filtering empty org. unit types
-        List<String> orgTypes = new ArrayList<>(orgUnit.getOrgType());
+        List<String> orgTypes = orgUnit.getOrgType();
         for(String type: orgTypes){
             if(type == null || type.isEmpty()){
                 orgUnit.getOrgType().remove(type);
@@ -870,7 +920,7 @@ public class PageOrg extends PageBase {
         }
 
         //Filtering empty org. unit parents
-        List<String> orgUnitParents = new ArrayList<>(orgUnit.getParentOrgUnits());
+        List<String> orgUnitParents = orgUnit.getParentOrgUnits();
         for(String parent: orgUnitParents){
             if(parent == null || parent.isEmpty()){
                 orgUnit.getParentOrgUnits().remove(parent);

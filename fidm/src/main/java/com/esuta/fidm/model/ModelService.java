@@ -8,6 +8,7 @@ import com.esuta.fidm.repository.schema.ObjectType;
 import com.esuta.fidm.repository.schema.OrgType;
 import com.esuta.fidm.repository.schema.UserType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -94,7 +95,28 @@ public class ModelService implements IModelService{
     }
 
     @Override
-    public void recomputeOrganizationalUnit(OrgType orgUnit) throws DatabaseCommunicationException {
-//        TODO
+    public void recomputeOrganizationalUnit(OrgType orgUnit) throws DatabaseCommunicationException, ObjectNotFoundException {
+        if(orgUnit == null){
+            return;
+        }
+
+        String orgUid = orgUnit.getUid();
+
+        //Retrieve all members of org. unit
+        List<UserType> members = new ArrayList<>();
+        List<UserType> users = getAllObjectsOfType(UserType.class);
+
+        for(UserType user: users){
+            for(String uid: user.getOrgUnitAssignments()){
+                if(orgUid.equals(uid)){
+                    members.add(user);
+                }
+            }
+        }
+
+        //And recompute them
+        for(UserType user: members){
+            recomputeUser(user);
+        }
     }
 }
