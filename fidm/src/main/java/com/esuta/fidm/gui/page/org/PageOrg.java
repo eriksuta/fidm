@@ -912,20 +912,24 @@ public class PageOrg extends PageBase {
         orgUnit = model.getObject();
 
         //Filtering empty org. unit types
-        List<String> orgTypes = orgUnit.getOrgType();
-        for(String type: orgTypes){
-            if(type == null || type.isEmpty()){
-                orgUnit.getOrgType().remove(type);
+        List<String> newOrgTypes = new ArrayList<>();
+        for(String type: orgUnit.getOrgType()){
+            if(type != null && StringUtils.isNotEmpty(type)){
+                newOrgTypes.add(type);
             }
         }
+        orgUnit.getOrgType().clear();
+        orgUnit.getOrgType().addAll(newOrgTypes);
 
         //Filtering empty org. unit parents
-        List<String> orgUnitParents = orgUnit.getParentOrgUnits();
-        for(String parent: orgUnitParents){
-            if(parent == null || parent.isEmpty()){
-                orgUnit.getParentOrgUnits().remove(parent);
+        List<String> newOrgParents = new ArrayList<>();
+        for(String parent: orgUnit.getParentOrgUnits()){
+            if(parent != null && StringUtils.isNotEmpty(parent)){
+                newOrgParents.add(parent);
             }
         }
+        orgUnit.getParentOrgUnits().clear();
+        orgUnit.getParentOrgUnits().addAll(newOrgParents);
 
         try{
             if(!isEditingOrgUnit()){
