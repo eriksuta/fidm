@@ -23,6 +23,8 @@ public class AccountType extends ObjectType{
 
     private boolean _protected;
 
+    private FederationIdentifier federationIdentifier;
+
     public AccountType(){}
 
     public String getResource() {
@@ -73,10 +75,18 @@ public class AccountType extends ObjectType{
         this.accountName = accountName;
     }
 
+    public FederationIdentifier getFederationIdentifier() {
+        return federationIdentifier;
+    }
+
+    public void setFederationIdentifier(FederationIdentifier federationIdentifier) {
+        this.federationIdentifier = federationIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AccountType)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
         AccountType that = (AccountType) o;
@@ -84,6 +94,8 @@ public class AccountType extends ObjectType{
         if (_protected != that._protected) return false;
         if (accountName != null ? !accountName.equals(that.accountName) : that.accountName != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (federationIdentifier != null ? !federationIdentifier.equals(that.federationIdentifier) : that.federationIdentifier != null)
+            return false;
         if (owner != null ? !owner.equals(that.owner) : that.owner != null) return false;
         if (password != null ? !password.equals(that.password) : that.password != null) return false;
         if (resource != null ? !resource.equals(that.resource) : that.resource != null) return false;
@@ -100,6 +112,7 @@ public class AccountType extends ObjectType{
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (_protected ? 1 : 0);
+        result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         return result;
     }
 }

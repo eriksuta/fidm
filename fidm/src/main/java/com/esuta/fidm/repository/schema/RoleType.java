@@ -15,6 +15,8 @@ public class RoleType extends ObjectType{
     @Index
     private String roleType;
 
+    private FederationIdentifier federationIdentifier;
+
     public RoleType(){}
 
     public String getDisplayName() {
@@ -33,15 +35,25 @@ public class RoleType extends ObjectType{
         this.roleType = roleType;
     }
 
+    public FederationIdentifier getFederationIdentifier() {
+        return federationIdentifier;
+    }
+
+    public void setFederationIdentifier(FederationIdentifier federationIdentifier) {
+        this.federationIdentifier = federationIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RoleType)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
         RoleType roleType1 = (RoleType) o;
 
         if (displayName != null ? !displayName.equals(roleType1.displayName) : roleType1.displayName != null)
+            return false;
+        if (federationIdentifier != null ? !federationIdentifier.equals(roleType1.federationIdentifier) : roleType1.federationIdentifier != null)
             return false;
         if (roleType != null ? !roleType.equals(roleType1.roleType) : roleType1.roleType != null) return false;
 
@@ -53,6 +65,7 @@ public class RoleType extends ObjectType{
         int result = super.hashCode();
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (roleType != null ? roleType.hashCode() : 0);
+        result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         return result;
     }
 }

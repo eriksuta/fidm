@@ -24,6 +24,9 @@ public class OrgType extends ObjectType{
     private List<String> resourceInducements;
     private List<String> roleInducements;
 
+    private boolean federationAvailable;
+    private boolean federationIdentifier;
+
     public OrgType(){}
 
     public String getDisplayName() {
@@ -102,14 +105,32 @@ public class OrgType extends ObjectType{
         this.roleInducements = roleInducements;
     }
 
+    public boolean isFederationAvailable() {
+        return federationAvailable;
+    }
+
+    public void setFederationAvailable(boolean federationAvailable) {
+        this.federationAvailable = federationAvailable;
+    }
+
+    public boolean isFederationIdentifier() {
+        return federationIdentifier;
+    }
+
+    public void setFederationIdentifier(boolean federationIdentifier) {
+        this.federationIdentifier = federationIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof OrgType)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
         OrgType orgType1 = (OrgType) o;
 
+        if (federationAvailable != orgType1.federationAvailable) return false;
+        if (federationIdentifier != orgType1.federationIdentifier) return false;
         if (displayName != null ? !displayName.equals(orgType1.displayName) : orgType1.displayName != null)
             return false;
         if (governors != null ? !governors.equals(orgType1.governors) : orgType1.governors != null) return false;
@@ -135,6 +156,8 @@ public class OrgType extends ObjectType{
         result = 31 * result + (governors != null ? governors.hashCode() : 0);
         result = 31 * result + (resourceInducements != null ? resourceInducements.hashCode() : 0);
         result = 31 * result + (roleInducements != null ? roleInducements.hashCode() : 0);
+        result = 31 * result + (federationAvailable ? 1 : 0);
+        result = 31 * result + (federationIdentifier ? 1 : 0);
         return result;
     }
 }

@@ -41,6 +41,8 @@ public class UserType extends ObjectType{
     private List<String> orgUnitAssignments;
     private List<String> accounts;
 
+    private FederationIdentifier federationIdentifier;
+
     public UserType(){}
 
     public String getFullName() {
@@ -175,10 +177,18 @@ public class UserType extends ObjectType{
         this.accounts = accounts;
     }
 
+    public FederationIdentifier getFederationIdentifier() {
+        return federationIdentifier;
+    }
+
+    public void setFederationIdentifier(FederationIdentifier federationIdentifier) {
+        this.federationIdentifier = federationIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof UserType)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
         UserType userType = (UserType) o;
@@ -189,6 +199,8 @@ public class UserType extends ObjectType{
         if (emailAddress != null ? !emailAddress.equals(userType.emailAddress) : userType.emailAddress != null)
             return false;
         if (familyName != null ? !familyName.equals(userType.familyName) : userType.familyName != null) return false;
+        if (federationIdentifier != null ? !federationIdentifier.equals(userType.federationIdentifier) : userType.federationIdentifier != null)
+            return false;
         if (fullName != null ? !fullName.equals(userType.fullName) : userType.fullName != null) return false;
         if (givenName != null ? !givenName.equals(userType.givenName) : userType.givenName != null) return false;
         if (honorificPrefix != null ? !honorificPrefix.equals(userType.honorificPrefix) : userType.honorificPrefix != null)
@@ -227,6 +239,7 @@ public class UserType extends ObjectType{
         result = 31 * result + (roleAssignments != null ? roleAssignments.hashCode() : 0);
         result = 31 * result + (orgUnitAssignments != null ? orgUnitAssignments.hashCode() : 0);
         result = 31 * result + (accounts != null ? accounts.hashCode() : 0);
+        result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         return result;
     }
 }
