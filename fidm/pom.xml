@@ -111,6 +111,13 @@
             <version>1.4.7</version>
         </dependency>
 
+        <!-- JERSEY DEPENDENCY -->
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>1.19</version>
+        </dependency>
+
         <!--  JETTY DEPENDENCIES FOR TESTING  -->
 		<dependency>
 			<groupId>org.eclipse.jetty.aggregate</groupId>
