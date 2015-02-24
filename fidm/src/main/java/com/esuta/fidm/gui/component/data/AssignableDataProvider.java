@@ -1,6 +1,6 @@
 package com.esuta.fidm.gui.component.data;
 
-import com.esuta.fidm.repository.schema.*;
+import com.esuta.fidm.repository.schema.core.*;
 import org.apache.log4j.Logger;
 import org.apache.wicket.Component;
 

@@ -1,4 +1,4 @@
-package com.esuta.fidm.repository.schema;
+package com.esuta.fidm.repository.schema.core;
 
 import javax.persistence.Entity;
 
@@ -10,12 +10,12 @@ public class FederationMemberType extends ObjectType{
 
     public static enum FederationMemberStatusType{
         AVAILABLE,
-        UNAVAILABLE,
-        REQUESTED,
-        DECLINED
+        REQUESTED
     }
 
+    private String federationMemberName;
     private FederationMemberStatusType status;
+    private int port;
     private String webAddress;
     private String displayName;
     private String locality;
@@ -54,6 +54,22 @@ public class FederationMemberType extends ObjectType{
         this.webAddress = webAddress;
     }
 
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getFederationMemberName() {
+        return federationMemberName;
+    }
+
+    public void setFederationMemberName(String federationMemberName) {
+        this.federationMemberName = federationMemberName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -62,7 +78,10 @@ public class FederationMemberType extends ObjectType{
 
         FederationMemberType that = (FederationMemberType) o;
 
+        if (port != that.port) return false;
         if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) return false;
+        if (federationMemberName != null ? !federationMemberName.equals(that.federationMemberName) : that.federationMemberName != null)
+            return false;
         if (locality != null ? !locality.equals(that.locality) : that.locality != null) return false;
         if (status != that.status) return false;
         if (webAddress != null ? !webAddress.equals(that.webAddress) : that.webAddress != null) return false;
@@ -73,7 +92,9 @@ public class FederationMemberType extends ObjectType{
     @Override
     public int hashCode() {
         int result = super.hashCode();
+        result = 31 * result + (federationMemberName != null ? federationMemberName.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + port;
         result = 31 * result + (webAddress != null ? webAddress.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (locality != null ? locality.hashCode() : 0);

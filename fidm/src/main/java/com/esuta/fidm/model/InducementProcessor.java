@@ -2,9 +2,9 @@ package com.esuta.fidm.model;
 
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
-import com.esuta.fidm.repository.schema.AccountType;
-import com.esuta.fidm.repository.schema.OrgType;
-import com.esuta.fidm.repository.schema.UserType;
+import com.esuta.fidm.repository.schema.core.AccountType;
+import com.esuta.fidm.repository.schema.core.OrgType;
+import com.esuta.fidm.repository.schema.core.UserType;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;

@@ -2,7 +2,7 @@ package com.esuta.fidm.gui.component.data;
 
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.repository.schema.core.ObjectType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.SortOrder;

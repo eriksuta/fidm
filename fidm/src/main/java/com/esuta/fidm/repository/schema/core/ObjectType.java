@@ -1,4 +1,4 @@
-package com.esuta.fidm.repository.schema;
+package com.esuta.fidm.repository.schema.core;
 
 import javax.jdo.annotations.Index;
 import javax.persistence.MappedSuperclass;

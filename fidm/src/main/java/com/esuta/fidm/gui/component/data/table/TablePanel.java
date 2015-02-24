@@ -1,7 +1,7 @@
 package com.esuta.fidm.gui.component.data.table;
 
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
-import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.repository.schema.core.ObjectType;
 import org.apache.commons.lang3.Validate;
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;

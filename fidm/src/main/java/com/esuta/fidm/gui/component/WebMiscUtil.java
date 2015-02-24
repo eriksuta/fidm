@@ -1,6 +1,6 @@
 package com.esuta.fidm.gui.component;
 
-import com.esuta.fidm.repository.schema.*;
+import com.esuta.fidm.repository.schema.core.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -27,7 +27,6 @@ import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

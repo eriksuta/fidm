@@ -1,6 +1,6 @@
 package com.esuta.fidm.gui.page.users.dto;
 
-import com.esuta.fidm.repository.schema.UserType;
+import com.esuta.fidm.repository.schema.core.UserType;
 
 import java.io.Serializable;
 

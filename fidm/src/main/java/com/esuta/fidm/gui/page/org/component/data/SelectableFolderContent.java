@@ -1,6 +1,6 @@
 package com.esuta.fidm.gui.page.org.component.data;
 
-import com.esuta.fidm.repository.schema.OrgType;
+import com.esuta.fidm.repository.schema.core.OrgType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.markup.html.repeater.tree.AbstractTree;

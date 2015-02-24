@@ -5,7 +5,7 @@ import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.GeneralException;
-import com.esuta.fidm.repository.schema.RoleType;
+import com.esuta.fidm.repository.schema.core.RoleType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;

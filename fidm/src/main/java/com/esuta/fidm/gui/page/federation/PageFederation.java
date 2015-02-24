@@ -5,7 +5,7 @@ import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.repository.schema.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;

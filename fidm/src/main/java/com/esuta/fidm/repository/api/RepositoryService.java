@@ -3,8 +3,8 @@ package com.esuta.fidm.repository.api;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
-import com.esuta.fidm.repository.schema.ObjectType;
-import com.esuta.fidm.repository.schema.SystemConfigurationType;
+import com.esuta.fidm.repository.schema.core.ObjectType;
+import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import com.objectdb.o._NoResultException;
 import org.apache.log4j.Logger;
 

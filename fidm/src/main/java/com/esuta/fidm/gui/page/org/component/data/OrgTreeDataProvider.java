@@ -3,7 +3,7 @@ package com.esuta.fidm.gui.page.org.component.data;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.repository.schema.OrgType;
+import com.esuta.fidm.repository.schema.core.OrgType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableTreeProvider;

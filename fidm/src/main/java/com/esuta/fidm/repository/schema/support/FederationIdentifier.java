@@ -1,4 +1,4 @@
-package com.esuta.fidm.repository.schema;
+package com.esuta.fidm.repository.schema.support;
 
 import java.io.Serializable;
 

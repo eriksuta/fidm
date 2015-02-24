@@ -1,4 +1,6 @@
-package com.esuta.fidm.repository.schema;
+package com.esuta.fidm.repository.schema.core;
+
+import com.esuta.fidm.repository.schema.support.FederationIdentifier;
 
 import javax.jdo.annotations.Index;
 import javax.persistence.Entity;

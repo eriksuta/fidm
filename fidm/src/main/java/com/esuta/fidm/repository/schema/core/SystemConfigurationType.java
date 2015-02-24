@@ -1,4 +1,4 @@
-package com.esuta.fidm.repository.schema;
+package com.esuta.fidm.repository.schema.core;
 
 import javax.persistence.Entity;
 import java.io.Serializable;
@@ -7,8 +7,9 @@ import java.io.Serializable;
  *  @author shood
  * */
 @Entity
-public class SystemConfigurationType implements Serializable{
+public class SystemConfigurationType extends ObjectType{
 
+    private String identityProviderIdentifier;
     private String dbConnectionFile;
 
     public SystemConfigurationType(){}
@@ -21,6 +22,14 @@ public class SystemConfigurationType implements Serializable{
         this.dbConnectionFile = dbConnectionFile;
     }
 
+    public String getIdentityProviderIdentifier() {
+        return identityProviderIdentifier;
+    }
+
+    public void setIdentityProviderIdentifier(String identityProviderIdentifier) {
+        this.identityProviderIdentifier = identityProviderIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -30,12 +39,16 @@ public class SystemConfigurationType implements Serializable{
 
         if (dbConnectionFile != null ? !dbConnectionFile.equals(that.dbConnectionFile) : that.dbConnectionFile != null)
             return false;
+        if (identityProviderIdentifier != null ? !identityProviderIdentifier.equals(that.identityProviderIdentifier) : that.identityProviderIdentifier != null)
+            return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return dbConnectionFile != null ? dbConnectionFile.hashCode() : 0;
+        int result = identityProviderIdentifier != null ? identityProviderIdentifier.hashCode() : 0;
+        result = 31 * result + (dbConnectionFile != null ? dbConnectionFile.hashCode() : 0);
+        return result;
     }
 }

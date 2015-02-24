@@ -6,7 +6,7 @@ import com.esuta.fidm.gui.page.dashboard.PageDashboard;
 import com.esuta.fidm.gui.page.org.component.OrgUnitTreePanel;
 import com.esuta.fidm.gui.page.org.component.TabbedPanel;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
-import com.esuta.fidm.repository.schema.OrgType;
+import com.esuta.fidm.repository.schema.core.OrgType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
@@ -36,7 +36,7 @@ public class PageOrgList extends PageBase {
     }
 
     private void initLayout(){
-        final IModel<List<ITab>> tabModel = new LoadableModel<List<ITab>>(false) {
+        final IModel<List<ITab>> tabModel = new LoadableModel<List<ITab>>() {
 
             @Override
             protected List<ITab> load() {

@@ -4,9 +4,9 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.api.RepositoryService;
-import com.esuta.fidm.repository.schema.ObjectType;
-import com.esuta.fidm.repository.schema.OrgType;
-import com.esuta.fidm.repository.schema.UserType;
+import com.esuta.fidm.repository.schema.core.ObjectType;
+import com.esuta.fidm.repository.schema.core.OrgType;
+import com.esuta.fidm.repository.schema.core.UserType;
 
 import java.util.ArrayList;
 import java.util.List;

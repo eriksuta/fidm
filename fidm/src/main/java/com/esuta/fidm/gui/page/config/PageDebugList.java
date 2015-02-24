@@ -4,17 +4,11 @@ import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.page.PageBase;
-import com.esuta.fidm.gui.page.org.PageOrg;
-import com.esuta.fidm.gui.page.resource.PageResource;
-import com.esuta.fidm.gui.page.roles.PageRole;
-import com.esuta.fidm.gui.page.users.PageAccount;
-import com.esuta.fidm.gui.page.users.PageUser;
 import com.esuta.fidm.infra.exception.GeneralException;
-import com.esuta.fidm.repository.schema.*;
+import com.esuta.fidm.repository.schema.core.*;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -108,9 +102,11 @@ public class PageDebugList extends PageBase{
     private List<Class<? extends ObjectType>> createObjectTypeList(){
         List<Class<? extends ObjectType>> list = new ArrayList<>();
         list.add(AccountType.class);
+        list.add(FederationMemberType.class);
         list.add(OrgType.class);
         list.add(ResourceType.class);
         list.add(RoleType.class);
+        list.add(SystemConfigurationType.class);
         list.add(UserType.class);
         return list;
     }

@@ -3,7 +3,7 @@ package com.esuta.fidm.gui.component.modal;
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
-import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.repository.schema.core.ObjectType;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;

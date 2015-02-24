@@ -5,7 +5,7 @@ import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
-import com.esuta.fidm.repository.schema.ObjectType;
+import com.esuta.fidm.repository.schema.core.ObjectType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
