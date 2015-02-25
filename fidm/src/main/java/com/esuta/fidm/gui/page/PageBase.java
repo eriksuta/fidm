@@ -3,6 +3,7 @@ package com.esuta.fidm.gui.page;
 import com.esuta.fidm.gui.component.CustomFeedbackPanel;
 import com.esuta.fidm.gui.component.nav.RightNavigationMenu;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -19,15 +20,21 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
  * */
 public abstract class PageBase extends WebPage{
 
-    //Every page is able to communicate with model through this ModelService instance
+    /**
+     *  Every page is able to communicate with model through this ModelService instance
+     * */
     private transient ModelService modelService;
 
-    //Constant used to identify page paramater name (uid) - used when editing objects
+    /**
+     *  Every page is able to communicate with other federation members using this federation service rest client instance
+     * */
+    private transient RestFederationServiceClient federationServiceClient;
+
+    //Constant used to identify page parameter name (uid) - used when editing objects
     public static final String UID_PAGE_PARAMETER_NAME = "uid";
 
     //Other page parameter constants
     public static final String PAGE_ACCOUNT_RESOURCE_UID = "pageAccResourceUid";
-
 
     private static final String ID_TITLE = "title";
     private static final String ID_SUBTITLE = "subtitle";
@@ -82,6 +89,14 @@ public abstract class PageBase extends WebPage{
         }
 
         return modelService;
+    }
+
+    public RestFederationServiceClient getFederationServiceClient() {
+        if(federationServiceClient == null){
+            federationServiceClient = RestFederationServiceClient.getInstance();
+        }
+
+        return federationServiceClient;
     }
 
     public WebMarkupContainer getFeedbackPanel(){

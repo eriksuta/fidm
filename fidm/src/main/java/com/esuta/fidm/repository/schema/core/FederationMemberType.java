@@ -13,7 +13,11 @@ public class FederationMemberType extends ObjectType{
         REQUESTED
     }
 
+    /**
+     *  This attribute is a unique identifier used in identity federations
+     * */
     private String federationMemberName;
+
     private FederationMemberStatusType status;
     private int port;
     private String webAddress;

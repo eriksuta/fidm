@@ -129,9 +129,6 @@ public class PageFederation extends PageBase {
         setResponsePage(PageFederationList.class);
     }
 
-    /**
-     *  TODO - make a federation API call to target federation member after federation REST API is available
-     * */
     private void savePerformed(AjaxRequestTarget target){
         ModelService modelService = getModelService();
         FederationMemberType federationMember;
@@ -145,8 +142,7 @@ public class PageFederation extends PageBase {
         try{
 
             if(!isEditingFederationMember()){
-                //TODO - change status based on response from REST call
-                federationMember.setStatus(FederationMemberType.FederationMemberStatusType.UNAVAILABLE);
+                federationMember.setStatus(FederationMemberType.FederationMemberStatusType.REQUESTED);
                 modelService.createObject(federationMember);
             } else {
                 modelService.updateObject(federationMember);

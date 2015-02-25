@@ -22,7 +22,7 @@ import java.util.List;
 /**
  *  @author shood
  * */
-@Path("/rest")
+@Path(FederationServiceUtil.REST_SERVICE_PATH)
 public class RestFederationService implements IFederationService{
 
     Logger LOGGER = Logger.getLogger(RestFederationService.class);
@@ -50,7 +50,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @POST
-    @Path("/federationRequest")
+    @Path(FederationServiceUtil.FEDERATION_REQUEST)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleFederationRequest(@Context HttpServletRequest requestContext, String identityProviderIdentifier){
         String remoteAddress = requestContext.getRemoteAddr();
@@ -93,7 +93,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @POST
-    @Path("/federationResponse")
+    @Path(FederationServiceUtil.FEDERATION_REQUEST_RESPONSE)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleFederationResponse(@Context HttpServletRequest requestContext, String identityProviderIdentifier, FederationRequestResponseType response){
         if(identityProviderIdentifier == null || identityProviderIdentifier.isEmpty() || response == null){

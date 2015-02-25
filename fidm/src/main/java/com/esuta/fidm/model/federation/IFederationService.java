@@ -3,9 +3,12 @@ package com.esuta.fidm.model.federation;
 import com.esuta.fidm.repository.schema.support.FederationRequestResponseType;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 
 /**
  *  @author shood
+ *
+ *  TODO - interface description
  * */
 public interface IFederationService {
 
@@ -45,7 +48,7 @@ public interface IFederationService {
      *                   in internal identity providers operations, such as handling the uniqueness
      *                   of requested federation member etc.
      * */
-    public Object handleFederationRequest(HttpServletRequest requestContext, String identityProviderIdentifier);
+    public Response handleFederationRequest(HttpServletRequest requestContext, String identityProviderIdentifier);
 
     /**
      *  <p>
@@ -81,5 +84,5 @@ public interface IFederationService {
      *                   in internal identity providers operations, such as handling the uniqueness
      *                   of requested federation member etc.
      * */
-    public Object handleFederationResponse(HttpServletRequest requestContext, String identityProviderIdentifier, FederationRequestResponseType response);
+    public Response handleFederationResponse(HttpServletRequest requestContext, String identityProviderIdentifier, FederationRequestResponseType response);
 }
