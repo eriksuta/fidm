@@ -94,6 +94,8 @@ public final class WebMiscUtil {
         xStream.alias("resource", ResourceType.class);
         xStream.alias("role", RoleType.class);
         xStream.alias("user", UserType.class);
+        xStream.alias("federationMember", FederationMemberType.class);
+        xStream.alias("systemConfiguration", SystemConfigurationType.class);
         return xStream;
     }
 

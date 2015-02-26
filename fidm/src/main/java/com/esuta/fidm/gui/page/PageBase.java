@@ -102,7 +102,4 @@ public abstract class PageBase extends WebPage{
     public WebMarkupContainer getFeedbackPanel(){
         return (WebMarkupContainer) get(ID_FEEDBACK_CONTAINER);
     }
-
-
-
 }

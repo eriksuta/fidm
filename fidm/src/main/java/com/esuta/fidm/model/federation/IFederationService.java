@@ -1,6 +1,6 @@
 package com.esuta.fidm.model.federation;
 
-import com.esuta.fidm.repository.schema.support.FederationRequestResponseType;
+import com.esuta.fidm.model.federation.client.FederationRequestResponseType;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
@@ -27,9 +27,9 @@ public interface IFederationService {
      *      A unique identified of federation membership requesting identity provider (Should
      *      be based on specified policy in identity federation)
      *
-     *  @return Object
-     *      a response object, specific type depends on concrete implementation. However it should
-     *      be an incarnation of HTTP response object. Possible HTTP return codes:
+     *  @return javax.ws.rs.core.Response
+     *      a response object containing one of the following return codes with response message
+     *      containing more information about operation status and processing
      *
      *      <b>200</b> - response with HTTP code 200 should be returned, when request
      *                   has been correctly handled, thus new federation membership request
@@ -61,16 +61,13 @@ public interface IFederationService {
      *      a request context, usually gained from underlying implementation technology rather than
      *      sent in request itself. Needed for information about sender (address, port, etc.)
      *
-     *  @param identityProviderIdentifier (String)
-     *      A unique identified of identity provider sending a response to requesting identity provider (Should
-     *      be based on specified policy in identity federation)
-     *
      *  @param response (FederationRequestResponseType)
-     *      A simple response to federation membership request.
+     *      A simple response to federation membership request. This object contains the identifier of
+     *      federation member and response to request (DENY or ACCEPT)
      *
-     *  @return Object
-     *      a response object, specific type depends on concrete implementation. However it should
-     *      be an incarnation of HTTP response object. Possible HTTP return codes:
+     *  @return javax.ws.rs.core.Response
+     *      a response object containing one of the following return codes with response message
+     *      containing more information about operation status and processing
      *
      *      <b>200</b> - response with HTTP code 200 should be returned when response to federation
      *                   membership request was correctly processed.
@@ -84,5 +81,5 @@ public interface IFederationService {
      *                   in internal identity providers operations, such as handling the uniqueness
      *                   of requested federation member etc.
      * */
-    public Response handleFederationResponse(HttpServletRequest requestContext, String identityProviderIdentifier, FederationRequestResponseType response);
+    public Response handleFederationResponse(HttpServletRequest requestContext, FederationRequestResponseType response);
 }

@@ -154,6 +154,10 @@ public class PageDebugList extends PageBase{
             setResponsePage(new PageDebugObject(parameters, RoleType.class));
         } else if(object instanceof UserType){
             setResponsePage(new PageDebugObject(parameters, UserType.class));
+        } else if(object instanceof FederationMemberType){
+            setResponsePage(new PageDebugObject(parameters, FederationMemberType.class));
+        } else if(object instanceof SystemConfigurationType){
+            setResponsePage(new PageDebugObject(parameters, SystemConfigurationType.class));
         }
     }
 

@@ -42,11 +42,13 @@ public class FederatedIDMApplication extends WebApplication{
         SystemConfigurationType systemConfig = new SystemConfigurationType();
 
 //        PC configuration
+        systemConfig.setUid("00000000-0000-0000-0000-000000000001");
         systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository.odb");
         systemConfig.setIdentityProviderIdentifier("Local Identity Provider");
         systemConfig.setName("System Configuration - Initial");
 
 //        NB configuration
+//        systemConfig.setUid("00000000-0000-0000-0000-000000000001");
 //        systemConfig.setDbConnectionFile("F:\\skola\\Ing\\Diplo\\_repository\\_DB\\repository.odb");
 //        systemConfig.setIdentityProviderIdentifier("Local Identity Provider");
 //        systemConfig.setName("System Configuration - Initial");
