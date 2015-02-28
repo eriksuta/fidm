@@ -63,7 +63,7 @@ public class RestFederationServiceClient {
     public SimpleRestResponseStatus createFederationRequest(FederationMemberType federationMember) throws IOException {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
-        String identifier = federationMember.getFederationMemberName();
+        String identifier = federationMember.getRequesterIdentifier();
 
         String url = FederationServiceUtil.createFederationRequestUrl(address, port);
         Client client = Client.create();
@@ -84,7 +84,7 @@ public class RestFederationServiceClient {
                                                              FederationRequestResponseType.Response responseType) throws IOException {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
-        String identifier = federationMember.getFederationMemberName();
+        String identifier = federationMember.getRequesterIdentifier();
 
         String url = FederationServiceUtil.createFederationRequestResponseUrl(address, port);
         Client client = Client.create();
