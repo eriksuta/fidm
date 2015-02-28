@@ -10,9 +10,11 @@ import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -25,10 +27,12 @@ public class PageFederation extends PageBase {
     private transient Logger LOGGER = Logger.getLogger(PageFederation.class);
 
     private static final String ID_MAIN_FORM = "mainForm";
+    private static final String ID_FEDERATION_IDENTIFIER = "federationIdentifier";
     private static final String ID_NAME = "name";
     private static final String ID_DISPLAY_NAME = "displayName";
     private static final String ID_DESCRIPTION = "description";
     private static final String ID_WEB_ADDRESS = "webAddress";
+    private static final String ID_PORT = "port";
     private static final String ID_LOCALITY = "locality";
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
@@ -83,6 +87,15 @@ public class PageFederation extends PageBase {
         mainForm.setOutputMarkupId(true);
         add(mainForm);
 
+        Label identifier = new Label(ID_NAME, new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return model.getObject().getFederationMemberName();
+            }
+        });
+        mainForm.add(identifier);
+
         TextField name = new TextField<>(ID_NAME, new PropertyModel<String>(model, "name"));
         name.setRequired(true);
         mainForm.add(name);
@@ -99,6 +112,9 @@ public class PageFederation extends PageBase {
 
         TextField webAddress = new TextField<>(ID_WEB_ADDRESS, new PropertyModel<String>(model, "webAddress"));
         mainForm.add(webAddress);
+
+        TextField port = new TextField<>(ID_PORT, new PropertyModel<String>(model, "port"));
+        mainForm.add(port);
 
         AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
 

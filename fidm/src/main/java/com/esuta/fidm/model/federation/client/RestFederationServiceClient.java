@@ -37,6 +37,26 @@ public class RestFederationServiceClient {
         //Put any future configuration here
     }
 
+    /**
+     *  Here, if status is 200, the message contains the requested identifier,
+     *  else is will contain the error message
+     * */
+    public SimpleRestResponseStatus createGetFederationIdentifierRequest(FederationMemberType federationMember){
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = FederationServiceUtil.createGetFederationMemberIdentifier(address, port);
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept("application/json").get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+
+        return new SimpleRestResponseStatus(responseStatus, responseMessage);
+    }
+
     public SimpleRestResponseStatus createFederationRequest(FederationMemberType federationMember) throws IOException {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
@@ -67,9 +87,9 @@ public class RestFederationServiceClient {
         WebResource webResource = client.resource(url);
 
         FederationRequestResponseType responseObject = new FederationRequestResponseType(responseType, identifier);
-        String identityProviderIdentifier = objectToJson(responseObject);
+        String responseObjectJson = objectToJson(responseObject);
 
-        ClientResponse response = webResource.type("application/json").post(ClientResponse.class, identityProviderIdentifier);
+        ClientResponse response = webResource.type("application/json").post(ClientResponse.class, responseObjectJson);
 
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);

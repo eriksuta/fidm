@@ -1,5 +1,6 @@
 package com.esuta.fidm.model.federation;
 
+import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
@@ -7,11 +8,13 @@ import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.model.federation.client.FederationRequestResponseType;
+import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
@@ -49,8 +52,28 @@ public class RestFederationService implements IFederationService{
         this.modelService = ModelService.getInstance();
     }
 
+    @GET
+    @Path(FederationServiceUtil.GET_FEDERATION_MEMBER_IDENTIFIER)
+    public Response getFederationIdentifier() {
+        SystemConfigurationType config;
+        String identifier;
+
+        try {
+            config = modelService.readObject(SystemConfigurationType.class, PageBase.SYSTEM_CONFIG_UID);
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not read system configuration: ", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Could not read system configuration.").build();
+        }
+
+        if(config != null){
+            return Response.status(HttpStatus.OK_200).entity(config.getIdentityProviderIdentifier()).build();
+        } else {
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Could not read system configuration.").build();
+        }
+    }
+
     @POST
-    @Path(FederationServiceUtil.FEDERATION_REQUEST)
+    @Path(FederationServiceUtil.POST_FEDERATION_REQUEST)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleFederationRequest(@Context HttpServletRequest requestContext, String identityProviderIdentifier){
         String remoteAddress = requestContext.getRemoteAddr();
@@ -93,7 +116,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @POST
-    @Path(FederationServiceUtil.FEDERATION_REQUEST_RESPONSE)
+    @Path(FederationServiceUtil.POST_FEDERATION_REQUEST_RESPONSE)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleFederationResponse(@Context HttpServletRequest requestContext, FederationRequestResponseType response){
         if(response == null || response.getIdentityProviderIdentifier() == null || response.getIdentityProviderIdentifier().isEmpty()

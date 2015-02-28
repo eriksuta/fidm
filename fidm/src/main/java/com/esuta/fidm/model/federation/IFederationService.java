@@ -14,6 +14,29 @@ public interface IFederationService {
 
     /**
      *  <p>
+     *      A basic method that will return an identification of asked federation member
+     *      to asking federation member. This method (as the entire API) assumes the
+     *      existence of trust relationship in federation, so it will identify to
+     *      any and all incoming requests
+     *  </p>
+     *
+     *  @return javax.ws.rs.core.Response
+     *      a response object containing one of the following return codes with response message
+     *      containing more information about operation status and processing
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned, when request
+     *                   has been correctly handled. The body of response contains an
+     *                   identifier of federation member
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when internal error occurs
+     *                   in internal identity providers operations, such as problems with reading the
+     *                   identifier of requested federation member etc.
+     *
+     * */
+    public Response getFederationIdentifier();
+
+    /**
+     *  <p>
      *      A method with simple purpose, to handle a federation membership request. An identity
      *      provider sends this request if there is a need to create federation relationship
      *      with another identity provider in trusted federated environment.

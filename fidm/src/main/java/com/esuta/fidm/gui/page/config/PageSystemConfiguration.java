@@ -2,12 +2,10 @@ package com.esuta.fidm.gui.page.config;
 
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
-import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
-import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.form.Form;
@@ -30,8 +28,6 @@ public class PageSystemConfiguration extends PageBase {
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
-    private static final String SYSTEM_CONFIG_UID = "00000000-0000-0000-0000-000000000001";
-
     private IModel<SystemConfigurationType> model;
 
     public PageSystemConfiguration(){
@@ -45,20 +41,6 @@ public class PageSystemConfiguration extends PageBase {
         };
 
         initLayout();
-    }
-
-    private SystemConfigurationType loadSystemConfiguration(){
-        SystemConfigurationType systemConfiguration;
-
-        try {
-            systemConfiguration = getModelService().readObject(SystemConfigurationType.class, SYSTEM_CONFIG_UID);
-        } catch (DatabaseCommunicationException exc){
-            error("Couldn't retrieve system configuration object, uid: '" + SYSTEM_CONFIG_UID + "' from the repository. Reason: " + exc.getExceptionMessage());
-            LOGGER.error("Couldn't retrieve system configuration object, uid: '" + SYSTEM_CONFIG_UID + "' from the repository. Reason: ", exc);
-            throw new RestartResponseException(PageDebugList.class);
-        }
-
-        return systemConfiguration;
     }
 
     private void initLayout(){

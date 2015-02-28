@@ -2,8 +2,13 @@ package com.esuta.fidm.gui.page;
 
 import com.esuta.fidm.gui.component.CustomFeedbackPanel;
 import com.esuta.fidm.gui.component.nav.RightNavigationMenu;
+import com.esuta.fidm.gui.page.config.PageDebugList;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
+import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
+import org.apache.log4j.Logger;
+import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -19,6 +24,8 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
  *  @author shood
  * */
 public abstract class PageBase extends WebPage{
+
+    Logger LOGGER = Logger.getLogger(PageBase.class);
 
     /**
      *  Every page is able to communicate with model through this ModelService instance
@@ -41,6 +48,8 @@ public abstract class PageBase extends WebPage{
     private static final String ID_RIGHT_MENU_PANEL = "rightMenuPanel";
     private static final String ID_FEEDBACK_CONTAINER = "feedbackContainer";
     private static final String ID_FEEDBACK = "feedback";
+
+    public static final String SYSTEM_CONFIG_UID = "00000000-0000-0000-0000-000000000001";
 
     public PageBase(){
         this(null);
@@ -101,5 +110,19 @@ public abstract class PageBase extends WebPage{
 
     public WebMarkupContainer getFeedbackPanel(){
         return (WebMarkupContainer) get(ID_FEEDBACK_CONTAINER);
+    }
+
+    public SystemConfigurationType loadSystemConfiguration(){
+        SystemConfigurationType systemConfiguration;
+
+        try {
+            systemConfiguration = getModelService().readObject(SystemConfigurationType.class, SYSTEM_CONFIG_UID);
+        } catch (DatabaseCommunicationException exc){
+            error("Couldn't retrieve system configuration object, uid: '" + SYSTEM_CONFIG_UID + "' from the repository. Reason: " + exc.getExceptionMessage());
+            LOGGER.error("Couldn't retrieve system configuration object, uid: '" + SYSTEM_CONFIG_UID + "' from the repository. Reason: ", exc);
+            throw new RestartResponseException(PageDebugList.class);
+        }
+
+        return systemConfiguration;
     }
 }
