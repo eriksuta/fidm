@@ -13,10 +13,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -54,6 +51,7 @@ public class RestFederationService implements IFederationService{
 
     @GET
     @Path(FederationServiceUtil.GET_FEDERATION_MEMBER_IDENTIFIER)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getFederationIdentifier() {
         SystemConfigurationType config;
         String identifier;
@@ -75,6 +73,7 @@ public class RestFederationService implements IFederationService{
     @POST
     @Path(FederationServiceUtil.POST_FEDERATION_REQUEST)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response handleFederationRequest(@Context HttpServletRequest requestContext, String identityProviderIdentifier){
         String remoteAddress = requestContext.getRemoteAddr();
         int remotePort = requestContext.getRemotePort();
@@ -118,6 +117,7 @@ public class RestFederationService implements IFederationService{
     @POST
     @Path(FederationServiceUtil.POST_FEDERATION_REQUEST_RESPONSE)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response handleFederationResponse(@Context HttpServletRequest requestContext, FederationRequestResponseType response){
         if(response == null || response.getIdentityProviderIdentifier() == null || response.getIdentityProviderIdentifier().isEmpty()
                 || response.getResponse() == null){

@@ -10,7 +10,8 @@ public class FederationMemberType extends ObjectType{
 
     public static enum FederationMemberStatusType{
         AVAILABLE,
-        REQUESTED
+        REQUESTED,
+        DENIED
     }
 
     /**
@@ -18,6 +19,7 @@ public class FederationMemberType extends ObjectType{
      * */
     private String federationMemberName;
 
+    private String requesterIdentifier;
     private FederationMemberStatusType status;
     private int port;
     private String webAddress;
@@ -74,6 +76,14 @@ public class FederationMemberType extends ObjectType{
         this.federationMemberName = federationMemberName;
     }
 
+    public String getRequesterIdentifier() {
+        return requesterIdentifier;
+    }
+
+    public void setRequesterIdentifier(String requesterIdentifier) {
+        this.requesterIdentifier = requesterIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -87,6 +97,8 @@ public class FederationMemberType extends ObjectType{
         if (federationMemberName != null ? !federationMemberName.equals(that.federationMemberName) : that.federationMemberName != null)
             return false;
         if (locality != null ? !locality.equals(that.locality) : that.locality != null) return false;
+        if (requesterIdentifier != null ? !requesterIdentifier.equals(that.requesterIdentifier) : that.requesterIdentifier != null)
+            return false;
         if (status != that.status) return false;
         if (webAddress != null ? !webAddress.equals(that.webAddress) : that.webAddress != null) return false;
 
@@ -97,6 +109,7 @@ public class FederationMemberType extends ObjectType{
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (federationMemberName != null ? federationMemberName.hashCode() : 0);
+        result = 31 * result + (requesterIdentifier != null ? requesterIdentifier.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + port;
         result = 31 * result + (webAddress != null ? webAddress.hashCode() : 0);

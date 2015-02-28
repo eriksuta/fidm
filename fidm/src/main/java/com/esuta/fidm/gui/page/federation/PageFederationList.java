@@ -2,6 +2,7 @@ package com.esuta.fidm.gui.page.federation;
 
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
+import com.esuta.fidm.gui.component.data.column.LinkColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.GeneralException;
@@ -48,10 +49,18 @@ public class PageFederationList extends PageBase{
     private List<IColumn> createColumns(){
         List<IColumn> columns = new ArrayList<>();
 
-        columns.add(new PropertyColumn<FederationMemberType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new LinkColumn<FederationMemberType>(new Model<>("Name"), "name", "name"){
+
+            @Override
+            public void onClick(AjaxRequestTarget target, IModel<FederationMemberType> rowModel) {
+                editPerformed(target, rowModel);
+            }
+        });
+
+        columns.add(new PropertyColumn<FederationMemberType, String>(new Model<>("Federation Identifier"), "federationMemberName", "federationMemberName"));
         columns.add(new PropertyColumn<FederationMemberType, String>(new Model<>("DisplayName"), "displayName", "displayName"));
-        columns.add(new PropertyColumn<FederationMemberType, String>(new Model<>("Address"), "webAddress", "webAddress"));
-        columns.add(new PropertyColumn<FederationMemberType, String>(new Model<>("Locality"), "locality", "locality"));
+        columns.add(new PropertyColumn<FederationMemberType, String>(new Model<>("Address"), "port", "port"));
+        columns.add(new PropertyColumn<FederationMemberType, String>(new Model<>("Port"), "webAddress", "webAddress"));
         columns.add(new PropertyColumn<FederationMemberType, String>(new Model<>("Status"), "status"));
 
         columns.add(new EditDeleteButtonColumn<FederationMemberType>(new Model<>("Actions")){

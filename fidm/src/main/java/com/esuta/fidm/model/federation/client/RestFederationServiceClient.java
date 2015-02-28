@@ -6,8 +6,10 @@ import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.filter.LoggingFilter;
 import org.apache.log4j.Logger;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 
 /**
@@ -47,9 +49,10 @@ public class RestFederationServiceClient {
 
         String url = FederationServiceUtil.createGetFederationMemberIdentifier(address, port);
         Client client = Client.create();
+        client.addFilter(new LoggingFilter(System.out));
         WebResource webResource = client.resource(url);
 
-        ClientResponse response = webResource.accept("application/json").get(ClientResponse.class);
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
 
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);
@@ -64,11 +67,12 @@ public class RestFederationServiceClient {
 
         String url = FederationServiceUtil.createFederationRequestUrl(address, port);
         Client client = Client.create();
+        client.addFilter(new LoggingFilter(System.out));
         WebResource webResource = client.resource(url);
 
         String identityProviderIdentifier = objectToJson(identifier);
 
-        ClientResponse response = webResource.type("application/json").post(ClientResponse.class, identityProviderIdentifier);
+        ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, identityProviderIdentifier);
 
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);
@@ -84,12 +88,13 @@ public class RestFederationServiceClient {
 
         String url = FederationServiceUtil.createFederationRequestResponseUrl(address, port);
         Client client = Client.create();
+        client.addFilter(new LoggingFilter(System.out));
         WebResource webResource = client.resource(url);
 
         FederationRequestResponseType responseObject = new FederationRequestResponseType(responseType, identifier);
         String responseObjectJson = objectToJson(responseObject);
 
-        ClientResponse response = webResource.type("application/json").post(ClientResponse.class, responseObjectJson);
+        ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, responseObjectJson);
 
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);

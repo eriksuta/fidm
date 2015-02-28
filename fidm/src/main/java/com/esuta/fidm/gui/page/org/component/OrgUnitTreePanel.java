@@ -215,6 +215,7 @@ public class OrgUnitTreePanel extends Panel {
         List<IColumn<OrgType, String>> columns = new ArrayList<>();
 
         columns.add(new LinkColumn<OrgType>(new Model<>("Name"), "name", "name"){
+
             @Override
             public void onClick(AjaxRequestTarget target, IModel<OrgType> rowModel) {
                 OrgUnitTreePanel.this.editChildrenPerformed(target, rowModel);

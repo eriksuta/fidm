@@ -22,7 +22,8 @@ public interface IFederationService {
      *
      *  @return javax.ws.rs.core.Response
      *      a response object containing one of the following return codes with response message
-     *      containing more information about operation status and processing
+     *      containing more information about operation status and processing. The message
+     *      is expected to be in JSON format
      *
      *      <b>200</b> - response with HTTP code 200 should be returned, when request
      *                   has been correctly handled. The body of response contains an
@@ -52,7 +53,8 @@ public interface IFederationService {
      *
      *  @return javax.ws.rs.core.Response
      *      a response object containing one of the following return codes with response message
-     *      containing more information about operation status and processing
+     *      containing more information about operation status and processing. The response
+     *      message is expected to be in JSON format
      *
      *      <b>200</b> - response with HTTP code 200 should be returned, when request
      *                   has been correctly handled, thus new federation membership request
@@ -90,7 +92,8 @@ public interface IFederationService {
      *
      *  @return javax.ws.rs.core.Response
      *      a response object containing one of the following return codes with response message
-     *      containing more information about operation status and processing
+     *      containing more information about operation status and processing. The response message
+     *      is expected to be in JSON format.
      *
      *      <b>200</b> - response with HTTP code 200 should be returned when response to federation
      *                   membership request was correctly processed.

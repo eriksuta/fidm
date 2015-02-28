@@ -23,6 +23,7 @@ public class PageSystemConfiguration extends PageBase {
     private transient Logger LOGGER = Logger.getLogger(PageSystemConfiguration.class);
 
     private static final String ID_MAIN_FORM = "mainForm";
+    private static final String ID_NAME = "name";
     private static final String ID_IDENTIFIER = "identityProviderIdentifier";
     private static final String ID_DB_CONNECTION = "dbConnectionFile";
     private static final String ID_BUTTON_SAVE = "saveButton";
@@ -47,6 +48,10 @@ public class PageSystemConfiguration extends PageBase {
         Form mainForm = new Form(ID_MAIN_FORM);
         mainForm.setOutputMarkupId(true);
         add(mainForm);
+
+        TextField name = new TextField<>(ID_NAME, new PropertyModel<String>(model, "name"));
+        name.setRequired(true);
+        mainForm.add(name);
 
         TextField identifier = new TextField<>(ID_IDENTIFIER, new PropertyModel<String>(model, "identityProviderIdentifier"));
         identifier.setRequired(true);
