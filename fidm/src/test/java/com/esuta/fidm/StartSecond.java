@@ -8,7 +8,7 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-public class Start {
+public class StartSecond {
     public static void main(String[] args) throws Exception {
         int timeout = (int) Duration.ONE_HOUR.getMilliseconds();
 
@@ -18,19 +18,19 @@ public class Start {
         // Set some timeout options to make debugging easier.
         connector.setMaxIdleTime(timeout);
         connector.setSoLingerTime(-1);
-        connector.setPort(8080);
+        connector.setPort(8081);
         server.addConnector(connector);
 
         Resource keystore = Resource.newClassPathResource("/keystore");
         if (keystore != null && keystore.exists()) {
             // if a keystore for a SSL certificate is available, start a SSL
-            // connector on port 8443.
+            // connector on port 8444.
             // By default, the quickstart comes with a Apache Wicket Quickstart
             // Certificate that expires about half way september 2021. Do not
             // use this certificate anywhere important as the passwords are
             // available in the source.
 
-            connector.setConfidentialPort(8443);
+            connector.setConfidentialPort(8444);
 
             SslContextFactory factory = new SslContextFactory();
             factory.setKeyStoreResource(keystore);
@@ -39,12 +39,12 @@ public class Start {
             factory.setKeyManagerPassword("wicket");
             SslSocketConnector sslConnector = new SslSocketConnector(factory);
             sslConnector.setMaxIdleTime(timeout);
-            sslConnector.setPort(8443);
+            sslConnector.setPort(8444);
             sslConnector.setAcceptors(4);
             server.addConnector(sslConnector);
 
-            System.out.println("SSL access to the quickstart has been enabled on port 8443");
-            System.out.println("You can access the application using SSL on https://localhost:8443");
+            System.out.println("SSL access to the quickstart has been enabled on port 8444");
+            System.out.println("You can access the application using SSL on https://localhost:8444");
             System.out.println();
         }
 

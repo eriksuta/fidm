@@ -25,7 +25,7 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
  * */
 public abstract class PageBase extends WebPage{
 
-    Logger LOGGER = Logger.getLogger(PageBase.class);
+    private static final Logger LOGGER = Logger.getLogger(PageBase.class);
 
     /**
      *  Every page is able to communicate with model through this ModelService instance

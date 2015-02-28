@@ -27,7 +27,7 @@ import java.util.List;
  * */
 public class PageDebugList extends PageBase{
 
-    private transient Logger LOGGER = Logger.getLogger(PageDebugList.class);
+    private static final Logger LOGGER = Logger.getLogger(PageDebugList.class);
 
     private static final String ID_OBJECT_TYPE_CHOOSER = "objectTypeChoice";
     private static final String ID_MAIN_FORM = "mainForm";

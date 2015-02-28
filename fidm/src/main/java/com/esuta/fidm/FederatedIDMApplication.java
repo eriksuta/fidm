@@ -10,13 +10,14 @@ import org.apache.log4j.Logger;
 import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  *  @author shood
  * */
 public class FederatedIDMApplication extends WebApplication{
 
-    Logger LOGGER = Logger.getLogger(FederatedIDMApplication.class);
+    private static final Logger LOGGER = Logger.getLogger(FederatedIDMApplication.class);
 
 	/**
 	 * @see org.apache.wicket.Application#getHomePage()
@@ -38,25 +39,35 @@ public class FederatedIDMApplication extends WebApplication{
 	public void init(){
 		super.init();
 
-        //Initialization of system configuration object
+//        Initialization of system configuration object
         SystemConfigurationType systemConfig = new SystemConfigurationType();
 
 //        PC configuration
         systemConfig.setUid("00000000-0000-0000-0000-000000000001");
-        systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository.odb");
+
+//        TODO - this is just a temporary hack, so we can run multiple application instances to test federation functions
+        if(getLocalPort() == 8080){
+            systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository.odb");
+        } else {
+            systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository2.odb");
+        }
         systemConfig.setIdentityProviderIdentifier("Local Identity Provider");
         systemConfig.setName("System Configuration - Initial");
 
 //        NB configuration
 //        systemConfig.setUid("00000000-0000-0000-0000-000000000001");
-//        systemConfig.setDbConnectionFile("F:\\skola\\Ing\\Diplo\\_repository\\_DB\\repository.odb");
+//        if(getLocalPort() == 8080){
+//            systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository.odb");
+//        } else {
+//            systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository2.odb");
+//        }
 //        systemConfig.setIdentityProviderIdentifier("Local Identity Provider");
 //        systemConfig.setName("System Configuration - Initial");
 
-        //Initialization of RepositoryService
+//        Initialization of RepositoryService
         RepositoryService.getInstance().initConnection(systemConfig);
 
-        //save system configuration
+//        save system configuration
         RepositoryService repositoryService = RepositoryService.getInstance();
 
         try {
@@ -69,15 +80,20 @@ public class FederatedIDMApplication extends WebApplication{
             LOGGER.error("Could not read or save initial system configuration object", e);
         }
 
-        //Initialization of RestFederationService
+//        Initialization of RestFederationService
         RestFederationService.getInstance();
 
-        //TODO - add initial configuration here
+//        TODO - add initial configuration here
 	}
 
     @Override
     protected void onDestroy() {
         //Clearing the resources (database connection) when wicket servlet is destroyed
         RepositoryService.getInstance().closeConnection();
+    }
+
+    private int getLocalPort(){
+        WebAppContext.Context context = (WebAppContext.Context) getServletContext();
+        return context.getContextHandler().getServer().getConnectors()[0].getPort();
     }
 }
