@@ -1,12 +1,14 @@
-package com.esuta.fidm.model.federation.client;
+package com.esuta.fidm.model.federation.service;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
 /**
  *  @author shood
  * */
 
-public class FederationRequestResponseType implements Serializable{
+@XmlRootElement
+public class FederationMembershipRequest implements Serializable{
 
     public enum Response{
         ACCEPT("Accept"),
@@ -24,14 +26,11 @@ public class FederationRequestResponseType implements Serializable{
     }
 
     private Response response;
+    private String address;
+    private int port;
     private String identityProviderIdentifier;
 
-    public FederationRequestResponseType() {}
-
-    public FederationRequestResponseType(Response response, String identityProviderIdentifier) {
-        this.response = response;
-        this.identityProviderIdentifier = identityProviderIdentifier;
-    }
+    public FederationMembershipRequest() {}
 
     public Response getResponse() {
         return response;
@@ -49,13 +48,31 @@ public class FederationRequestResponseType implements Serializable{
         this.identityProviderIdentifier = identityProviderIdentifier;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FederationRequestResponseType)) return false;
+        if (!(o instanceof FederationMembershipRequest)) return false;
 
-        FederationRequestResponseType that = (FederationRequestResponseType) o;
+        FederationMembershipRequest that = (FederationMembershipRequest) o;
 
+        if (port != that.port) return false;
+        if (address != null ? !address.equals(that.address) : that.address != null) return false;
         if (identityProviderIdentifier != null ? !identityProviderIdentifier.equals(that.identityProviderIdentifier) : that.identityProviderIdentifier != null)
             return false;
         if (response != that.response) return false;
@@ -66,6 +83,8 @@ public class FederationRequestResponseType implements Serializable{
     @Override
     public int hashCode() {
         int result = response != null ? response.hashCode() : 0;
+        result = 31 * result + (address != null ? address.hashCode() : 0);
+        result = 31 * result + port;
         result = 31 * result + (identityProviderIdentifier != null ? identityProviderIdentifier.hashCode() : 0);
         return result;
     }

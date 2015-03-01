@@ -1,4 +1,4 @@
-package com.esuta.fidm.model.federation;
+package com.esuta.fidm.model.federation.service;
 
 import java.io.Serializable;
 

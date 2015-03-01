@@ -1,12 +1,12 @@
 package com.esuta.fidm.model.federation.client;
 
-import com.esuta.fidm.model.federation.FederationServiceUtil;
+import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
+import com.esuta.fidm.model.federation.service.FederationServiceUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.filter.LoggingFilter;
 import org.apache.log4j.Logger;
 
 import javax.ws.rs.core.MediaType;
@@ -49,55 +49,60 @@ public class RestFederationServiceClient {
 
         String url = FederationServiceUtil.createGetFederationMemberIdentifier(address, port);
         Client client = Client.create();
-        client.addFilter(new LoggingFilter(System.out));
         WebResource webResource = client.resource(url);
 
         ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
 
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
 
         return new SimpleRestResponseStatus(responseStatus, responseMessage);
     }
 
-    public SimpleRestResponseStatus createFederationRequest(FederationMemberType federationMember) throws IOException {
+    public SimpleRestResponseStatus createFederationRequest(FederationMemberType federationMember, String localAddress, int localPort) throws IOException {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
-        String identifier = federationMember.getRequesterIdentifier();
 
         String url = FederationServiceUtil.createFederationRequestUrl(address, port);
         Client client = Client.create();
-        client.addFilter(new LoggingFilter(System.out));
         WebResource webResource = client.resource(url);
 
-        String identityProviderIdentifier = objectToJson(identifier);
+        FederationMembershipRequest request = new FederationMembershipRequest();
+        request.setIdentityProviderIdentifier(federationMember.getRequesterIdentifier());
+        request.setPort(localPort);
+        request.setAddress(localAddress);
 
-        ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, identityProviderIdentifier);
+        String jsonRequest = objectToJson(request);
+
+        ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
 
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
 
         return new SimpleRestResponseStatus(responseStatus, responseMessage);
     }
 
     public SimpleRestResponseStatus createFederationResponse(FederationMemberType federationMember,
-                                                             FederationRequestResponseType.Response responseType) throws IOException {
+                                                             FederationMembershipRequest.Response responseType) throws IOException {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
-        String identifier = federationMember.getRequesterIdentifier();
 
         String url = FederationServiceUtil.createFederationRequestResponseUrl(address, port);
         Client client = Client.create();
-        client.addFilter(new LoggingFilter(System.out));
         WebResource webResource = client.resource(url);
 
-        FederationRequestResponseType responseObject = new FederationRequestResponseType(responseType, identifier);
+        FederationMembershipRequest responseObject = new FederationMembershipRequest();
+        responseObject.setIdentityProviderIdentifier(federationMember.getRequesterIdentifier());
+        responseObject.setResponse(responseType);
         String responseObjectJson = objectToJson(responseObject);
 
         ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, responseObjectJson);
 
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
 
         return new SimpleRestResponseStatus(responseStatus, responseMessage);
     }

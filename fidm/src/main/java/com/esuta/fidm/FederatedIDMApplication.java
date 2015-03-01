@@ -3,7 +3,7 @@ package com.esuta.fidm;
 import com.esuta.fidm.gui.page.dashboard.PageDashboard;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
-import com.esuta.fidm.model.federation.RestFederationService;
+import com.esuta.fidm.model.federation.service.RestFederationService;
 import com.esuta.fidm.repository.api.RepositoryService;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
@@ -53,6 +53,8 @@ public class FederatedIDMApplication extends WebApplication{
         }
         systemConfig.setIdentityProviderIdentifier("Local Identity Provider");
         systemConfig.setName("System Configuration - Initial");
+        systemConfig.setPort(getLocalPort());
+        systemConfig.setLocalAddress("localhost");
 
 //        NB configuration
 //        systemConfig.setUid("00000000-0000-0000-0000-000000000001");
@@ -63,6 +65,8 @@ public class FederatedIDMApplication extends WebApplication{
 //        }
 //        systemConfig.setIdentityProviderIdentifier("Local Identity Provider");
 //        systemConfig.setName("System Configuration - Initial");
+//        systemConfig.setPort(getLocalPort());
+//        systemConfig.setLocalAddress("localhost")
 
 //        Initialization of RepositoryService
         RepositoryService.getInstance().initConnection(systemConfig);

@@ -7,9 +7,10 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.model.federation.client.FederationRequestResponseType;
+import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
 import com.esuta.fidm.model.federation.client.SimpleRestResponseStatus;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -231,14 +232,14 @@ public class PageFederation extends PageBase {
     }
 
     private void acceptPerformed(AjaxRequestTarget target){
-        acceptRejectOperation(target, FederationRequestResponseType.Response.ACCEPT);
+        acceptRejectOperation(target, FederationMembershipRequest.Response.ACCEPT);
     }
 
     private void rejectPerformed(AjaxRequestTarget target){
-        acceptRejectOperation(target, FederationRequestResponseType.Response.DENY);
+        acceptRejectOperation(target, FederationMembershipRequest.Response.DENY);
     }
 
-    private void acceptRejectOperation(AjaxRequestTarget target, FederationRequestResponseType.Response response){
+    private void acceptRejectOperation(AjaxRequestTarget target, FederationMembershipRequest.Response response){
         if(model == null || model.getObject() == null){
             return;
         }
@@ -249,7 +250,7 @@ public class PageFederation extends PageBase {
             SimpleRestResponseStatus status = getFederationServiceClient().createFederationResponse(member, response);
 
             if(HttpStatus.OK_200 == status.getStatus()){
-                if(FederationRequestResponseType.Response.ACCEPT.equals(response)){
+                if(FederationMembershipRequest.Response.ACCEPT.equals(response)){
                     member.setStatus(FederationMemberType.FederationMemberStatusType.AVAILABLE);
                 } else {
                     member.setStatus(FederationMemberType.FederationMemberStatusType.DENIED);
@@ -292,11 +293,13 @@ public class PageFederation extends PageBase {
         try{
 
             if(!isEditingFederationMember()){
+                SystemConfigurationType systemConfig = loadSystemConfiguration();
                 federationMember.setStatus(FederationMemberType.FederationMemberStatusType.REQUESTED);
-                federationMember.setRequesterIdentifier(loadSystemConfiguration().getIdentityProviderIdentifier());
+                federationMember.setRequesterIdentifier(systemConfig.getIdentityProviderIdentifier());
 
                 //At first, we send a request to make a bond with another federation request
-                SimpleRestResponseStatus responseStatus = getFederationServiceClient().createFederationRequest(federationMember);
+                SimpleRestResponseStatus responseStatus = getFederationServiceClient().createFederationRequest(federationMember,
+                        systemConfig.getLocalAddress(), systemConfig.getPort());
 
                 if(HttpStatus.OK_200 == responseStatus.getStatus()){
 
@@ -308,15 +311,19 @@ public class PageFederation extends PageBase {
                         federationMember.setFederationMemberName(secondResponseStatus.getMessage());
                         federationMember = modelService.createObject(federationMember);
                     } else {
-                        getSession().error("Federation request not processed, Status: " + secondResponseStatus.getStatus() + ", Message: " + secondResponseStatus.getMessage());
-                        LOGGER.error("Federation request not processed, Status: " + secondResponseStatus.getStatus() + ", Message: " + secondResponseStatus.getMessage());
+                        getSession().error("Federation request not processed, Status: "
+                                + secondResponseStatus.getStatus() + ", Message: " + secondResponseStatus.getMessage());
+                        LOGGER.error("Federation request not processed, Status: "
+                                + secondResponseStatus.getStatus() + ", Message: " + secondResponseStatus.getMessage());
                     }
 
                     LOGGER.info("Federation request processed OK, " + responseStatus.getMessage());
                     getSession().success("Federation request processed OK, " + responseStatus.getMessage());
                 } else {
-                    getSession().error("Federation request not processed, Status: " + responseStatus.getStatus() + ", Message: " + responseStatus.getMessage());
-                    LOGGER.error("Federation request not processed, Status: " + responseStatus.getStatus() + ", Message: " + responseStatus.getMessage());
+                    getSession().error("Federation request not processed, Status: "
+                            + responseStatus.getStatus() + ", Message: " + responseStatus.getMessage());
+                    LOGGER.error("Federation request not processed, Status: "
+                            + responseStatus.getStatus() + ", Message: " + responseStatus.getMessage());
                 }
 
             } else {

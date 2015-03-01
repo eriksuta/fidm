@@ -19,11 +19,41 @@ public class FederationMemberType extends ObjectType{
      * */
     private String federationMemberName;
 
+    /**
+     *  Another identifier attribute, this one uniquely identifies the
+     *  requester of federation membership relationship
+     * */
     private String requesterIdentifier;
+
+    /**
+     *  A status of federation membership, can have several values:
+     *      AVAILABLE
+     *      REQUESTED
+     *      DENIED
+     * */
     private FederationMemberStatusType status;
+
+    /**
+     *  A communication attribute - this one specified a port on which
+     *  federation member can be contacted.
+     * */
     private int port;
+
+    /**
+     *  A communication attribute - this one specifies a web address on
+     *  which federation member can be contacted
+     * */
     private String webAddress;
+
+    /**
+     *  Display name can be used as a readable form for identity
+     *  provider, member of identity federation
+     * */
     private String displayName;
+
+    /**
+     *  A physical locality, can be a city, country, state, address, etc.
+     * */
     private String locality;
 
     public FederationMemberType(){}

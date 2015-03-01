@@ -1,4 +1,4 @@
-package com.esuta.fidm.model.federation;
+package com.esuta.fidm.model.federation.service;
 
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
@@ -7,14 +7,12 @@ import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
-import com.esuta.fidm.model.federation.client.FederationRequestResponseType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
+import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -54,7 +52,6 @@ public class RestFederationService implements IFederationService{
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFederationIdentifier() {
         SystemConfigurationType config;
-        String identifier;
 
         try {
             config = modelService.readObject(SystemConfigurationType.class, PageBase.SYSTEM_CONFIG_UID);
@@ -74,29 +71,31 @@ public class RestFederationService implements IFederationService{
     @Path(FederationServiceUtil.POST_FEDERATION_REQUEST)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response handleFederationRequest(@Context HttpServletRequest requestContext, String identityProviderIdentifier){
-        String remoteAddress = requestContext.getRemoteAddr();
-        int remotePort = requestContext.getRemotePort();
+    public Response handleFederationRequest(FederationMembershipRequest membershipRequest){
+        String remoteAddress = membershipRequest.getAddress();
+        int remotePort = membershipRequest.getPort();
+        String identifier = membershipRequest.getIdentityProviderIdentifier();
 
-        if(identityProviderIdentifier == null || identityProviderIdentifier.isEmpty()){
+        if(identifier == null || identifier.isEmpty()){
             return Response.status(HttpStatus.BAD_REQUEST_400).entity("Request body does not contain required identity provider identifier name.").build();
         }
 
         LOGGER.debug("Federation request received. Request host address: " + remoteAddress + "(" + remotePort + "). " +
-                "Identity provider ID: '" + identityProviderIdentifier + "'.");
+                "Identity provider ID: '" + identifier + "'.");
 
         try {
             List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
 
             for(FederationMemberType federationMember: federationMembers){
-                if(identityProviderIdentifier.equals(federationMember.getFederationMemberName()) || identityProviderIdentifier.equals(federationMember.getName())){
+                if(identifier.equals(federationMember.getFederationMemberName()) || identifier.equals(federationMember.getName())){
                     return Response.status(HttpStatus.CONFLICT_409).entity("Federation member with provided ID already exists").build();
                 }
             }
 
             FederationMemberType newMember = new FederationMemberType();
-            newMember.setName(identityProviderIdentifier);
-            newMember.setFederationMemberName(identityProviderIdentifier);
+            newMember.setName(identifier);
+            newMember.setRequesterIdentifier(identifier);
+            newMember.setFederationMemberName(identifier);
             newMember.setPort(remotePort);
             newMember.setWebAddress(remoteAddress);
             newMember.setStatus(FederationMemberType.FederationMemberStatusType.REQUESTED);
@@ -118,7 +117,7 @@ public class RestFederationService implements IFederationService{
     @Path(FederationServiceUtil.POST_FEDERATION_REQUEST_RESPONSE)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response handleFederationResponse(@Context HttpServletRequest requestContext, FederationRequestResponseType response){
+    public Response handleFederationResponse(FederationMembershipRequest response){
         if(response == null || response.getIdentityProviderIdentifier() == null || response.getIdentityProviderIdentifier().isEmpty()
                 || response.getResponse() == null){
             return Response.status(HttpStatus.BAD_REQUEST_400)  .entity("Request body does not contain required identity provider identifier name or request response.").build();
@@ -129,7 +128,7 @@ public class RestFederationService implements IFederationService{
 
             FederationMemberType responseFederationMember = null;
             for(FederationMemberType federationMember: federationMembers){
-                if(response.getIdentityProviderIdentifier().equals(federationMember.getFederationMemberName())){
+                if(response.getIdentityProviderIdentifier().equals(federationMember.getRequesterIdentifier())){
                     responseFederationMember = federationMember;
                     break;
                 }
@@ -140,11 +139,11 @@ public class RestFederationService implements IFederationService{
                         "federation membership request in this identity provider.").build();
             }
 
-            if(response.getResponse().equals(FederationRequestResponseType.Response.ACCEPT)){
+            if(response.getResponse().equals(FederationMembershipRequest.Response.ACCEPT)){
                 responseFederationMember.setStatus(FederationMemberType.FederationMemberStatusType.AVAILABLE);
                 LOGGER.info("Federation membership request for federation member: '" + responseFederationMember.getFederationMemberName() +
                         "'(" + responseFederationMember.getUid() + ") was accepted.");
-            } else if(response.equals(FederationRequestResponseType.Response.DENY)){
+            } else if(response.equals(FederationMembershipRequest.Response.DENY)){
                 LOGGER.info("Federation membership request for federation member: '" + responseFederationMember.getFederationMemberName() +
                         "'(" + responseFederationMember.getUid() + ") was denied. Deleting federation member.");
                 modelService.deleteObject(responseFederationMember);
@@ -160,7 +159,6 @@ public class RestFederationService implements IFederationService{
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Can't delete federation membership request.").build();
         }
     }
-
 }
 
 

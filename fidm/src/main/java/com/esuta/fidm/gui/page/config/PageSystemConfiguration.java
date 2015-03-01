@@ -8,8 +8,10 @@ import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 
@@ -25,6 +27,8 @@ public class PageSystemConfiguration extends PageBase {
     private static final String ID_MAIN_FORM = "mainForm";
     private static final String ID_NAME = "name";
     private static final String ID_IDENTIFIER = "identityProviderIdentifier";
+    private static final String ID_ADDRESS = "address";
+    private static final String ID_PORT = "port";
     private static final String ID_DB_CONNECTION = "dbConnectionFile";
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
@@ -56,6 +60,24 @@ public class PageSystemConfiguration extends PageBase {
         TextField identifier = new TextField<>(ID_IDENTIFIER, new PropertyModel<String>(model, "identityProviderIdentifier"));
         identifier.setRequired(true);
         mainForm.add(identifier);
+
+        Label address = new Label(ID_ADDRESS, new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return model.getObject().getLocalAddress();
+            }
+        });
+        mainForm.add(address);
+
+        Label port = new Label(ID_PORT, new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return Integer.toString(model.getObject().getPort());
+            }
+        });
+        mainForm.add(port);
 
         TextField objectDbPath = new TextField<>(ID_DB_CONNECTION, new PropertyModel<String>(model, "dbConnectionFile"));
         objectDbPath.setRequired(true);

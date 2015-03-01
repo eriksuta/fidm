@@ -1,6 +1,4 @@
-package com.esuta.fidm.model.federation;
-
-import com.esuta.fidm.model.federation.client.FederationRequestResponseType;
+package com.esuta.fidm.model.federation.service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
@@ -43,13 +41,9 @@ public interface IFederationService {
      *      with another identity provider in trusted federated environment.
      *  </p>
      *
-     *  @param requestContext (HttpServletRequest)
-     *      a request context, usually gained from underlying implementation technology rather than
-     *      sent in request itself. Needed for information about sender (address, port, etc.)
-     *
-     *  @param identityProviderIdentifier (String)
-     *      A unique identified of federation membership requesting identity provider (Should
-     *      be based on specified policy in identity federation)
+     *  @param membershipRequest (FederationMembershipRequest)
+     *      An instance containing information about requesting identity provider, specifically
+     *      an identifier in federation, address and port for backward communication
      *
      *  @return javax.ws.rs.core.Response
      *      a response object containing one of the following return codes with response message
@@ -73,7 +67,7 @@ public interface IFederationService {
      *                   in internal identity providers operations, such as handling the uniqueness
      *                   of requested federation member etc.
      * */
-    public Response handleFederationRequest(HttpServletRequest requestContext, String identityProviderIdentifier);
+    public Response handleFederationRequest(FederationMembershipRequest membershipRequest);
 
     /**
      *  <p>
@@ -82,11 +76,7 @@ public interface IFederationService {
      *      identity provider.
      *  </p>
      *
-     *  @param requestContext (HttpServletRequest)
-     *      a request context, usually gained from underlying implementation technology rather than
-     *      sent in request itself. Needed for information about sender (address, port, etc.)
-     *
-     *  @param response (FederationRequestResponseType)
+     *  @param membershipResponse (FederationRequestResponseType)
      *      A simple response to federation membership request. This object contains the identifier of
      *      federation member and response to request (DENY or ACCEPT)
      *
@@ -107,5 +97,5 @@ public interface IFederationService {
      *                   in internal identity providers operations, such as handling the uniqueness
      *                   of requested federation member etc.
      * */
-    public Response handleFederationResponse(HttpServletRequest requestContext, FederationRequestResponseType response);
+    public Response handleFederationResponse(FederationMembershipRequest membershipResponse);
 }
