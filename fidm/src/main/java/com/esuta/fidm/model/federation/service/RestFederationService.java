@@ -8,7 +8,6 @@ import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
-import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -158,6 +157,41 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Could not remove federation member from the repository.");
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Can't delete federation membership request.").build();
         }
+    }
+
+    @POST
+    @Path(FederationServiceUtil.POST_FEDERATION_DELETION_REQUEST)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response handleFederationDeleteRequest(FederationMembershipRequest deletionRequest) {
+        if(deletionRequest == null){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Request body does not contain required identity provider identifier name.").build();        }
+
+        String remoteAddress = deletionRequest.getAddress();
+        int remotePort = deletionRequest.getPort();
+        String identifier = deletionRequest.getIdentityProviderIdentifier();
+
+        if(identifier == null || identifier.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Request body does not contain required identity provider identifier name.").build();
+        }
+
+        LOGGER.debug("Federation deletion request received. Request host address: " + remoteAddress + "(" + remotePort + "). " +
+                "Identity provider ID: '" + identifier + "'.");
+
+        try {
+            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
+
+            for(FederationMemberType member: federationMembers){
+
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load federation members from the repository.");
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Can't read from the repository").build();
+        }
+
+
+        return null;
     }
 }
 

@@ -11,7 +11,8 @@ public class FederationMemberType extends ObjectType{
     public static enum FederationMemberStatusType{
         AVAILABLE,
         REQUESTED,
-        DENIED
+        DENIED,
+        DELETE_REQUESTED
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.esuta.fidm.model.federation.service;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 
 /**
@@ -98,4 +97,25 @@ public interface IFederationService {
      *                   of requested federation member etc.
      * */
     public Response handleFederationResponse(FederationMembershipRequest membershipResponse);
+
+    /**
+     *  <p>
+     *      An operation responsible for deletion of federation membership. This operation
+     *      also requires both parts of membership to accept the deletion request. This
+     *      operation simply creates a deletion request.
+     *  </p>
+     *
+     *  @param deletionRequest (FederationMembershipRequest)
+     *      A simple response to federation membership request. This object contains the identifier of
+     *      federation member and response to request (DENY or ACCEPT)
+     *
+     *  @return javax.ws.rs.core.Response
+     *      a response object containing one of the following return codes with response message
+     *      containing more information about operation status and processing. The response message
+     *      is expected to be in JSON format.
+     *
+     *      <b> </b> -
+     *
+     * */
+    public Response handleFederationDeleteRequest(FederationMembershipRequest deletionRequest);
 }

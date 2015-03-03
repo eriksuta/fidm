@@ -4,9 +4,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
 /**
+ *  This is a simple object used in REST Federation Service API. It is used
+ *  for both creation operation cycle and deletion operation cycle
+ *
  *  @author shood
  * */
-
 @XmlRootElement
 public class FederationMembershipRequest implements Serializable{
 
