@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
@@ -29,6 +30,10 @@ import java.io.IOException;
 
 /**
  *  @author shood
+ *
+ *  TODO - currently, even the member requesting the deletion of membership
+ *  is able to respond to this request, fix this (probably need another attribute
+ *  to save the requestor of deletion)
  * */
 public class PageFederation extends PageBase {
 
@@ -45,8 +50,14 @@ public class PageFederation extends PageBase {
 
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
+
+    private static final String ID_ADD_BUTTON_GROUP = "addRequestButtonGroup";
     private static final String ID_BUTTON_ACCEPT = "acceptButton";
     private static final String ID_BUTTON_REJECT = "rejectButton";
+    private static final String ID_DELETE_BUTTON_GROUP = "deleteRequestButtonGroup";
+    private static final String ID_BUTTON_ACCEPT_DELETION = "deleteAcceptButton";
+    private static final String ID_BUTTON_REJECT_DELETION = "deleteRejectButton";
+
 
     private IModel<FederationMemberType> model;
 
@@ -173,6 +184,28 @@ public class PageFederation extends PageBase {
         };
         mainForm.add(save);
 
+        initAcceptButtons(mainForm);
+    }
+
+    private void initAcceptButtons(Form mainForm){
+        WebMarkupContainer additionRequestButtonGroup = new WebMarkupContainer(ID_ADD_BUTTON_GROUP);
+        additionRequestButtonGroup.setOutputMarkupId(true);
+        additionRequestButtonGroup.setOutputMarkupPlaceholderTag(true);
+        additionRequestButtonGroup.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                FederationMemberType member = model.getObject();
+
+                if(!member.getRequesterIdentifier().equals(member.getFederationMemberName())){
+                    return false;
+                }
+
+                return FederationMemberType.FederationMemberStatusType.REQUESTED.equals(member.getStatus());
+            }
+        });
+        mainForm.add(additionRequestButtonGroup);
+
         AjaxSubmitLink accept = new AjaxSubmitLink(ID_BUTTON_ACCEPT) {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
@@ -184,14 +217,7 @@ public class PageFederation extends PageBase {
                 target.add(getFeedbackPanel());
             }
         };
-        accept.add(new VisibleEnableBehavior(){
-
-            @Override
-            public boolean isEnabled() {
-                return isAcceptRejectEnabled();
-            }
-        });
-        mainForm.add(accept);
+        additionRequestButtonGroup.add(accept);
 
         AjaxSubmitLink reject = new AjaxSubmitLink(ID_BUTTON_REJECT) {
             @Override
@@ -204,31 +230,104 @@ public class PageFederation extends PageBase {
                 target.add(getFeedbackPanel());
             }
         };
-        reject.add(new VisibleEnableBehavior(){
+        additionRequestButtonGroup.add(reject);
+
+        WebMarkupContainer deletionRequestButtonGroup = new WebMarkupContainer(ID_DELETE_BUTTON_GROUP);
+        deletionRequestButtonGroup.setOutputMarkupId(true);
+        deletionRequestButtonGroup.setOutputMarkupPlaceholderTag(true);
+        deletionRequestButtonGroup.add(new VisibleEnableBehavior() {
 
             @Override
-            public boolean isEnabled() {
-                return isAcceptRejectEnabled();
+            public boolean isVisible() {
+                return FederationMemberType.FederationMemberStatusType.DELETE_REQUESTED.equals(model.getObject().getStatus());
             }
         });
-        mainForm.add(reject);
-    }
+        mainForm.add(deletionRequestButtonGroup);
 
-    private boolean isAcceptRejectEnabled(){
-        if(!isEditingFederationMember()){
-            return false;
-        }
+        AjaxSubmitLink acceptDelete = new AjaxSubmitLink(ID_BUTTON_ACCEPT_DELETION) {
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                acceptDeletePerformed(target);
+            }
 
-        if(model.getObject().getRequesterIdentifier().equals(loadSystemConfiguration().getIdentityProviderIdentifier())){
-            return false;
-        }
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.add(getFeedbackPanel());
+            }
+        };
+        deletionRequestButtonGroup.add(acceptDelete);
 
-        FederationMemberType.FederationMemberStatusType status = model.getObject().getStatus();
-        return FederationMemberType.FederationMemberStatusType.REQUESTED.equals(status);
+        AjaxSubmitLink rejectDelete = new AjaxSubmitLink(ID_BUTTON_REJECT_DELETION) {
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                rejectDeletePerformed(target);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.add(getFeedbackPanel());
+            }
+        };
+        deletionRequestButtonGroup.add(rejectDelete);
     }
 
     private void cancelPerformed(){
         setResponsePage(PageFederationList.class);
+    }
+
+    private void acceptDeletePerformed(AjaxRequestTarget target){
+        deleteAcceptRejectOperation(target, FederationMembershipRequest.Response.ACCEPT);
+    }
+
+    private void rejectDeletePerformed(AjaxRequestTarget target){
+        deleteAcceptRejectOperation(target, FederationMembershipRequest.Response.DENY);
+    }
+
+    private void deleteAcceptRejectOperation(AjaxRequestTarget target, FederationMembershipRequest.Response response){
+        if(model == null || model.getObject() == null){
+            return;
+        }
+
+        FederationMemberType member = model.getObject();
+        String memberName = member.getFederationMemberName();
+        String memberUid = member.getUid();
+
+        try {
+            SimpleRestResponseStatus status = getFederationServiceClient().createFederationDeletionRequestResponse(member, response);
+
+            if(HttpStatus.OK_200 == status.getStatus()){
+                if(FederationMembershipRequest.Response.ACCEPT.equals(response)){
+                    getModelService().deleteObject(member);
+                    LOGGER.info("Federation member: '" + memberName + "'(" + memberUid + ") deleted.");
+                    getSession().info("Federation member: '" + memberName + "'(" + memberUid + ") deleted.");
+                } else {
+                    member.setStatus(FederationMemberType.FederationMemberStatusType.AVAILABLE);
+                    getModelService().updateObject(member);
+                    LOGGER.info("Federation member: '" + memberName + "'(" + memberUid + ") deletion not accepted. Switching status to AVAILABLE.");
+                    getSession().info("Federation member: '" + memberName + "'(" + memberUid + ") deletion not accepted. Switching status to AVAILABLE..");
+                }
+
+            } else {
+                String message = status.getMessage();
+                LOGGER.error("Federation membership deletion request not successful. Reason: " + message);
+                getSession().error("Federation membership deletion request not successful. Reason: " + message);
+            }
+
+        } catch (IOException e) {
+            LOGGER.error("Could not create a REST request to ACCEPT/DENY federation member deletion. Federation member: '"
+                    + member.getFederationMemberName() + "'. Reason: ", e);
+
+            getSession().error("Could not create a REST request to ACCEPT/DENY federation member deletion. Federation member: '"
+                    + member.getFederationMemberName() + "'. Reason: " + e);
+        } catch (ObjectNotFoundException | DatabaseCommunicationException e) {
+            LOGGER.error("Could not delete/update federation member: '" + member.getFederationMemberName()
+                    + "'(" + member.getUid() + ").", e);
+            getSession().error("Could not delete/update federation member: '" + member.getFederationMemberName()
+                    + "'(" + member.getUid() + ")." + e);
+        }
+
+        setResponsePage(PageFederationList.class);
+        target.add(getFeedbackPanel());
     }
 
     private void acceptPerformed(AjaxRequestTarget target){
@@ -261,8 +360,9 @@ public class PageFederation extends PageBase {
                 getSession().info("Federation membership response was correct.");
 
             } else {
-                LOGGER.error("Federation membership request not successful. Reason: " + status.getMessage());
-                getSession().error("Federation membership request not successful. Reason: " + status.getMessage());
+                String message = status.getMessage();
+                LOGGER.error("Federation membership request not successful. Reason: " + message);
+                getSession().error("Federation membership request not successful. Reason: " + message);
             }
 
         } catch (IOException e) {
@@ -272,8 +372,10 @@ public class PageFederation extends PageBase {
             getSession().error("Could not create a REST request to ACCEPT/DENY federation member. Federation member: '"
                     + member.getFederationMemberName() + "'. Reason: " + e);
         } catch (ObjectNotFoundException | DatabaseCommunicationException e) {
-            LOGGER.error("Could not update federation member: '" + member.getFederationMemberName() + "'(" + member.getUid() + ").", e);
-            getSession().error("Could not update federation member: '" + member.getFederationMemberName() + "'(" + member.getUid() + ")." + e);
+            LOGGER.error("Could not update federation member: '" + member.getFederationMemberName()
+                    + "'(" + member.getUid() + ").", e);
+            getSession().error("Could not update federation member: '" + member.getFederationMemberName()
+                    + "'(" + member.getUid() + ")." + e);
         }
 
         setResponsePage(PageFederationList.class);

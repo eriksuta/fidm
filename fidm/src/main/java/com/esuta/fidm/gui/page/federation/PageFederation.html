@@ -80,7 +80,7 @@
                         <hr class="assignmentDelimiter">
 
                         <span>Users</span>
-                        <hr class="assignmentDelimiter">
+             deletion           <hr class="assignmentDelimiter">
                     </div>
                 </div>
 
@@ -88,9 +88,14 @@
                 <div class="row main-button-bar">
                     <input type="submit" wicket:id="saveButton" class="btn btn-primary" value="Save"/>
 
-                    <div class="btn-group">
+                    <div wicket:id="addRequestButtonGroup" class="btn-group">
                         <input type="submit" wicket:id="acceptButton" class="btn btn-success" value="Accept"/>
                         <input type="submit" wicket:id="rejectButton" class="btn btn-danger" value="Reject"/>
+                    </div>
+
+                    <div wicket:id="deleteRequestButtonGroup" class="btn-group">
+                        <input type="submit" wicket:id="deleteAcceptButton" class="btn btn-success" value="Accept Deletion"/>
+                        <input type="submit" wicket:id="deleteRejectButton" class="btn btn-danger" value="Reject Deletion"/>
                     </div>
 
                     <input type="submit" wicket:id="cancelButton" class="btn btn-default" value="Cancel"/>

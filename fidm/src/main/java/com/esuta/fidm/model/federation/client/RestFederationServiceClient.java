@@ -107,6 +107,51 @@ public class RestFederationServiceClient {
         return new SimpleRestResponseStatus(responseStatus, responseMessage);
     }
 
+    public SimpleRestResponseStatus createFederationDeletionRequest(FederationMemberType federationMember) throws IOException {
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = FederationServiceUtil.createFederationDeleteRequestUrl(address, port);
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        FederationMembershipRequest request = new FederationMembershipRequest();
+        request.setIdentityProviderIdentifier(federationMember.getRequesterIdentifier());
+
+        String jsonRequest = objectToJson(request);
+
+        ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        return new SimpleRestResponseStatus(responseStatus, responseMessage);
+    }
+
+    public SimpleRestResponseStatus createFederationDeletionRequestResponse(FederationMemberType federationMember,
+                                                                            FederationMembershipRequest.Response responseType) throws IOException {
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = FederationServiceUtil.createFederationDeleteResponseUrl(address, port);
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        FederationMembershipRequest responseObject = new FederationMembershipRequest();
+        responseObject.setIdentityProviderIdentifier(federationMember.getFederationMemberName());
+        responseObject.setResponse(responseType);
+        String responseObjectJson = objectToJson(responseObject);
+
+        ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, responseObjectJson);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        return new SimpleRestResponseStatus(responseStatus, responseMessage);
+    }
+
     private String objectToJson(Object object){
         Gson gson = new Gson();
         return gson.toJson(object);

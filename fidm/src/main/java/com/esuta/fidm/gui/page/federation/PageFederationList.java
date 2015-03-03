@@ -5,7 +5,9 @@ import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.column.LinkColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.page.PageBase;
-import com.esuta.fidm.infra.exception.GeneralException;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
+import com.esuta.fidm.model.federation.client.SimpleRestResponseStatus;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -15,7 +17,9 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.eclipse.jetty.http.HttpStatus;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,19 +111,42 @@ public class PageFederationList extends PageBase{
         }
 
         FederationMemberType federationMember = rowModel.getObject();
-        String federationMemberName = federationMember.getName();
 
-        try {
-            getModelService().deleteObject(federationMember);
-        } catch (GeneralException e){
-            LOGGER.error("Could not delete federation member: '" + federationMemberName + "'. Reason: ", e);
-            error("Could not delete federation member: '" + federationMemberName + "'. Reason: " + e.getExceptionMessage());
-            target.add(getFeedbackPanel());
+        //Can't request deletion, when another deletion request is already in progress
+        if(FederationMemberType.FederationMemberStatusType.DELETE_REQUESTED.equals(federationMember.getStatus())){
+            warn("Can't request deletion, when another deletion request is already in progress");
+            target.add(getFeedbackPanel(), getMainForm());
             return;
         }
 
-        LOGGER.info("Federation Member '" + federationMemberName + "' was successfully deleted from the system.");
-        success("Federation Member '" + federationMemberName + "' was successfully deleted from the system.");
+        try {
+            SimpleRestResponseStatus response = getFederationServiceClient().createFederationDeletionRequest(federationMember);
+
+            if(HttpStatus.OK_200 == response.getStatus()){
+                federationMember.setStatus(FederationMemberType.FederationMemberStatusType.DELETE_REQUESTED);
+                getModelService().updateObject(federationMember);
+                LOGGER.info("Federation deletion request accepted. Member: '" + federationMember.getFederationMemberName()
+                        + "'(" + federationMember.getUid() + ").");
+                info("Federation deletion request accepted. Member: '" + federationMember.getFederationMemberName()
+                        + "'(" + federationMember.getUid() + ").");
+            } else {
+                LOGGER.error("Federation membership deletion request not successful. Reason: " + response.getMessage());
+                getSession().error("Federation membership deletion request not successful. Reason: " + response.getMessage());
+            }
+
+        } catch (IOException e) {
+            LOGGER.error("Could not create a REST request to federation member deletion. Federation member: '"
+                    + federationMember.getFederationMemberName() + "'. Reason: ", e);
+
+            getSession().error("Could not create a REST request to federation member deletion. Federation member: '"
+                    + federationMember.getFederationMemberName() + "'. Reason: " + e);
+        } catch (ObjectNotFoundException | DatabaseCommunicationException e) {
+            LOGGER.error("Could not update federation member: '" + federationMember.getFederationMemberName()
+                    + "'(" + federationMember.getUid() + ").", e);
+            getSession().error("Could not update federation member: '" + federationMember.getFederationMemberName()
+                    + "'(" + federationMember.getUid() + ")." + e);
+        }
+
         target.add(getFeedbackPanel(), getMainForm());
     }
 }
