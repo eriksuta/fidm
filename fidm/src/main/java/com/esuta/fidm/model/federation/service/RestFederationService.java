@@ -56,13 +56,15 @@ public class RestFederationService implements IFederationService{
             config = modelService.readObject(SystemConfigurationType.class, PageBase.SYSTEM_CONFIG_UID);
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not read system configuration: ", e);
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Could not read system configuration.").build();
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not read system configuration.").build();
         }
 
         if(config != null){
             return Response.status(HttpStatus.OK_200).entity(config.getIdentityProviderIdentifier()).build();
         } else {
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Could not read system configuration.").build();
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not read system configuration.").build();
         }
     }
 
@@ -76,7 +78,8 @@ public class RestFederationService implements IFederationService{
         String identifier = membershipRequest.getIdentityProviderIdentifier();
 
         if(identifier == null || identifier.isEmpty()){
-            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Request body does not contain required identity provider identifier name.").build();
+            return Response.status(HttpStatus.BAD_REQUEST_400)
+                    .entity("Request body does not contain required identity provider identifier name.").build();
         }
 
         LOGGER.debug("Federation request received. Request host address: " + remoteAddress + "(" + remotePort + "). " +
@@ -87,7 +90,8 @@ public class RestFederationService implements IFederationService{
 
             for(FederationMemberType federationMember: federationMembers){
                 if(identifier.equals(federationMember.getFederationMemberName()) || identifier.equals(federationMember.getName())){
-                    return Response.status(HttpStatus.CONFLICT_409).entity("Federation member with provided ID already exists").build();
+                    return Response.status(HttpStatus.CONFLICT_409)
+                            .entity("Federation member with provided ID already exists").build();
                 }
             }
 
@@ -104,11 +108,13 @@ public class RestFederationService implements IFederationService{
             return Response.status(HttpStatus.OK_200).entity("Federation membership request handled correctly.").build();
 
         } catch (DatabaseCommunicationException e) {
-            LOGGER.error("Could not load federation members from the repository.");
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Can't read from the repository").build();
+            LOGGER.error("Could not load federation members from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal error: " + e).build();
         } catch (ObjectAlreadyExistsException e) {
-            LOGGER.error("Could not save federation member to the repository. Federation member already exists.");
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Can't save new federation membership request.").build();
+            LOGGER.error("Could not save federation member to the repository. Federation member already exists.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't save new federation membership request. Internal error: " + e).build();
         }
     }
 
@@ -119,7 +125,8 @@ public class RestFederationService implements IFederationService{
     public Response handleFederationResponse(FederationMembershipRequest response){
         if(response == null || response.getIdentityProviderIdentifier() == null || response.getIdentityProviderIdentifier().isEmpty()
                 || response.getResponse() == null){
-            return Response.status(HttpStatus.BAD_REQUEST_400)  .entity("Request body does not contain required identity provider identifier name or request response.").build();
+            return Response.status(HttpStatus.BAD_REQUEST_400)
+                    .entity("Request body does not contain required identity provider identifier name or request response.").build();
         }
 
         try {
@@ -134,8 +141,9 @@ public class RestFederationService implements IFederationService{
             }
 
             if(responseFederationMember == null){
-                return Response.status(HttpStatus.BAD_REQUEST_400).entity("Provided identity provider identifier does not contain valid " +
-                        "federation membership request in this identity provider.").build();
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("Provided identity provider identifier does not contain valid " +
+                                "federation membership request in this identity provider.").build();
             }
 
             if(response.getResponse().equals(FederationMembershipRequest.Response.ACCEPT)){
@@ -151,11 +159,13 @@ public class RestFederationService implements IFederationService{
             return Response.status(HttpStatus.OK_200).entity("Response handled correctly.").build();
 
         } catch (DatabaseCommunicationException e) {
-            LOGGER.error("Could not load federation members from the repository.");
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Can't read from the repository").build();
+            LOGGER.error("Could not load federation members from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal error: " + e).build();
         } catch (ObjectNotFoundException e) {
-            LOGGER.error("Could not remove federation member from the repository.");
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Can't delete federation membership request.").build();
+            LOGGER.error("Could not remove federation member from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't delete federation membership request. Internal error: " + e).build();
         }
     }
 
@@ -165,14 +175,17 @@ public class RestFederationService implements IFederationService{
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleFederationDeleteRequest(FederationMembershipRequest deletionRequest) {
         if(deletionRequest == null){
-            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Request body does not contain required identity provider identifier name.").build();        }
+            return Response.status(HttpStatus.BAD_REQUEST_400)
+                    .entity("Request body does not contain required identity provider identifier name.").build();
+        }
 
         String remoteAddress = deletionRequest.getAddress();
         int remotePort = deletionRequest.getPort();
         String identifier = deletionRequest.getIdentityProviderIdentifier();
 
         if(identifier == null || identifier.isEmpty()){
-            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Request body does not contain required identity provider identifier name.").build();
+            return Response.status(HttpStatus.BAD_REQUEST_400)
+                    .entity("Request body does not contain required identity provider identifier name.").build();
         }
 
         LOGGER.debug("Federation deletion request received. Request host address: " + remoteAddress + "(" + remotePort + "). " +
@@ -181,17 +194,87 @@ public class RestFederationService implements IFederationService{
         try {
             List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
 
+            FederationMemberType memberToDelete = null;
             for(FederationMemberType member: federationMembers){
-
+                if(member.getFederationMemberName().equals(identifier)){
+                    memberToDelete = member;
+                }
             }
 
+            if(memberToDelete == null){
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("There is no federation membership between deletion request members. Nothing to delete.").build();
+            }
+
+            memberToDelete.setStatus(FederationMemberType.FederationMemberStatusType.DELETE_REQUESTED);
+            modelService.updateObject(memberToDelete);
+            LOGGER.info("Updating federation member: '" + memberToDelete.getFederationMemberName()
+                    + "'(" + memberToDelete.getUid() + "). Adding status 'DELETE_REQUESTED'.");
+            return Response.status(HttpStatus.OK_200).entity("Federation member delete request processed correctly.").build();
+
         } catch (DatabaseCommunicationException e) {
-            LOGGER.error("Could not load federation members from the repository.");
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500).entity("Can't read from the repository").build();
+            LOGGER.error("Could not load federation members from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal problem: " + e).build();
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Can't update federation member to delete. Internal problem:", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't update federation member to delete. Internal problem: " + e).build();
+        }
+    }
+
+    @POST
+    @Path(FederationServiceUtil.POST_FEDERATION_DELETION_RESPONSE)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response handleFederationDeleteResponse(FederationMembershipRequest deletionResponse) {
+        if(deletionResponse == null){
+            return Response.status(HttpStatus.BAD_REQUEST_400)
+                    .entity("Request body does not contain required identity provider identifier name and/or reaction.").build();
         }
 
+        String remoteAddress = deletionResponse.getAddress();
+        int remotePort = deletionResponse.getPort();
+        String identifier = deletionResponse.getIdentityProviderIdentifier();
 
-        return null;
+        if(identifier == null || identifier.isEmpty() || deletionResponse.getResponse() == null){
+            return Response.status(HttpStatus.BAD_REQUEST_400)
+                    .entity("Request body does not contain required identity provider identifier name and/or reaction.").build();
+        }
+
+        LOGGER.debug("Federation deletion request received. Request host address: " + remoteAddress + "(" + remotePort + "). " +
+                "Identity provider ID: '" + identifier + "'.");
+
+        try {
+            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
+
+            FederationMemberType memberToDelete = null;
+            for(FederationMemberType member: federationMembers){
+                if(member.getFederationMemberName().equals(identifier)){
+                    memberToDelete = member;
+                }
+            }
+
+            if(memberToDelete == null){
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("There is no federation membership between deletion request members. Nothing to delete.").build();
+            }
+
+            modelService.deleteObject(memberToDelete);
+            LOGGER.info("Federation member: '" + memberToDelete.getFederationMemberName()
+                    + "'(" + memberToDelete.getUid() + ") deleted correctly.");
+            return Response.status(HttpStatus.OK_200)
+                    .entity("Deletion response processed correctly. Federation member deleted.").build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load federation members from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal problem: " + e).build();
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Can't delete federation member to delete. Internal problem:", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't delete federation member to delete. Internal problem: " + e).build();
+        }
     }
 }
 

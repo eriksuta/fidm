@@ -106,16 +106,60 @@ public interface IFederationService {
      *  </p>
      *
      *  @param deletionRequest (FederationMembershipRequest)
-     *      A simple response to federation membership request. This object contains the identifier of
-     *      federation member and response to request (DENY or ACCEPT)
+     *      A simple representation of deletion request. For the purposes of this operation,
+     *      the deletion request only needs to contain an identifier of REQUESTING
+     *      federation member, so the processing side is able to correctly identify it.
      *
      *  @return javax.ws.rs.core.Response
      *      a response object containing one of the following return codes with response message
      *      containing more information about operation status and processing. The response message
      *      is expected to be in JSON format.
      *
-     *      <b> </b> -
+     *      <b>200</b> - response with HTTP code 200 should be returned when request to federation
+     *                   deletion was correctly handled.
      *
+     *      <b>400</b> - response with HTTP code 400 should be returned when there is an issue
+     *                   with request format, e. g. deletionRequest does not contain requested
+     *                   parameters, or there is no federation bond between requesting and requested
+     *                   federation members.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading or updating objects in repository.
      * */
     public Response handleFederationDeleteRequest(FederationMembershipRequest deletionRequest);
+
+    /**
+     *  <p>
+     *      An operation responsible for handling a response for federation membership deletion request.
+     *      A federation member may accept or deny a deletion request.
+     *  </p>
+     *
+     *  @param deletionResponse (FederationMembershipRequest)
+     *      A simple response to federation deletion request. This response should contain an
+     *      identifier of REQUESTING federation member, so the processing side is able to
+     *      correctly identify it. It should also contain a reaction to deletion request that
+     *      has two values, ACCEPT or DENY. ACCEPT reaction should lead to deletion of federation
+     *      on both sides of the request.
+     *
+     *  @return FederationMembershipRequest
+     *      a response object containing one of the following return codes with response message
+     *      containing more information about operation status and processing. The response message
+     *      is expected to be in JSON format.
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when response to federation
+     *                   deletion request was processed correctly, thus target federation member
+     *                   was deleted and federation membership does no longer exist.
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when there is an issue
+     *                   with request format, e. g. deletionRequest does not contain requested
+     *                   parameters, or there is no federation bond between requesting and requested
+     *                   federation members.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading or deleting objects in repository.
+     * */
+    public Response handleFederationDeleteResponse(FederationMembershipRequest deletionResponse);
+
 }
