@@ -13,7 +13,7 @@ public class FederationServiceUtil implements Serializable{
     public static final String POST_FEDERATION_REQUEST = "/federationRequest";
     public static final String POST_FEDERATION_REQUEST_RESPONSE = "/federationResponse";
     public static final String POST_FEDERATION_DELETION_REQUEST = "/federationDeleteRequest";
-    public static final String POST_FEDERATION_DELETION_RESPONSE = "federationDeleteResponse";
+    public static final String POST_FEDERATION_DELETION_RESPONSE = "/federationDeleteResponse";
 
     public static String createGetFederationMemberIdentifier(String address, int port){
         StringBuilder sb = new StringBuilder();

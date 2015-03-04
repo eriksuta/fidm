@@ -1,8 +1,13 @@
 package com.esuta.fidm.model.federation.client;
 
+import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.model.IModelService;
+import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
 import com.esuta.fidm.model.federation.service.FederationServiceUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -22,6 +27,7 @@ public class RestFederationServiceClient {
     Logger LOGGER = Logger.getLogger(RestFederationServiceClient.class);
 
     private static RestFederationServiceClient instance = null;
+    private IModelService modelService;
 
     private RestFederationServiceClient(){
         initRestFederationServiceClient();
@@ -36,7 +42,7 @@ public class RestFederationServiceClient {
     }
 
     private void initRestFederationServiceClient(){
-        //Put any future configuration here
+        modelService = ModelService.getInstance();
     }
 
     /**
@@ -107,7 +113,9 @@ public class RestFederationServiceClient {
         return new SimpleRestResponseStatus(responseStatus, responseMessage);
     }
 
-    public SimpleRestResponseStatus createFederationDeletionRequest(FederationMemberType federationMember) throws IOException {
+    public SimpleRestResponseStatus createFederationDeletionRequest(FederationMemberType federationMember)
+            throws IOException, DatabaseCommunicationException {
+
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
@@ -115,8 +123,10 @@ public class RestFederationServiceClient {
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
+        SystemConfigurationType systemConfig = modelService.readObject(SystemConfigurationType.class, PageBase.SYSTEM_CONFIG_UID);
+
         FederationMembershipRequest request = new FederationMembershipRequest();
-        request.setIdentityProviderIdentifier(federationMember.getRequesterIdentifier());
+        request.setIdentityProviderIdentifier(systemConfig.getIdentityProviderIdentifier());
 
         String jsonRequest = objectToJson(request);
 
@@ -130,7 +140,7 @@ public class RestFederationServiceClient {
     }
 
     public SimpleRestResponseStatus createFederationDeletionRequestResponse(FederationMemberType federationMember,
-                                                                            FederationMembershipRequest.Response responseType) throws IOException {
+                                                                            FederationMembershipRequest.Response responseType) throws IOException, DatabaseCommunicationException {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
@@ -138,8 +148,10 @@ public class RestFederationServiceClient {
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
+        SystemConfigurationType systemConfig = modelService.readObject(SystemConfigurationType.class, PageBase.SYSTEM_CONFIG_UID);
+
         FederationMembershipRequest responseObject = new FederationMembershipRequest();
-        responseObject.setIdentityProviderIdentifier(federationMember.getFederationMemberName());
+        responseObject.setIdentityProviderIdentifier(systemConfig.getIdentityProviderIdentifier());
         responseObject.setResponse(responseType);
         String responseObjectJson = objectToJson(responseObject);
 

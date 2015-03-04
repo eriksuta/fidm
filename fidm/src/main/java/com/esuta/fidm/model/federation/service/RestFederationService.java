@@ -179,8 +179,6 @@ public class RestFederationService implements IFederationService{
                     .entity("Request body does not contain required identity provider identifier name.").build();
         }
 
-        String remoteAddress = deletionRequest.getAddress();
-        int remotePort = deletionRequest.getPort();
         String identifier = deletionRequest.getIdentityProviderIdentifier();
 
         if(identifier == null || identifier.isEmpty()){
@@ -188,8 +186,7 @@ public class RestFederationService implements IFederationService{
                     .entity("Request body does not contain required identity provider identifier name.").build();
         }
 
-        LOGGER.debug("Federation deletion request received. Request host address: " + remoteAddress + "(" + remotePort + "). " +
-                "Identity provider ID: '" + identifier + "'.");
+        LOGGER.debug("Federation deletion request received. Request host address: " + "Identity provider ID: '" + identifier + "'.");
 
         try {
             List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
@@ -233,8 +230,6 @@ public class RestFederationService implements IFederationService{
                     .entity("Request body does not contain required identity provider identifier name and/or reaction.").build();
         }
 
-        String remoteAddress = deletionResponse.getAddress();
-        int remotePort = deletionResponse.getPort();
         String identifier = deletionResponse.getIdentityProviderIdentifier();
 
         if(identifier == null || identifier.isEmpty() || deletionResponse.getResponse() == null){
@@ -242,8 +237,7 @@ public class RestFederationService implements IFederationService{
                     .entity("Request body does not contain required identity provider identifier name and/or reaction.").build();
         }
 
-        LOGGER.debug("Federation deletion request received. Request host address: " + remoteAddress + "(" + remotePort + "). " +
-                "Identity provider ID: '" + identifier + "'.");
+        LOGGER.debug("Federation deletion request received. " + "Identity provider ID: '" + identifier + "'.");
 
         try {
             List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);

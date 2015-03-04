@@ -197,6 +197,10 @@ public class PageFederation extends PageBase {
             public boolean isVisible() {
                 FederationMemberType member = model.getObject();
 
+                if(member == null || member.getFederationMemberName() == null || member.getRequesterIdentifier() == null){
+                    return false;
+                }
+
                 if(!member.getRequesterIdentifier().equals(member.getFederationMemberName())){
                     return false;
                 }
@@ -239,7 +243,13 @@ public class PageFederation extends PageBase {
 
             @Override
             public boolean isVisible() {
-                return FederationMemberType.FederationMemberStatusType.DELETE_REQUESTED.equals(model.getObject().getStatus());
+                FederationMemberType member = model.getObject();
+
+                if(member == null || member.getFederationMemberName() == null || member.getRequesterIdentifier() == null){
+                    return false;
+                }
+
+                return FederationMemberType.FederationMemberStatusType.DELETE_REQUESTED.equals(member.getStatus());
             }
         });
         mainForm.add(deletionRequestButtonGroup);
