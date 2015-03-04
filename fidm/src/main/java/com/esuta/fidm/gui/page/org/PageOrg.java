@@ -24,12 +24,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
@@ -55,6 +57,11 @@ public class PageOrg extends PageBase {
     private static final String ID_LOCALITY = "locality";
     private static final String ID_ORG_TYPE = "orgType";
     private static final String ID_PARENT_ORG_UNIT = "parentOrgUnits";
+
+    private static final String ID_FEDERATION_CONTAINER = "federationContainer";
+    private static final String ID_SHARE_IN_FEDERATION = "sharedInFederation";
+    private static final String ID_SHARE_SUBTREE = "sharedSubtree";
+    private static final String ID_OVERRIDE_SHARING = "overrideParentSharing";
 
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_RECOMPUTE = "recomputeButton";
@@ -164,6 +171,47 @@ public class PageOrg extends PageBase {
         };
         mainForm.add(parentOrgUnit);
 
+        WebMarkupContainer federationContainer = new WebMarkupContainer(ID_FEDERATION_CONTAINER);
+        federationContainer.setOutputMarkupId(true);
+        mainForm.add(federationContainer);
+
+        CheckBox sharedInFederation = new CheckBox(ID_SHARE_IN_FEDERATION, new PropertyModel<Boolean>(model, "sharedInFederation"));
+        sharedInFederation.add(new OnChangeAjaxBehavior() {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(getFederationContainer());
+            }
+        });
+        federationContainer.add(sharedInFederation);
+
+        CheckBox shareSubtree = new CheckBox(ID_SHARE_SUBTREE, new PropertyModel<Boolean>(model, "sharedSubtree"));
+        shareSubtree.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return model.getObject().isSharedInFederation();
+            }
+        });
+        federationContainer.add(shareSubtree);
+
+        CheckBox overrideSharing = new CheckBox(ID_OVERRIDE_SHARING, new PropertyModel<Boolean>(model, "overrideParentSharing"));
+        overrideSharing.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return model.getObject().isSharedInFederation();
+            }
+        });
+        federationContainer.add(overrideSharing);
+
+        initButtons(mainForm);
+        initModalWindows();
+        initInducements(mainForm);
+        initContainers(mainForm);
+    }
+
+    private void initButtons(Form mainForm){
         AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
 
             @Override
@@ -209,9 +257,6 @@ public class PageOrg extends PageBase {
         });
         mainForm.add(recompute);
 
-        initModalWindows();
-        initInducements(mainForm);
-        initContainers(mainForm);
     }
 
     private void initModalWindows(){
@@ -572,6 +617,10 @@ public class PageOrg extends PageBase {
 
     private Form getMainForm(){
         return (Form) get(ID_MAIN_FORM);
+    }
+
+    private WebMarkupContainer getFederationContainer(){
+        return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_FEDERATION_CONTAINER);
     }
 
     private WebMarkupContainer getResourceInducementsContainer(){

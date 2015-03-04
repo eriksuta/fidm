@@ -116,9 +116,6 @@ public class OrgType extends ObjectType{
      * */
     private boolean overrideParentSharing;
 
-
-    private boolean federationAvailable;
-
     public OrgType(){}
 
     public String getDisplayName() {
@@ -197,14 +194,6 @@ public class OrgType extends ObjectType{
         this.roleInducements = roleInducements;
     }
 
-    public boolean isFederationAvailable() {
-        return federationAvailable;
-    }
-
-    public void setFederationAvailable(boolean federationAvailable) {
-        this.federationAvailable = federationAvailable;
-    }
-
     public FederationIdentifier getFederationIdentifier() {
         return federationIdentifier;
     }
@@ -245,7 +234,6 @@ public class OrgType extends ObjectType{
 
         OrgType orgType1 = (OrgType) o;
 
-        if (federationAvailable != orgType1.federationAvailable) return false;
         if (overrideParentSharing != orgType1.overrideParentSharing) return false;
         if (sharedInFederation != orgType1.sharedInFederation) return false;
         if (sharedSubtree != orgType1.sharedSubtree) return false;
@@ -280,7 +268,6 @@ public class OrgType extends ObjectType{
         result = 31 * result + (sharedInFederation ? 1 : 0);
         result = 31 * result + (sharedSubtree ? 1 : 0);
         result = 31 * result + (overrideParentSharing ? 1 : 0);
-        result = 31 * result + (federationAvailable ? 1 : 0);
         return result;
     }
 }

@@ -11,59 +11,96 @@
 
                 <div class="row">
                     <div class="col-lg-6">
-                        <dl class="dl-horizontal">
-                            <dt>
-                                <label>Name</label>
-                            </dt>
-                            <dd>
-                                <input wicket:id="name" type="text" class="form-control input-sm"/>
-                            </dd>
-                        </dl>
 
-                        <dl class="dl-horizontal">
-                            <dt>
-                                <label>Display Name</label>
-                            </dt>
-                            <dd>
-                                <input wicket:id="displayName" type="text" class="form-control input-sm"/>
-                            </dd>
-                        </dl>
+                        <!-- Basic (local identity provider) attributes -->
+                        <div>
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Name</label>
+                                </dt>
+                                <dd>
+                                    <input wicket:id="name" type="text" class="form-control input-sm"/>
+                                </dd>
+                            </dl>
 
-                        <dl class="dl-horizontal">
-                            <dt>
-                                <label>Description</label>
-                            </dt>
-                            <dd>
-                                <textarea wicket:id="description" rows="2" class="form-control input-sm"></textarea>
-                            </dd>
-                        </dl>
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Display Name</label>
+                                </dt>
+                                <dd>
+                                    <input wicket:id="displayName" type="text" class="form-control input-sm"/>
+                                </dd>
+                            </dl>
 
-                        <dl class="dl-horizontal">
-                            <dt>
-                                <label>Locality</label>
-                            </dt>
-                            <dd>
-                                <input wicket:id="locality" type="text" class="form-control input-sm"/>
-                            </dd>
-                        </dl>
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Description</label>
+                                </dt>
+                                <dd>
+                                    <textarea wicket:id="description" rows="2" class="form-control input-sm"></textarea>
+                                </dd>
+                            </dl>
 
-                        <dl class="dl-horizontal">
-                            <dt>
-                                <label>Type</label>
-                            </dt>
-                            <dd>
-                                <div wicket:id="orgType"/>
-                            </dd>
-                        </dl>
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Locality</label>
+                                </dt>
+                                <dd>
+                                    <input wicket:id="locality" type="text" class="form-control input-sm"/>
+                                </dd>
+                            </dl>
 
-                        <dl class="dl-horizontal">
-                            <dt>
-                                <label>Parent Org. Units</label>
-                            </dt>
-                            <dd>
-                                <div wicket:id="parentOrgUnits"/>
-                            </dd>
-                        </dl>
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Type</label>
+                                </dt>
+                                <dd>
+                                    <div wicket:id="orgType"/>
+                                </dd>
+                            </dl>
+
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Parent Org. Units</label>
+                                </dt>
+                                <dd>
+                                    <div wicket:id="parentOrgUnits"/>
+                                </dd>
+                            </dl>
+                        </div>
+
+                        <hr>
+
+                        <!-- Federation attributes -->
+                        <div wicket:id="federationContainer">
+                            <h4>Federation options</h4>
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Share In Federation</label>
+                                </dt>
+                                <dd>
+                                    <input wicket:id="sharedInFederation" type="checkbox" class="input-sm"/>
+                                </dd>
+                            </dl>
+
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Share Subtree</label>
+                                </dt>
+                                <dd>
+                                    <input wicket:id="sharedSubtree" type="checkbox" class="input-sm"/>
+                                </dd>
+                            </dl>
+
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Override Sharing</label>
+                                </dt>
+                                <dd>
+                                    <input wicket:id="overrideParentSharing" type="checkbox" class="input-sm"/>
+                                </dd>
+                            </dl>
+                        </div>
                     </div>
 
                     <div class="col-lg-6">
