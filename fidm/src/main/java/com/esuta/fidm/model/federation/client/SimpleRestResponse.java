@@ -3,14 +3,14 @@ package com.esuta.fidm.model.federation.client;
 /**
  *  @author shood
  * */
-public class SimpleRestResponseStatus {
+public class SimpleRestResponse {
 
     private int status;
     private String message;
 
-    public SimpleRestResponseStatus() {}
+    public SimpleRestResponse() {}
 
-    public SimpleRestResponseStatus(int status, String message) {
+    public SimpleRestResponse(int status, String message) {
         this.status = status;
         this.message = message;
     }
@@ -34,9 +34,9 @@ public class SimpleRestResponseStatus {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SimpleRestResponseStatus)) return false;
+        if (!(o instanceof SimpleRestResponse)) return false;
 
-        SimpleRestResponseStatus that = (SimpleRestResponseStatus) o;
+        SimpleRestResponse that = (SimpleRestResponse) o;
 
         if (status != that.status) return false;
         if (message != null ? !message.equals(that.message) : that.message != null) return false;

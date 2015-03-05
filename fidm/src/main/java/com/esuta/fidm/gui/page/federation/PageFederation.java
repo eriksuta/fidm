@@ -7,8 +7,8 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.federation.client.SimpleRestResponse;
 import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
-import com.esuta.fidm.model.federation.client.SimpleRestResponseStatus;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
@@ -303,7 +303,7 @@ public class PageFederation extends PageBase {
         String memberUid = member.getUid();
 
         try {
-            SimpleRestResponseStatus status = getFederationServiceClient().createFederationDeletionRequestResponse(member, response);
+            SimpleRestResponse status = getFederationServiceClient().createFederationDeletionRequestResponse(member, response);
 
             if(HttpStatus.OK_200 == status.getStatus()){
                 if(FederationMembershipRequest.Response.ACCEPT.equals(response)){
@@ -356,7 +356,7 @@ public class PageFederation extends PageBase {
         FederationMemberType member = model.getObject();
 
         try {
-            SimpleRestResponseStatus status = getFederationServiceClient().createFederationResponse(member, response);
+            SimpleRestResponse status = getFederationServiceClient().createFederationResponse(member, response);
 
             if(HttpStatus.OK_200 == status.getStatus()){
                 if(FederationMembershipRequest.Response.ACCEPT.equals(response)){
@@ -410,12 +410,12 @@ public class PageFederation extends PageBase {
                 federationMember.setRequesterIdentifier(systemConfig.getIdentityProviderIdentifier());
 
                 //At first, we send a request to make a bond with another federation request
-                SimpleRestResponseStatus responseStatus = getFederationServiceClient().createFederationRequest(federationMember,
+                SimpleRestResponse responseStatus = getFederationServiceClient().createFederationRequest(federationMember,
                         systemConfig.getLocalAddress(), systemConfig.getPort());
 
                 if(HttpStatus.OK_200 == responseStatus.getStatus()){
 
-                    SimpleRestResponseStatus secondResponseStatus = getFederationServiceClient().createGetFederationIdentifierRequest(federationMember);
+                    SimpleRestResponse secondResponseStatus = getFederationServiceClient().createGetFederationIdentifierRequest(federationMember);
 
                     //If that request is processed, we need to get the federation identifier of target
                     //federation member

@@ -7,7 +7,7 @@ import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
-import com.esuta.fidm.model.federation.client.SimpleRestResponseStatus;
+import com.esuta.fidm.model.federation.client.SimpleRestResponse;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -120,7 +120,7 @@ public class PageFederationList extends PageBase{
         }
 
         try {
-            SimpleRestResponseStatus response = getFederationServiceClient().createFederationDeletionRequest(federationMember);
+            SimpleRestResponse response = getFederationServiceClient().createFederationDeletionRequest(federationMember);
 
             if(HttpStatus.OK_200 == response.getStatus()){
                 federationMember.setStatus(FederationMemberType.FederationMemberStatusType.DELETE_REQUESTED);

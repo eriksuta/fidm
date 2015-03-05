@@ -75,7 +75,7 @@ public class FederationServiceUtil implements Serializable{
         return sb.toString();
     }
 
-    public static String getSharedOrgUnitCountUrl(String address, int port, String memberIdentifier){
+    public static String createGetSharedOrgUnitCountUrl(String address, int port, String memberIdentifier){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
         sb.append(address);
@@ -87,7 +87,7 @@ public class FederationServiceUtil implements Serializable{
         return sb.toString();
     }
 
-    public static String getSharedOrgUnitUrl(String address, int port, String memberIdentifier){
+    public static String createGetSharedOrgUnitUrl(String address, int port, String memberIdentifier){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
         sb.append(address);
