@@ -15,6 +15,11 @@ public class FederationServiceUtil implements Serializable{
     public static final String POST_FEDERATION_DELETION_REQUEST = "/federationDeleteRequest";
     public static final String POST_FEDERATION_DELETION_RESPONSE = "/federationDeleteResponse";
 
+    public static final String GET_SHARED_ORG_UNIT_COUNT = "/getSharedOrgUnitCount/";
+    public static final String GET_SHARED_ORG_UNIT = "/getSharedOrgUnits/";
+    public static final String GET_SHARED_ORG_UNIT_COUNT_PARAM = "/getSharedOrgUnitCount/{memberIdentifier}";
+    public static final String GET_SHARED_ORG_UNIT_PARAM = "/getSharedOrgUnits/{memberIdentifier}";
+
     public static String createGetFederationMemberIdentifier(String address, int port){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
@@ -67,6 +72,30 @@ public class FederationServiceUtil implements Serializable{
         sb.append(port);
         sb.append(REST_SERVICE_PATH);
         sb.append(POST_FEDERATION_DELETION_RESPONSE);
+        return sb.toString();
+    }
+
+    public static String getSharedOrgUnitCountUrl(String address, int port, String memberIdentifier){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_SHARED_ORG_UNIT_COUNT);
+        sb.append(memberIdentifier);
+        return sb.toString();
+    }
+
+    public static String getSharedOrgUnitUrl(String address, int port, String memberIdentifier){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_SHARED_ORG_UNIT);
+        sb.append(memberIdentifier);
         return sb.toString();
     }
 

@@ -142,7 +142,7 @@ public interface IFederationService {
      *      has two values, ACCEPT or DENY. ACCEPT reaction should lead to deletion of federation
      *      on both sides of the request.
      *
-     *  @return FederationMembershipRequest
+     *  @return javax.ws.rs.core.Response
      *      a response object containing one of the following return codes with response message
      *      containing more information about operation status and processing. The response message
      *      is expected to be in JSON format.
@@ -162,4 +162,69 @@ public interface IFederationService {
      * */
     public Response handleFederationDeleteResponse(FederationMembershipRequest deletionResponse);
 
+    /**
+     *  <p>
+     *      A simple operation that returns a number of org. units that are shared by federation
+     *      member that the request is directed at. The request should fail, if there is no
+     *      accepted federation relationship between requester and requested identity provider.
+     *      If there is an org. unit hierarchy shared, each org. unit in this hierarchy
+     *      is counted as one.
+     *  </p>
+     *
+     *  @param memberIdentifier (String)
+     *      A unique identifier of federation member in identity federation performing the
+     *      request
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing either a number of shared org. units, if the request was
+     *      processed properly, or a message informing requester about the error that happened
+     *      during request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when request to retrieve
+     *                   shared org. unit count was handled correctly. In this case, the message of Response
+     *                   object contains the number of shared org. units.
+     *
+     *      <b>400</b> - response with HTTP cod 400 should be returned when the request is
+     *                   malformed, e.g. the memberIdentifier value is not set or there is no
+     *                   existing membership relation between requesting and requested
+     *                   federation members.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     * */
+    public Response getSharedOrgUnitCount(String memberIdentifier);
+
+    /**
+     *  <p>
+     *      A simple operation that returns a list of org. units that are shared by federation
+     *      member that the request is directed at. The request should fail, if there is no
+     *      accepted federation relationship between requester and requested identity provider.
+     *      If there is an org. unit hierarchy shared, the list containing all shared org.
+     *      units is returned
+     *  </p>
+     *
+     *  @param memberIdentifier (String)
+     *      A unique identifier of federation member in identity federation performing the
+     *      request
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing either a list of shared org. units, if the request was
+     *      processed properly, or a message informing requester about the error that happened
+     *      during request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when request to retrieve
+     *                   shared org. unit count was handled correctly. In this case, the message of Response
+     *                   object contains the list of shared org. units.
+     *
+     *      <b>400</b> - response with HTTP cod 400 should be returned when the request is
+     *                   malformed, e.g. the memberIdentifier value is not set or there is no
+     *                   existing membership relation between requesting and requested
+     *                   federation members.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     * */
+    public Response getSharedOrgUnits(String memberIdentifier);
 }

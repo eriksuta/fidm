@@ -1,19 +1,24 @@
 package com.esuta.fidm.model.federation.service;
 
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.config.PageDebugList;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
+import com.esuta.fidm.repository.schema.support.FederationIdentifier;
 import org.apache.log4j.Logger;
+import org.apache.wicket.RestartResponseException;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,6 +49,11 @@ public class RestFederationService implements IFederationService{
 
     public void initRestFederationService(){
         this.modelService = ModelService.getInstance();
+    }
+
+    private String getLocalFederationMemberIdentifier() throws DatabaseCommunicationException {
+        SystemConfigurationType systemConfiguration = modelService.readObject(SystemConfigurationType.class, PageBase.SYSTEM_CONFIG_UID);
+        return systemConfiguration.getIdentityProviderIdentifier();
     }
 
     @GET
@@ -150,7 +160,7 @@ public class RestFederationService implements IFederationService{
                 responseFederationMember.setStatus(FederationMemberType.FederationMemberStatusType.AVAILABLE);
                 LOGGER.info("Federation membership request for federation member: '" + responseFederationMember.getFederationMemberName() +
                         "'(" + responseFederationMember.getUid() + ") was accepted.");
-            } else if(response.equals(FederationMembershipRequest.Response.DENY)){
+            } else if(response.getResponse().equals(FederationMembershipRequest.Response.DENY)){
                 LOGGER.info("Federation membership request for federation member: '" + responseFederationMember.getFederationMemberName() +
                         "'(" + responseFederationMember.getUid() + ") was denied. Deleting federation member.");
                 modelService.deleteObject(responseFederationMember);
@@ -268,6 +278,101 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Can't delete federation member to delete. Internal problem:", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Can't delete federation member to delete. Internal problem: " + e).build();
+        }
+    }
+
+    @GET
+    @Path(FederationServiceUtil.GET_SHARED_ORG_UNIT_COUNT_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSharedOrgUnitCount(@PathParam("memberIdentifier") String memberIdentifier) {
+        if(memberIdentifier == null || memberIdentifier.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
+            //First, we need to find out, if there is an existing federation bond between requesting
+            //and requested federation members
+            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
+            FederationMemberType currentMember = null;
+
+            for(FederationMemberType member: federationMembers){
+                if(memberIdentifier.equals(member.getFederationMemberName())){
+                    currentMember = member;
+                }
+            }
+
+            if(currentMember == null){
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            List<OrgType> orgUnits = modelService.getAllObjectsOfType(OrgType.class);
+            int count = 0;
+
+            for(OrgType org: orgUnits){
+                if(org.isSharedInFederation()){
+                    count++;
+                }
+            }
+
+            return Response.status(HttpStatus.OK_200).entity(count).build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load org. units from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal problem: " + e).build();
+        }
+    }
+
+    @GET
+    @Path(FederationServiceUtil.GET_SHARED_ORG_UNIT_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSharedOrgUnits(@PathParam("memberIdentifier") String memberIdentifier) {
+        if(memberIdentifier == null || memberIdentifier.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
+            FederationMemberType currentMember = null;
+
+            for(FederationMemberType member: federationMembers){
+                if(memberIdentifier.equals(member.getFederationMemberName())){
+                    currentMember = member;
+                }
+            }
+
+            if(currentMember == null){
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            List<OrgType> orgUnits = modelService.getAllObjectsOfType(OrgType.class);
+            List<OrgType> sharedOrgUnits = new ArrayList<>();
+
+            //TODO - federationUnique value should be read from FederationMemberType defined unique org. attribute, fix later
+            for(OrgType org: orgUnits){
+                if(org.isSharedInFederation()){
+                    FederationIdentifier federationIdentifier = new FederationIdentifier();
+                    federationIdentifier.setFederationMemberId(getLocalFederationMemberIdentifier());
+                    federationIdentifier.setUniqueAttributeValue(org.getName());
+                    org.setFederationIdentifier(federationIdentifier);
+                    org.setUid(null);
+                    sharedOrgUnits.add(org);
+                }
+            }
+
+            return Response.status(HttpStatus.OK_200).entity(sharedOrgUnits).build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load org. units from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal problem: " + e).build();
         }
     }
 }
