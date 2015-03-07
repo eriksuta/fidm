@@ -23,7 +23,7 @@ import java.util.List;
 /**
  *  @author shood
  * */
-@Path(FederationServiceUtil.REST_SERVICE_PATH)
+@Path(RestFederationServiceUtil.REST_SERVICE_PATH)
 public class RestFederationService implements IFederationService{
 
     Logger LOGGER = Logger.getLogger(RestFederationService.class);
@@ -61,7 +61,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @GET
-    @Path(FederationServiceUtil.GET_FEDERATION_MEMBER_IDENTIFIER)
+    @Path(RestFederationServiceUtil.GET_FEDERATION_MEMBER_IDENTIFIER)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFederationIdentifier() {
         SystemConfigurationType config;
@@ -83,7 +83,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @POST
-    @Path(FederationServiceUtil.POST_FEDERATION_REQUEST)
+    @Path(RestFederationServiceUtil.POST_FEDERATION_REQUEST)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleFederationRequest(FederationMembershipRequest membershipRequest){
@@ -133,7 +133,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @POST
-    @Path(FederationServiceUtil.POST_FEDERATION_REQUEST_RESPONSE)
+    @Path(RestFederationServiceUtil.POST_FEDERATION_REQUEST_RESPONSE)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleFederationResponse(FederationMembershipRequest response){
@@ -184,7 +184,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @POST
-    @Path(FederationServiceUtil.POST_FEDERATION_DELETION_REQUEST)
+    @Path(RestFederationServiceUtil.POST_FEDERATION_DELETION_REQUEST)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleFederationDeleteRequest(FederationMembershipRequest deletionRequest) {
@@ -235,7 +235,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @POST
-    @Path(FederationServiceUtil.POST_FEDERATION_DELETION_RESPONSE)
+    @Path(RestFederationServiceUtil.POST_FEDERATION_DELETION_RESPONSE)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleFederationDeleteResponse(FederationMembershipRequest deletionResponse) {
@@ -286,7 +286,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @GET
-    @Path(FederationServiceUtil.GET_SHARED_ORG_UNIT_COUNT_PARAM)
+    @Path(RestFederationServiceUtil.GET_SHARED_ORG_UNIT_COUNT_PARAM)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSharedOrgUnitCount(@PathParam("memberIdentifier") String memberIdentifier) {
@@ -332,7 +332,7 @@ public class RestFederationService implements IFederationService{
     }
 
     @GET
-    @Path(FederationServiceUtil.GET_SHARED_ORG_UNIT_PARAM)
+    @Path(RestFederationServiceUtil.GET_SHARED_ORG_UNIT_PARAM)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSharedOrgUnits(@PathParam("memberIdentifier") String memberIdentifier) {

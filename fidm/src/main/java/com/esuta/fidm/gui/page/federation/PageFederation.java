@@ -25,9 +25,7 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.TextArea;
-import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -58,6 +56,7 @@ public class PageFederation extends PageBase {
     private static final String ID_WEB_ADDRESS = "webAddress";
     private static final String ID_PORT = "port";
     private static final String ID_LOCALITY = "locality";
+    private static final String ID_ORG_UNIQUE_ATTRIBUTE = "orgIdentifier";
 
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
@@ -175,6 +174,22 @@ public class PageFederation extends PageBase {
             }
         });
         mainForm.add(port);
+
+        DropDownChoice orgIdentifier = new DropDownChoice<>(ID_ORG_UNIQUE_ATTRIBUTE,
+                new PropertyModel<String>(model, "uniqueOrgIdentifier"), createUniqueOrgAttributeList(),
+                new IChoiceRenderer<String>() {
+
+                    @Override
+                    public String getDisplayValue(String object) {
+                        return object;
+                    }
+
+                    @Override
+                    public String getIdValue(String object, int index) {
+                        return Integer.toString(index);
+                    }
+                });
+        mainForm.add(orgIdentifier);
 
         AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
 
@@ -427,6 +442,13 @@ public class PageFederation extends PageBase {
             }
         };
         deletionRequestButtonGroup.add(rejectDelete);
+    }
+
+    private List<String> createUniqueOrgAttributeList(){
+        List<String> list = new ArrayList<>();
+        list.add("name");
+        list.add("uid");
+        return list;
     }
 
     private void sharedOrgUnitEditPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){

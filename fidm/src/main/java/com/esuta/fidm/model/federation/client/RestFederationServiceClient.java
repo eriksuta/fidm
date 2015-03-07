@@ -5,7 +5,7 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
-import com.esuta.fidm.model.federation.service.FederationServiceUtil;
+import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
@@ -64,7 +64,7 @@ public class RestFederationServiceClient {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
-        String url = FederationServiceUtil.createGetFederationMemberIdentifier(address, port);
+        String url = RestFederationServiceUtil.createGetFederationMemberIdentifier(address, port);
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
@@ -81,7 +81,7 @@ public class RestFederationServiceClient {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
-        String url = FederationServiceUtil.createFederationRequestUrl(address, port);
+        String url = RestFederationServiceUtil.createFederationRequestUrl(address, port);
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
@@ -106,7 +106,7 @@ public class RestFederationServiceClient {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
-        String url = FederationServiceUtil.createFederationRequestResponseUrl(address, port);
+        String url = RestFederationServiceUtil.createFederationRequestResponseUrl(address, port);
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
@@ -130,7 +130,7 @@ public class RestFederationServiceClient {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
-        String url = FederationServiceUtil.createFederationDeleteRequestUrl(address, port);
+        String url = RestFederationServiceUtil.createFederationDeleteRequestUrl(address, port);
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
@@ -153,7 +153,7 @@ public class RestFederationServiceClient {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
-        String url = FederationServiceUtil.createFederationDeleteResponseUrl(address, port);
+        String url = RestFederationServiceUtil.createFederationDeleteResponseUrl(address, port);
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
@@ -175,7 +175,7 @@ public class RestFederationServiceClient {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
-        String url = FederationServiceUtil.createGetSharedOrgUnitCountUrl(address, port, getLocalFederationMemberIdentifier());
+        String url = RestFederationServiceUtil.createGetSharedOrgUnitCountUrl(address, port, getLocalFederationMemberIdentifier());
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
@@ -200,7 +200,7 @@ public class RestFederationServiceClient {
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
-        String url = FederationServiceUtil.createGetSharedOrgUnitUrl(address, port, getLocalFederationMemberIdentifier());
+        String url = RestFederationServiceUtil.createGetSharedOrgUnitUrl(address, port, getLocalFederationMemberIdentifier());
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 

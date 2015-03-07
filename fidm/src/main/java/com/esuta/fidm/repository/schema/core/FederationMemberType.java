@@ -57,6 +57,13 @@ public class FederationMemberType extends ObjectType{
      * */
     private String locality;
 
+    /**
+     *  A name of attribute of OrgType that is unique in federation
+     *  member system. A system can identify the org. unit by using the value
+     *  of this attribute.
+     * */
+    private String uniqueOrgIdentifier;
+
     public FederationMemberType(){}
 
     public String getDisplayName() {
@@ -115,6 +122,14 @@ public class FederationMemberType extends ObjectType{
         this.requesterIdentifier = requesterIdentifier;
     }
 
+    public String getUniqueOrgIdentifier() {
+        return uniqueOrgIdentifier;
+    }
+
+    public void setUniqueOrgIdentifier(String uniqueOrgIdentifier) {
+        this.uniqueOrgIdentifier = uniqueOrgIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -131,6 +146,8 @@ public class FederationMemberType extends ObjectType{
         if (requesterIdentifier != null ? !requesterIdentifier.equals(that.requesterIdentifier) : that.requesterIdentifier != null)
             return false;
         if (status != that.status) return false;
+        if (uniqueOrgIdentifier != null ? !uniqueOrgIdentifier.equals(that.uniqueOrgIdentifier) : that.uniqueOrgIdentifier != null)
+            return false;
         if (webAddress != null ? !webAddress.equals(that.webAddress) : that.webAddress != null) return false;
 
         return true;
@@ -146,6 +163,7 @@ public class FederationMemberType extends ObjectType{
         result = 31 * result + (webAddress != null ? webAddress.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (locality != null ? locality.hashCode() : 0);
+        result = 31 * result + (uniqueOrgIdentifier != null ? uniqueOrgIdentifier.hashCode() : 0);
         return result;
     }
 }

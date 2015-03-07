@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  *  @author shood
  * */
-public class FederationServiceUtil implements Serializable{
+public class RestFederationServiceUtil implements Serializable{
 
     public static final String REST_SERVICE_PATH = "/rest";
 
