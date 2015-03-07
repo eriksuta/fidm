@@ -1,6 +1,10 @@
 package com.esuta.fidm.gui.page.federation;
 
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
+import com.esuta.fidm.gui.component.data.ObjectDataProvider;
+import com.esuta.fidm.gui.component.data.ProvidedOrgDataProvider;
+import com.esuta.fidm.gui.component.data.column.LinkColumn;
+import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
@@ -10,11 +14,15 @@ import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.client.SimpleRestResponse;
 import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
+import com.esuta.fidm.repository.schema.support.FederationIdentifier;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -22,11 +30,14 @@ import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.eclipse.jetty.http.HttpStatus;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  @author shood
@@ -58,6 +69,11 @@ public class PageFederation extends PageBase {
     private static final String ID_BUTTON_ACCEPT_DELETION = "deleteAcceptButton";
     private static final String ID_BUTTON_REJECT_DELETION = "deleteRejectButton";
 
+    private static final String ID_TABLE_CONTAINER = "tableContainers";
+    private static final String ID_SHARED_ORG_CONTAINER = "sharedOrgUnitsContainer";
+    private static final String ID_SHARED_ORG_TABLE = "sharedOrgUnitsTable";
+    private static final String ID_PROVIDED_ORG_CONTAINER = "providedOrgUnitsContainer";
+    private static final String ID_PROVIDED_ORG_TABLE = "providedOrgUnitsTable";
 
     private IModel<FederationMemberType> model;
 
@@ -184,7 +200,139 @@ public class PageFederation extends PageBase {
         };
         mainForm.add(save);
 
+        initFederationOrgTables(mainForm);
         initAcceptButtons(mainForm);
+    }
+
+    private void initFederationOrgTables(Form mainForm){
+        WebMarkupContainer tableContainer = new WebMarkupContainer(ID_TABLE_CONTAINER);
+        tableContainer.setOutputMarkupId(true);
+        tableContainer.setOutputMarkupPlaceholderTag(true);
+        tableContainer.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return isEditingFederationMember();
+            }
+        });
+        mainForm.add(tableContainer);
+
+        //Shared org. units section
+        WebMarkupContainer sharedOrgUnitsContainer = new WebMarkupContainer(ID_SHARED_ORG_CONTAINER);
+        sharedOrgUnitsContainer.setOutputMarkupId(true);
+        tableContainer.add(sharedOrgUnitsContainer);
+
+        final ObjectDataProvider sharedOrgProvider = new ObjectDataProvider<OrgType>(getPage(), OrgType.class){
+
+            @Override
+            public List<OrgType> applyDataFilter(List<OrgType> list) {
+                List<OrgType> sharedOrgUnits = new ArrayList<>();
+
+                if(model != null && model.getObject() != null){
+                    FederationMemberType member = model.getObject();
+
+                    for(OrgType org: list){
+                        if(org.getFederationIdentifier() != null){
+                            FederationIdentifier identifier = org.getFederationIdentifier();
+
+                            if(identifier.getFederationMemberId().equals(member.getFederationMemberName())){
+                                sharedOrgUnits.add(org);
+                            }
+                        }
+                    }
+                }
+
+                return sharedOrgUnits;
+            }
+        };
+
+        List<IColumn> sharedOrgColumns = createSharedOrgUnitColumns();
+        TablePanel sharedOrgTable = new TablePanel(ID_SHARED_ORG_TABLE, sharedOrgProvider, sharedOrgColumns, 10);
+        sharedOrgTable.add(new VisibleEnableBehavior() {
+
+            @Override
+            public boolean isVisible() {
+                return sharedOrgProvider.size() > 0;
+            }
+        });
+        sharedOrgTable.setShowPaging(false);
+        sharedOrgTable.setOutputMarkupId(true);
+        sharedOrgUnitsContainer.add(sharedOrgTable);
+
+        //Provided org. units section
+        WebMarkupContainer providedOrgUnitsContainer = new WebMarkupContainer(ID_PROVIDED_ORG_CONTAINER);
+        providedOrgUnitsContainer.setOutputMarkupId(true);
+        tableContainer.add(providedOrgUnitsContainer);
+
+        final ProvidedOrgDataProvider providedOrgProvider = new ProvidedOrgDataProvider(getPage(), model.getObject());
+        List<IColumn> providedOrgColumns = createProvidedOrgUnitColumns();
+        TablePanel providedOrgPanel = new TablePanel(ID_PROVIDED_ORG_TABLE, providedOrgProvider, providedOrgColumns, 10);
+        providedOrgPanel.add(new VisibleEnableBehavior() {
+
+            @Override
+            public boolean isVisible() {
+                return providedOrgProvider.size() > 0;
+            }
+        });
+        providedOrgPanel.setShowPaging(false);
+        providedOrgPanel.setOutputMarkupId(true);
+        providedOrgUnitsContainer.add(providedOrgPanel);
+    }
+
+    private List<IColumn> createSharedOrgUnitColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new LinkColumn<OrgType>(new Model<>("Name"), "name"){
+
+            @Override
+            protected IModel<String> createLinkModel(final IModel<OrgType> rowModel) {
+                return new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return rowModel.getObject().getName();
+                    }
+                };
+            }
+
+            @Override
+            public void onClick(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                sharedOrgUnitEditPerformed(target, rowModel);
+            }
+        });
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Display Name"), "displayName", "displayName"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Type"), "orgType", "orgType"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Locality"), "locality", "locality"));
+
+        return columns;
+    }
+
+    private List<IColumn> createProvidedOrgUnitColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new LinkColumn<OrgType>(new Model<>("Name"), "name"){
+
+            @Override
+            protected IModel<String> createLinkModel(final IModel<OrgType> rowModel) {
+                return new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return rowModel.getObject().getName();
+                    }
+                };
+            }
+
+            @Override
+            public void onClick(AjaxRequestTarget target, IModel<OrgType> rowModel) {
+                providedOrgUnitEditPerformed(target, rowModel);
+            }
+        });
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Display Name"), "displayName", "displayName"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Type"), "orgType", "orgType"));
+        columns.add(new PropertyColumn<OrgType, String>(new Model<>("Locality"), "locality", "locality"));
+
+        return columns;
     }
 
     private void initAcceptButtons(Form mainForm){
@@ -279,6 +427,18 @@ public class PageFederation extends PageBase {
             }
         };
         deletionRequestButtonGroup.add(rejectDelete);
+    }
+
+    private void sharedOrgUnitEditPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
+//        TODO
+        warn("Not implemented yet");
+        target.add(getFeedbackPanel());
+    }
+
+    private void providedOrgUnitEditPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
+//        TODO
+        warn("Not implemented yet");
+        target.add(getFeedbackPanel());
     }
 
     private void cancelPerformed(){

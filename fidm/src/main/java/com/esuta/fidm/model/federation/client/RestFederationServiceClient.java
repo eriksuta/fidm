@@ -18,7 +18,8 @@ import org.eclipse.jetty.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -187,9 +188,9 @@ public class RestFederationServiceClient {
         IntegerRestResponse responseObject = new IntegerRestResponse();
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
-            responseObject.setValue(response.getEntity(Integer.class));
+            responseObject.setValue((Integer)jsonToObject(responseMessage, Integer.class));
         } else {
-            responseObject.setMessage(response.getEntity(String.class));
+            responseObject.setMessage(responseMessage);
         }
 
         return responseObject;
@@ -212,10 +213,9 @@ public class RestFederationServiceClient {
         GenericListRestResponse<OrgType> responseObject = new GenericListRestResponse<>();
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
-//            TODO
-//            responseObject.setValues(response.getEntity(ArrayList<OrgType>.class));
+              responseObject.setValues(jsonListToObject(responseMessage, OrgType[].class));
         } else {
-            responseObject.setMessage(response.getEntity(String.class));
+            responseObject.setMessage(responseMessage);
         }
 
         return responseObject;
@@ -224,5 +224,18 @@ public class RestFederationServiceClient {
     private String objectToJson(Object object){
         Gson gson = new Gson();
         return gson.toJson(object);
+    }
+
+    private Object jsonToObject(String jsonObject, Class type){
+        Gson gson = new Gson();
+        return gson.fromJson(jsonObject, type);
+    }
+
+    /**
+     *  Use this when you need to deserialize parametrized List from json String
+     * */
+    private <T extends Serializable> List<T> jsonListToObject(String jsonList, Class<T[]> type){
+        T[] arr = new Gson().fromJson(jsonList, type);
+        return Arrays.asList(arr);
     }
 }

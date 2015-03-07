@@ -73,14 +73,18 @@
 
                     </div>
 
-                    <!-- TODO - Org. unit provided by federation member -->
-                    <!-- TODO - Maybe even users? -->
-                    <div class="col-lg-6">
-                        <span>Provided Org. Units</span>
-                        <hr class="assignmentDelimiter">
+                    <div class="col-lg-6" wicket:id="tableContainers">
+                        <div wicket:id="sharedOrgUnitsContainer">
+                            <span>Shared Org. Units</span>
+                            <hr class="assignmentDelimiter">
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="sharedOrgUnitsTable"></table>
+                        </div>
 
-                        <span>Users</span>
-             deletion           <hr class="assignmentDelimiter">
+                        <div wicket:id="providedOrgUnitsContainer">
+                            <span>Provided Org. Units</span>
+                            <hr class="assignmentDelimiter">
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="providedOrgUnitsTable"></table>
+                        </div>
                     </div>
                 </div>
 

@@ -59,7 +59,7 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
         return currentPageData;
     }
 
-    private PageBase getPageBase(){
+    protected PageBase getPageBase(){
         if(component instanceof PageBase){
             return (PageBase) component;
         }

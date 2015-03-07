@@ -51,7 +51,7 @@ public class FederatedIDMApplication extends WebApplication{
         } else {
             systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository2.odb");
         }
-        systemConfig.setIdentityProviderIdentifier("Local Identity Provider");
+        systemConfig.setIdentityProviderIdentifier("Local-Identity-Provider");
         systemConfig.setName("System Configuration - Initial");
         systemConfig.setPort(getLocalPort());
         systemConfig.setLocalAddress("localhost");

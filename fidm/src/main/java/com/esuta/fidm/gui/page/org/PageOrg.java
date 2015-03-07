@@ -173,6 +173,15 @@ public class PageOrg extends PageBase {
 
         WebMarkupContainer federationContainer = new WebMarkupContainer(ID_FEDERATION_CONTAINER);
         federationContainer.setOutputMarkupId(true);
+        federationContainer.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                //If the org. unit is not in local federation member, the section
+                //where federation options are edited should not be visible at all.
+                return model.getObject().getFederationIdentifier() == null;
+            }
+        });
         mainForm.add(federationContainer);
 
         CheckBox sharedInFederation = new CheckBox(ID_SHARE_IN_FEDERATION, new PropertyModel<Boolean>(model, "sharedInFederation"));
@@ -200,6 +209,11 @@ public class PageOrg extends PageBase {
 
             @Override
             public boolean isEnabled() {
+                //Can't override parent sharing when the org. unit is root.
+                if(model.getObject().getParentOrgUnits().isEmpty()){
+                    return false;
+                }
+
                 return model.getObject().isSharedInFederation();
             }
         });

@@ -1,7 +1,6 @@
 package com.esuta.fidm.model.federation.service;
 
 import com.esuta.fidm.gui.page.PageBase;
-import com.esuta.fidm.gui.page.config.PageDebugList;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
@@ -11,8 +10,8 @@ import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import com.esuta.fidm.repository.schema.support.FederationIdentifier;
+import com.google.gson.Gson;
 import org.apache.log4j.Logger;
-import org.apache.wicket.RestartResponseException;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.ws.rs.*;
@@ -49,6 +48,11 @@ public class RestFederationService implements IFederationService{
 
     public void initRestFederationService(){
         this.modelService = ModelService.getInstance();
+    }
+
+    private String objectToJson(Object object){
+        Gson gson = new Gson();
+        return gson.toJson(object);
     }
 
     private String getLocalFederationMemberIdentifier() throws DatabaseCommunicationException {
@@ -318,7 +322,7 @@ public class RestFederationService implements IFederationService{
                 }
             }
 
-            return Response.status(HttpStatus.OK_200).entity(count).build();
+            return Response.status(HttpStatus.OK_200).entity(objectToJson(count)).build();
 
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not load org. units from the repository.", e);
@@ -367,7 +371,7 @@ public class RestFederationService implements IFederationService{
                 }
             }
 
-            return Response.status(HttpStatus.OK_200).entity(sharedOrgUnits).build();
+            return Response.status(HttpStatus.OK_200).entity(objectToJson(sharedOrgUnits)).build();
 
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not load org. units from the repository.", e);
