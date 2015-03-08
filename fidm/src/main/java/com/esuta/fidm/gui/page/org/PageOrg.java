@@ -35,6 +35,7 @@ import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
@@ -103,6 +104,21 @@ public class PageOrg extends PageBase {
         initLayout();
     }
 
+    @Override
+    protected IModel<String> createPageSubtitleModel() {
+        return new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                if(isLocalOrgUnit()){
+                    return "View/Edit local org. unit.";
+                } else {
+                    return "View/Edit copy of org. unit. Origin IP: " + getOrgUnitOriginFederationMember();
+                }
+            }
+        };
+    }
+
     private OrgType loadOrgUnit(){
         if(!isEditingOrgUnit()){
             return new OrgType();
@@ -126,6 +142,24 @@ public class PageOrg extends PageBase {
     private boolean isEditingOrgUnit(){
         PageParameters parameters = getPageParameters();
         return !parameters.get(UID_PAGE_PARAMETER_NAME).isEmpty();
+    }
+
+    private boolean isLocalOrgUnit(){
+        if(model != null && model.getObject() != null){
+            OrgType org = model.getObject();
+            return org.getFederationIdentifier() == null;
+        }
+
+        return true;
+    }
+
+    private String getOrgUnitOriginFederationMember(){
+        if(model != null && model.getObject() != null && model.getObject().getFederationIdentifier() != null){
+            OrgType org = model.getObject();
+            return org.getFederationIdentifier().getFederationMemberId();
+        }
+
+        return null;
     }
 
     private void initLayout(){
@@ -984,6 +1018,7 @@ public class PageOrg extends PageBase {
                 if(!orgUnit.isOverrideParentSharing()){
                     orgUnit.setSharedInFederation(true);
                     getModelService().updateObject(orgUnit);
+                    success("Org. unit: '" + orgUnit.getName() + "' federation sharing set successfully.");
                 }
             }
 
