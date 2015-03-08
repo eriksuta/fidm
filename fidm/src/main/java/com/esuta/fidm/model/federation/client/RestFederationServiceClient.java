@@ -9,6 +9,7 @@ import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
+import com.esuta.fidm.repository.schema.support.FederationIdentifier;
 import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -214,6 +215,62 @@ public class RestFederationServiceClient {
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
               responseObject.setValues(jsonListToObject(responseMessage, OrgType[].class));
+        } else {
+            responseObject.setMessage(responseMessage);
+        }
+
+        return responseObject;
+    }
+
+    public ObjectTypeRestResponse<OrgType> createGetOrgUnitRequest(FederationMemberType federationMember, FederationIdentifier federationIdentifier)
+            throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetOrgUnitUrl(address, port,
+                getLocalFederationMemberIdentifier(), federationIdentifier.getUniqueAttributeValue());
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        ObjectTypeRestResponse<OrgType> responseObject = new ObjectTypeRestResponse<>();
+        responseObject.setStatus(responseStatus);
+        if(responseStatus == HttpStatus.OK_200){
+            responseObject.setValue((OrgType)jsonToObject(responseMessage, OrgType.class));
+        } else {
+            responseObject.setMessage(responseMessage);
+        }
+
+        return responseObject;
+    }
+
+    public GenericListRestResponse<OrgType> createGetOrgUnitHierarchyRequest(FederationMemberType federationMember, FederationIdentifier federationIdentifier)
+            throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetOrgUnitHierarchyUrl(address, port,
+                getLocalFederationMemberIdentifier(), federationIdentifier.getUniqueAttributeValue());
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        GenericListRestResponse<OrgType> responseObject = new GenericListRestResponse<>();
+        responseObject.setStatus(responseStatus);
+        if(responseStatus == HttpStatus.OK_200){
+            responseObject.setValues(jsonListToObject(responseMessage, OrgType[].class));
         } else {
             responseObject.setMessage(responseMessage);
         }
