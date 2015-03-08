@@ -17,6 +17,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -359,12 +360,11 @@ public class RestFederationService implements IFederationService{
             List<OrgType> orgUnits = modelService.getAllObjectsOfType(OrgType.class);
             List<OrgType> sharedOrgUnits = new ArrayList<>();
 
-            //TODO - federationUnique value should be read from FederationMemberType defined unique org. attribute, fix later
             for(OrgType org: orgUnits){
                 if(org.isSharedInFederation()){
                     FederationIdentifier federationIdentifier = new FederationIdentifier();
                     federationIdentifier.setFederationMemberId(getLocalFederationMemberIdentifier());
-                    federationIdentifier.setUniqueAttributeValue(org.getName());
+                    federationIdentifier.setUniqueAttributeValue(getUniqueAttributeValue(org, currentMember));
                     org.setFederationIdentifier(federationIdentifier);
                     org.setUid(null);
                     sharedOrgUnits.add(org);
@@ -377,7 +377,21 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Could not load org. units from the repository.", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Can't read from the repository. Internal problem: " + e).build();
+        } catch (IllegalAccessException  | NoSuchFieldException e) {
+            LOGGER.error("Incorrect unique attribute for org. unit is set. Can't create unique identifier. ", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Incorrect unique attribute for org. unit is set. Can't create unique identifier. Reason: " + e).build();
         }
+    }
+
+    private String getUniqueAttributeValue(OrgType org, FederationMemberType federationMember) throws NoSuchFieldException, IllegalAccessException {
+        String attributeName = federationMember.getUniqueOrgIdentifier();
+        String attributeValue;
+
+        Field attribute = org.getClass().getSuperclass().getDeclaredField(attributeName);
+        attribute.setAccessible(true);
+        attributeValue = (String)attribute.get(org);
+        return attributeValue;
     }
 }
 

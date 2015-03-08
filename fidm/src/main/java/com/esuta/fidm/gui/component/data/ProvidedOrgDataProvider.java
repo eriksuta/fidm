@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ *  TODO - show errors related to federation rest responses to user in GUI
+ *
  *  This implementation of ObjectDataProvider returns values by using rest federation
  *  API to retrieve provided org. units from specific federation member. It does not
  *  work with local repository.
