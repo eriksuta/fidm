@@ -962,6 +962,45 @@ public class PageOrg extends PageBase {
         target.add(this, getFeedbackPanel());
     }
 
+    private void shareOrgSubtree(OrgType org){
+        String uid = org.getUid();
+
+        try {
+            List<OrgType> allOrgUnits = getModelService().getAllObjectsOfType(OrgType.class);
+            List<OrgType> children =  new ArrayList<>();
+
+            //First, retrieve all children of target org. unit
+            for(OrgType orgUnit: allOrgUnits){
+                for(String orgUid: orgUnit.getParentOrgUnits()){
+                    if(uid.equals(orgUid)){
+                        children.add(orgUnit);
+                        break;
+                    }
+                }
+            }
+
+            //If the children does not override parent sharing, set sharing to true and save
+            for(OrgType orgUnit: children){
+                if(!orgUnit.isOverrideParentSharing()){
+                    orgUnit.setSharedInFederation(true);
+                    getModelService().updateObject(orgUnit);
+                }
+            }
+
+            //Repeat the process recursively for entire tree
+            for(OrgType orgUnit: children){
+                shareOrgSubtree(orgUnit);
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Can't retrieve the children of org. unit: " + org.getName() + ". Reason: ", e);
+            error("Can't retrieve the children of org. unit: " + org.getName() + ". Reason: " + e);
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Can't save children org. unit. Reason: ", e);
+            error("Can't save children org. unit. Reason: " + e);
+        }
+    }
+
     private void savePerformed(AjaxRequestTarget target){
         ModelService modelService = getModelService();
         OrgType orgUnit;
@@ -999,6 +1038,9 @@ public class PageOrg extends PageBase {
                 modelService.createObject(orgUnit);
             } else {
                 modelService.updateObject(orgUnit);
+                if(orgUnit.isSharedSubtree()){
+                    shareOrgSubtree(orgUnit);
+                }
             }
 
         } catch (GeneralException e){
