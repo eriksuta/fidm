@@ -1,5 +1,6 @@
 package com.esuta.fidm.repository.schema.core;
 
+import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
 
 /**
@@ -14,6 +15,12 @@ public class FederationMemberType extends ObjectType{
         DENIED,
         DELETE_REQUESTED
     }
+
+    /**
+     *  A system unique name of the federation member.
+     * */
+    @Index(unique = "true")
+    private String name;
 
     /**
      *  This attribute is a unique identifier used in identity federations
@@ -65,6 +72,14 @@ public class FederationMemberType extends ObjectType{
     private String uniqueOrgIdentifier;
 
     public FederationMemberType(){}
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getDisplayName() {
         return displayName;
@@ -143,6 +158,7 @@ public class FederationMemberType extends ObjectType{
         if (federationMemberName != null ? !federationMemberName.equals(that.federationMemberName) : that.federationMemberName != null)
             return false;
         if (locality != null ? !locality.equals(that.locality) : that.locality != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (requesterIdentifier != null ? !requesterIdentifier.equals(that.requesterIdentifier) : that.requesterIdentifier != null)
             return false;
         if (status != that.status) return false;
@@ -156,6 +172,7 @@ public class FederationMemberType extends ObjectType{
     @Override
     public int hashCode() {
         int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (federationMemberName != null ? federationMemberName.hashCode() : 0);
         result = 31 * result + (requesterIdentifier != null ? requesterIdentifier.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);

@@ -1,5 +1,6 @@
 package com.esuta.fidm.repository.schema.core;
 
+import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
 import java.io.Serializable;
 
@@ -9,12 +10,45 @@ import java.io.Serializable;
 @Entity
 public class SystemConfigurationType extends ObjectType{
 
+    /**
+     *  A system unique name of the system configuration.
+     * */
+    @Index(unique = "true")
+    private String name;
+
+    /**
+     *  An identifier for the member of the identity federation.
+     *  This attribute uniquely identifier the federation member
+     *  and it's format should be defined by internal policy of the
+     *  federation.
+     * */
     private String identityProviderIdentifier;
+
+    /**
+     *  A system path to the database
+     * */
     private String dbConnectionFile;
+
+    /**
+     *  A port on which this local identity provider runs
+     * */
     private int port;
+
+    /**
+     *  A web address representation of server on which this
+     *  identity provider runs.
+     * */
     private String localAddress;
 
     public SystemConfigurationType(){}
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getDbConnectionFile() {
         return dbConnectionFile;
@@ -62,6 +96,7 @@ public class SystemConfigurationType extends ObjectType{
         if (identityProviderIdentifier != null ? !identityProviderIdentifier.equals(that.identityProviderIdentifier) : that.identityProviderIdentifier != null)
             return false;
         if (localAddress != null ? !localAddress.equals(that.localAddress) : that.localAddress != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
 
         return true;
     }
@@ -69,6 +104,7 @@ public class SystemConfigurationType extends ObjectType{
     @Override
     public int hashCode() {
         int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (identityProviderIdentifier != null ? identityProviderIdentifier.hashCode() : 0);
         result = 31 * result + (dbConnectionFile != null ? dbConnectionFile.hashCode() : 0);
         result = 31 * result + port;

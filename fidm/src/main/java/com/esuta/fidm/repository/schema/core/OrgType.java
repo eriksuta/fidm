@@ -14,6 +14,12 @@ import java.util.List;
 public class OrgType extends ObjectType{
 
     /**
+     *  A system unique name of the organizational unit.
+     * */
+    @Index(unique = "true")
+    private String name;
+
+    /**
      *  The display name of the organizational unit. Should be a
      *  human readable form, such as 'Chemistry Department' etc.
      *  This attribute is mostly used in user interface.
@@ -117,6 +123,14 @@ public class OrgType extends ObjectType{
     private boolean overrideParentSharing;
 
     public OrgType(){}
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getDisplayName() {
         return displayName;
@@ -243,6 +257,7 @@ public class OrgType extends ObjectType{
             return false;
         if (governors != null ? !governors.equals(orgType1.governors) : orgType1.governors != null) return false;
         if (locality != null ? !locality.equals(orgType1.locality) : orgType1.locality != null) return false;
+        if (name != null ? !name.equals(orgType1.name) : orgType1.name != null) return false;
         if (orgType != null ? !orgType.equals(orgType1.orgType) : orgType1.orgType != null) return false;
         if (parentOrgUnits != null ? !parentOrgUnits.equals(orgType1.parentOrgUnits) : orgType1.parentOrgUnits != null)
             return false;
@@ -257,6 +272,7 @@ public class OrgType extends ObjectType{
     @Override
     public int hashCode() {
         int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (orgType != null ? orgType.hashCode() : 0);
         result = 31 * result + (locality != null ? locality.hashCode() : 0);

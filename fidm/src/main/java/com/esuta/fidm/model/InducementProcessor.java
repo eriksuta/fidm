@@ -125,7 +125,7 @@ public class InducementProcessor {
             AccountType newAccount = new AccountType();
             newAccount.setResource(resourceUid);
             newAccount.setOwner(user.getUid());
-            newAccount.setAccountName(user.getName());
+            newAccount.setName(user.getName());
 
             try {
                 newAccount = modelService.createObject(newAccount);
@@ -142,7 +142,7 @@ public class InducementProcessor {
             AccountType newAccount = new AccountType();
             newAccount.setResource(resourceUid);
             newAccount.setOwner(user.getUid());
-            newAccount.setAccountName(user.getName());
+            newAccount.setName(user.getName());
 
             try {
                 newAccount = modelService.createObject(newAccount);

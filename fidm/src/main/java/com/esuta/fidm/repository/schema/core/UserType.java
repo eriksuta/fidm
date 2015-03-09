@@ -13,6 +13,12 @@ import java.util.List;
 @Entity
 public class UserType extends ObjectType{
 
+    /**
+     *  A system unique name of the user.
+     * */
+    @Index(unique = "true")
+    private String name;
+
     @Index
     private String fullName;
 
@@ -43,9 +49,30 @@ public class UserType extends ObjectType{
     private List<String> orgUnitAssignments;
     private List<String> accounts;
 
+    /**
+     *  A federation identifier used to uniquely identify the user
+     *  across federation. More specifically, it is a link to the origin
+     *  of this user. If this attribute is empty, the user is
+     *  local, thus the origin of this org. unit is current identity
+     *  provider. A federation identifier contains an identifier
+     *  of federation member (FederationMemberType) and a single
+     *  'uniqueAttributeValue' - an attribute containing a value that
+     *  is guaranteed to be unique in origin identity provider. The
+     *  source of this value is not known to this provider, it is handled
+     *  by origin identity provider, so we believe that this mechanism
+     *  is privacy-respecting.
+     * */
     private FederationIdentifier federationIdentifier;
 
     public UserType(){}
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getFullName() {
         return fullName;
@@ -190,7 +217,7 @@ public class UserType extends ObjectType{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof UserType)) return false;
         if (!super.equals(o)) return false;
 
         UserType userType = (UserType) o;
@@ -210,6 +237,7 @@ public class UserType extends ObjectType{
         if (honorificSuffix != null ? !honorificSuffix.equals(userType.honorificSuffix) : userType.honorificSuffix != null)
             return false;
         if (locality != null ? !locality.equals(userType.locality) : userType.locality != null) return false;
+        if (name != null ? !name.equals(userType.name) : userType.name != null) return false;
         if (nickName != null ? !nickName.equals(userType.nickName) : userType.nickName != null) return false;
         if (orgUnitAssignments != null ? !orgUnitAssignments.equals(userType.orgUnitAssignments) : userType.orgUnitAssignments != null)
             return false;
@@ -226,6 +254,7 @@ public class UserType extends ObjectType{
     @Override
     public int hashCode() {
         int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
         result = 31 * result + (givenName != null ? givenName.hashCode() : 0);
         result = 31 * result + (familyName != null ? familyName.hashCode() : 0);

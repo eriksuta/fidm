@@ -13,23 +13,14 @@ public class ObjectType implements Serializable{
     @Index(unique = "true")
     private String uid;
 
-    @Index(unique = "true")
-    private String name;
+    private String objectName;
+
     private String description;
 
     public ObjectType(){}
 
-    public ObjectType(String name, String description){
-        this.name = name;
+    public ObjectType(String description){
         this.description = description;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -48,6 +39,14 @@ public class ObjectType implements Serializable{
         this.uid = uid;
     }
 
+    public String getName() {
+        return objectName;
+    }
+
+    public void setName(String objectName) {
+        this.objectName = objectName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -56,7 +55,7 @@ public class ObjectType implements Serializable{
         ObjectType that = (ObjectType) o;
 
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (objectName != null ? !objectName.equals(that.objectName) : that.objectName != null) return false;
         if (uid != null ? !uid.equals(that.uid) : that.uid != null) return false;
 
         return true;
@@ -65,7 +64,7 @@ public class ObjectType implements Serializable{
     @Override
     public int hashCode() {
         int result = uid != null ? uid.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (objectName != null ? objectName.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         return result;
     }
