@@ -7,6 +7,7 @@ import com.esuta.fidm.gui.component.data.column.LinkColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.org.PageOrg;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
@@ -452,15 +453,29 @@ public class PageFederation extends PageBase {
     }
 
     private void sharedOrgUnitEditPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
-//        TODO
-        warn("Not implemented yet");
-        target.add(getFeedbackPanel());
+        if(rowModel == null || rowModel.getObject() == null){
+            warn("Could not show shared org. unit");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        OrgType org = rowModel.getObject();
+        String orgUid = org.getUid();
+
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, orgUid);
+        setResponsePage(new PageOrg(parameters));
     }
 
     private void providedOrgUnitEditPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
-//        TODO
-        warn("Not implemented yet");
-        target.add(getFeedbackPanel());
+        if(rowModel == null || rowModel.getObject() == null){
+            warn("Could not show shared org. unit");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        OrgType org = rowModel.getObject();
+        setResponsePage(new PageOrgPreview(org));
     }
 
     private void cancelPerformed(){
