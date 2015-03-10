@@ -65,7 +65,7 @@ public class RestFederationService implements IFederationService{
         String attributeName = federationMember.getUniqueOrgIdentifier();
         String attributeValue;
 
-        Field attribute = org.getClass().getSuperclass().getDeclaredField(attributeName);
+        Field attribute = org.getClass().getDeclaredField(attributeName);
         attribute.setAccessible(true);
         attributeValue = (String)attribute.get(org);
         return attributeValue;

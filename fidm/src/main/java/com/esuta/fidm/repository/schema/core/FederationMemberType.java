@@ -72,6 +72,27 @@ public class FederationMemberType extends ObjectType{
      * */
     private String uniqueOrgIdentifier;
 
+    /**
+     *  A name of attribute of UserType that is unique in federation
+     *  member system. A system can identify the user (subject) by using the value
+     *  of this attribute.
+     * */
+    private String uniqueUserIdentifier;
+
+    /**
+     *  A name of attribute of ResourceType that is unique in federation
+     *  member system. A system can identify the resource (relying party)
+     *  by using the value of this attribute.
+     * */
+    private String uniqueResourceIdentifier;
+
+    /**
+     *  A name of attribute of RoleType that is unique in federation
+     *  member system. A system can identify the role by using the value
+     *  of this attribute.
+     * */
+    private String uniqueRoleIdentifier;
+
     public FederationMemberType(){}
 
     public String getName() {
@@ -146,6 +167,30 @@ public class FederationMemberType extends ObjectType{
         this.uniqueOrgIdentifier = uniqueOrgIdentifier;
     }
 
+    public String getUniqueUserIdentifier() {
+        return uniqueUserIdentifier;
+    }
+
+    public void setUniqueUserIdentifier(String uniqueUserIdentifier) {
+        this.uniqueUserIdentifier = uniqueUserIdentifier;
+    }
+
+    public String getUniqueResourceIdentifier() {
+        return uniqueResourceIdentifier;
+    }
+
+    public void setUniqueResourceIdentifier(String uniqueResourceIdentifier) {
+        this.uniqueResourceIdentifier = uniqueResourceIdentifier;
+    }
+
+    public String getUniqueRoleIdentifier() {
+        return uniqueRoleIdentifier;
+    }
+
+    public void setUniqueRoleIdentifier(String uniqueRoleIdentifier) {
+        this.uniqueRoleIdentifier = uniqueRoleIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -165,6 +210,12 @@ public class FederationMemberType extends ObjectType{
         if (status != that.status) return false;
         if (uniqueOrgIdentifier != null ? !uniqueOrgIdentifier.equals(that.uniqueOrgIdentifier) : that.uniqueOrgIdentifier != null)
             return false;
+        if (uniqueResourceIdentifier != null ? !uniqueResourceIdentifier.equals(that.uniqueResourceIdentifier) : that.uniqueResourceIdentifier != null)
+            return false;
+        if (uniqueRoleIdentifier != null ? !uniqueRoleIdentifier.equals(that.uniqueRoleIdentifier) : that.uniqueRoleIdentifier != null)
+            return false;
+        if (uniqueUserIdentifier != null ? !uniqueUserIdentifier.equals(that.uniqueUserIdentifier) : that.uniqueUserIdentifier != null)
+            return false;
         if (webAddress != null ? !webAddress.equals(that.webAddress) : that.webAddress != null) return false;
 
         return true;
@@ -182,6 +233,9 @@ public class FederationMemberType extends ObjectType{
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (locality != null ? locality.hashCode() : 0);
         result = 31 * result + (uniqueOrgIdentifier != null ? uniqueOrgIdentifier.hashCode() : 0);
+        result = 31 * result + (uniqueUserIdentifier != null ? uniqueUserIdentifier.hashCode() : 0);
+        result = 31 * result + (uniqueResourceIdentifier != null ? uniqueResourceIdentifier.hashCode() : 0);
+        result = 31 * result + (uniqueRoleIdentifier != null ? uniqueRoleIdentifier.hashCode() : 0);
         return result;
     }
 }

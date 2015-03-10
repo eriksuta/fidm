@@ -201,9 +201,13 @@ public class PageOrgPreview extends PageBase{
 
     private void resolvePerformed(AjaxRequestTarget target){
 //        TODO
+        warn("Not implemented yet.");
+        target.add(getFeedbackPanel());
     }
 
     private void sharePerformed(AjaxRequestTarget target){
 //        TODO
+        warn("Not implemented yet.");
+        target.add(getFeedbackPanel());
     }
 }

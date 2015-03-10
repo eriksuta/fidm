@@ -57,7 +57,11 @@ public class PageFederation extends PageBase {
     private static final String ID_WEB_ADDRESS = "webAddress";
     private static final String ID_PORT = "port";
     private static final String ID_LOCALITY = "locality";
+
     private static final String ID_ORG_UNIQUE_ATTRIBUTE = "orgIdentifier";
+    private static final String ID_USER_UNIQUE_ATTRIBUTE = "userIdentifier";
+    private static final String ID_ROLE_UNIQUE_ATTRIBUTE = "roleIdentifier";
+    private static final String ID_RESOURCE_UNIQUE_ATTRIBUTE = "resourceIdentifier";
 
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
@@ -190,7 +194,59 @@ public class PageFederation extends PageBase {
                         return Integer.toString(index);
                     }
                 });
+        orgIdentifier.setRequired(true);
         mainForm.add(orgIdentifier);
+
+        DropDownChoice userIdentifier = new DropDownChoice<>(ID_USER_UNIQUE_ATTRIBUTE,
+                new PropertyModel<String>(model, "uniqueUserIdentifier"), createUniqueUserAttributeList(),
+                new IChoiceRenderer<String>() {
+
+                    @Override
+                    public String getDisplayValue(String object) {
+                        return object;
+                    }
+
+                    @Override
+                    public String getIdValue(String object, int index) {
+                        return Integer.toString(index);
+                    }
+                });
+        userIdentifier.setRequired(true);
+        mainForm.add(userIdentifier);
+
+        DropDownChoice roleIdentifier = new DropDownChoice<>(ID_ROLE_UNIQUE_ATTRIBUTE,
+                new PropertyModel<String>(model, "uniqueRoleIdentifier"), createUniqueRoleAttributeList(),
+                new IChoiceRenderer<String>() {
+
+                    @Override
+                    public String getDisplayValue(String object) {
+                        return object;
+                    }
+
+                    @Override
+                    public String getIdValue(String object, int index) {
+                        return Integer.toString(index);
+                    }
+                });
+        roleIdentifier.setRequired(true);
+        mainForm.add(roleIdentifier);
+
+        DropDownChoice resourceIdentifier = new DropDownChoice<>(ID_RESOURCE_UNIQUE_ATTRIBUTE,
+                new PropertyModel<String>(model, "uniqueResourceIdentifier"), createUniqueResourceAttributeList(),
+                new IChoiceRenderer<String>() {
+
+                    @Override
+                    public String getDisplayValue(String object) {
+                        return object;
+                    }
+
+                    @Override
+                    public String getIdValue(String object, int index) {
+                        return Integer.toString(index);
+                    }
+                });
+        resourceIdentifier.setRequired(true);
+        mainForm.add(resourceIdentifier);
 
         AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
 
@@ -446,6 +502,29 @@ public class PageFederation extends PageBase {
     }
 
     private List<String> createUniqueOrgAttributeList(){
+        List<String> list = new ArrayList<>();
+        list.add("name");
+        list.add("uid");
+        return list;
+    }
+
+    private List<String> createUniqueUserAttributeList(){
+        List<String> list = new ArrayList<>();
+        list.add("name");
+        list.add("uid");
+        list.add("telephoneNumber");
+        list.add("emailAddress");
+        return list;
+    }
+
+    private List<String> createUniqueRoleAttributeList(){
+        List<String> list = new ArrayList<>();
+        list.add("name");
+        list.add("uid");
+        return list;
+    }
+
+    private List<String> createUniqueResourceAttributeList(){
         List<String> list = new ArrayList<>();
         list.add("name");
         list.add("uid");
