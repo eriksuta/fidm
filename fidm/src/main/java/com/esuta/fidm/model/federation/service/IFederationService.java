@@ -234,11 +234,11 @@ public interface IFederationService {
      *      federation.
      *  </p>
      *
-     *  @param memberIdentifier
+     *  @param memberIdentifier (String)
      *      A unique identifier of federation member in identity federation performing the
      *      request
      *
-     *  @param uniqueAttributeValue
+     *  @param uniqueAttributeValue (String)
      *      A unique value of attribute specified by targeted federation member. By this value,
      *      requested federation member is able to uniquely identify the requested org. unit.
      *
@@ -252,7 +252,7 @@ public interface IFederationService {
      *                   HTTP response contains requested org. unit in response
      *                   body.
      *
-     *      <b>400</b> - response with HTTP cod 400 should be returned when the request is
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
      *                   malformed, e.g. the memberIdentifier or uniqueAttributeValue is not
      *                   set or there is no existing membership relation between
      *                   requesting and requested federation members. Another situation

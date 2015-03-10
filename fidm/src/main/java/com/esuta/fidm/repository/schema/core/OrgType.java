@@ -1,6 +1,6 @@
 package com.esuta.fidm.repository.schema.core;
 
-import com.esuta.fidm.repository.schema.support.FederationIdentifier;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 
 import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
@@ -92,7 +92,7 @@ public class OrgType extends ObjectType{
      *  by origin identity provider, so we believe that this mechanism
      *  is privacy-respecting.
      * */
-    private FederationIdentifier federationIdentifier;
+    private FederationIdentifierType federationIdentifier;
 
     /**
      *  An attribute declaring, if this org. unit can be shared in
@@ -208,11 +208,11 @@ public class OrgType extends ObjectType{
         this.roleInducements = roleInducements;
     }
 
-    public FederationIdentifier getFederationIdentifier() {
+    public FederationIdentifierType getFederationIdentifier() {
         return federationIdentifier;
     }
 
-    public void setFederationIdentifier(FederationIdentifier federationIdentifier) {
+    public void setFederationIdentifier(FederationIdentifierType federationIdentifier) {
         this.federationIdentifier = federationIdentifier;
     }
 

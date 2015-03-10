@@ -1,6 +1,6 @@
 package com.esuta.fidm.repository.schema.core;
 
-import com.esuta.fidm.repository.schema.support.FederationIdentifier;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 
 import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
@@ -62,7 +62,7 @@ public class UserType extends ObjectType{
      *  by origin identity provider, so we believe that this mechanism
      *  is privacy-respecting.
      * */
-    private FederationIdentifier federationIdentifier;
+    private FederationIdentifierType federationIdentifier;
 
     public UserType(){}
 
@@ -206,11 +206,11 @@ public class UserType extends ObjectType{
         this.accounts = accounts;
     }
 
-    public FederationIdentifier getFederationIdentifier() {
+    public FederationIdentifierType getFederationIdentifier() {
         return federationIdentifier;
     }
 
-    public void setFederationIdentifier(FederationIdentifier federationIdentifier) {
+    public void setFederationIdentifier(FederationIdentifierType federationIdentifier) {
         this.federationIdentifier = federationIdentifier;
     }
 

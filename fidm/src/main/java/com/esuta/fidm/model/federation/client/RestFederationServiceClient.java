@@ -9,7 +9,7 @@ import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
-import com.esuta.fidm.repository.schema.support.FederationIdentifier;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -222,7 +222,7 @@ public class RestFederationServiceClient {
         return responseObject;
     }
 
-    public ObjectTypeRestResponse<OrgType> createGetOrgUnitRequest(FederationMemberType federationMember, FederationIdentifier federationIdentifier)
+    public ObjectTypeRestResponse<OrgType> createGetOrgUnitRequest(FederationMemberType federationMember, FederationIdentifierType federationIdentifier)
             throws DatabaseCommunicationException {
 
         String address = federationMember.getWebAddress();
@@ -250,7 +250,7 @@ public class RestFederationServiceClient {
         return responseObject;
     }
 
-    public GenericListRestResponse<OrgType> createGetOrgUnitHierarchyRequest(FederationMemberType federationMember, FederationIdentifier federationIdentifier)
+    public GenericListRestResponse<OrgType> createGetOrgUnitHierarchyRequest(FederationMemberType federationMember, FederationIdentifierType federationIdentifier)
             throws DatabaseCommunicationException {
 
         String address = federationMember.getWebAddress();

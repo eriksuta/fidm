@@ -38,6 +38,7 @@ public class FederationMemberType extends ObjectType{
      *      AVAILABLE
      *      REQUESTED
      *      DENIED
+     *      DELETE_REQUESTED
      * */
     private FederationMemberStatusType status;
 

@@ -9,7 +9,7 @@ import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
-import com.esuta.fidm.repository.schema.support.FederationIdentifier;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
@@ -430,7 +430,7 @@ public class RestFederationService implements IFederationService{
 
             for(OrgType org: orgUnits){
                 if(org.isSharedInFederation()){
-                    FederationIdentifier federationIdentifier = new FederationIdentifier();
+                    FederationIdentifierType federationIdentifier = new FederationIdentifierType();
                     federationIdentifier.setFederationMemberId(getLocalFederationMemberIdentifier());
                     federationIdentifier.setUniqueAttributeValue(getUniqueAttributeValue(org, currentMember));
                     org.setFederationIdentifier(federationIdentifier);

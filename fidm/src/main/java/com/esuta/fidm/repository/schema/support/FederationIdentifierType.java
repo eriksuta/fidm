@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  *  TODO - add correct description
  * */
-public class FederationIdentifier implements Serializable {
+public class FederationIdentifierType implements Serializable {
 
     private String federationMemberId;
     private String uniqueAttributeValue;
@@ -33,7 +33,7 @@ public class FederationIdentifier implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        FederationIdentifier that = (FederationIdentifier) o;
+        FederationIdentifierType that = (FederationIdentifierType) o;
 
         if (federationMemberId != null ? !federationMemberId.equals(that.federationMemberId) : that.federationMemberId != null)
             return false;

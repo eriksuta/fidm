@@ -17,7 +17,7 @@ import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
-import com.esuta.fidm.repository.schema.support.FederationIdentifier;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -249,7 +249,7 @@ public class PageFederation extends PageBase {
 
                     for(OrgType org: list){
                         if(org.getFederationIdentifier() != null){
-                            FederationIdentifier identifier = org.getFederationIdentifier();
+                            FederationIdentifierType identifier = org.getFederationIdentifier();
 
                             if(identifier.getFederationMemberId().equals(member.getFederationMemberName())){
                                 sharedOrgUnits.add(org);
