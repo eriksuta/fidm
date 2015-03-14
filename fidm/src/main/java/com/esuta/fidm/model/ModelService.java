@@ -4,6 +4,7 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.api.RepositoryService;
+import com.esuta.fidm.repository.schema.core.AssignmentType;
 import com.esuta.fidm.repository.schema.core.ObjectType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.UserType;
@@ -107,8 +108,8 @@ public class ModelService implements IModelService{
         List<UserType> users = getAllObjectsOfType(UserType.class);
 
         for(UserType user: users){
-            for(String uid: user.getOrgUnitAssignments()){
-                if(orgUid.equals(uid)){
+            for(AssignmentType assignment: user.getOrgUnitAssignments()){
+                if(orgUid.equals(assignment.getUid())){
                     members.add(user);
                 }
             }

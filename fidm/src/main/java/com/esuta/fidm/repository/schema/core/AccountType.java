@@ -22,15 +22,14 @@ public class AccountType extends ObjectType{
      *  is located
      * */
     @Index
-    private String resource;
+    private ObjectReferenceType<ResourceType> resource;
 
     /**
      *  A reference to the UserType instance, a user that
      *  is an owner of account entity in identity provider
      *  as well as on the target system
      * */
-    @Index
-    private String owner;
+    private ObjectReferenceType<UserType> owner;
 
     /**
      *  A password used to login, or verify the identity
@@ -70,19 +69,19 @@ public class AccountType extends ObjectType{
         this.name = name;
     }
 
-    public String getResource() {
+    public ObjectReferenceType<ResourceType> getResource() {
         return resource;
     }
 
-    public void setResource(String resource) {
+    public void setResource(ObjectReferenceType<ResourceType> resource) {
         this.resource = resource;
     }
 
-    public String getOwner() {
+    public ObjectReferenceType<UserType> getOwner() {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public void setOwner(ObjectReferenceType<UserType> owner) {
         this.owner = owner;
     }
 

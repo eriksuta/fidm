@@ -33,18 +33,18 @@ public class AssignableDataProvider<T extends ObjectType, S extends ObjectType> 
                 UserType user = (UserType)assignmentSource;
 
                 if(getType().equals(RoleType.class)){
-                    for(String uid: user.getRoleAssignments()){
-                        RoleType role = getModelService().readObject(RoleType.class, uid);
+                    for(AssignmentType roleAssignment: user.getRoleAssignments()){
+                        RoleType role = getModelService().readObject(RoleType.class, roleAssignment.getUid());
                         getData().add((T)role);
                     }
                 } else if (getType().equals(OrgType.class)){
-                    for(String uid: user.getOrgUnitAssignments()){
-                        OrgType org = getModelService().readObject(OrgType.class, uid);
+                    for(AssignmentType orgAssignment: user.getOrgUnitAssignments()){
+                        OrgType org = getModelService().readObject(OrgType.class, orgAssignment.getUid());
                         getData().add((T)org);
                     }
                 } else if (getType().equals(AccountType.class)){
-                    for(String uid: user.getAccounts()){
-                        AccountType account = getModelService().readObject(AccountType.class, uid);
+                    for(AssignmentType accountAssignment: user.getAccounts()){
+                        AccountType account = getModelService().readObject(AccountType.class, accountAssignment.getUid());
                         getData().add((T)account);
                     }
                 }

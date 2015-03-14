@@ -53,14 +53,14 @@ public class OrgType extends ObjectType{
      *      - org. unit can't have a children that is somewhere
      *        in the chain of it's parents (to prevent cycles)
      * */
-    private List<String> parentOrgUnits;
+    private List<ObjectReferenceType<OrgType>> parentOrgUnits;
 
     /**
      *  A list of governors, a references to the users that
      *  possess some level of control over org. units and
      *  decisions made with org. units
      * */
-    private List<String> governors;
+    private List<ObjectReferenceType<UserType>> governors;
 
     /**
      *  A list of references to relying parties (service providers,
@@ -71,13 +71,13 @@ public class OrgType extends ObjectType{
      *  at ALL times. If they do not, such state is considered
      *  as inconsistent.
      * */
-    private List<String> resourceInducements;
+    private List<InducementType<ResourceType>> resourceInducements;
 
     /**
      *  The same concept as with the attribute 'resourceInducements', but
      *  with roles.
      * */
-    private List<String> roleInducements;
+    private List<InducementType<RoleType>> roleInducements;
 
     /**
      *  A federation identifier used to uniquely identify the org. unit
@@ -160,7 +160,7 @@ public class OrgType extends ObjectType{
         this.locality = locality;
     }
 
-    public List<String> getParentOrgUnits() {
+    public List<ObjectReferenceType<OrgType>> getParentOrgUnits() {
         if(parentOrgUnits == null){
             parentOrgUnits = new ArrayList<>();
         }
@@ -168,11 +168,11 @@ public class OrgType extends ObjectType{
         return parentOrgUnits;
     }
 
-    public void setParentOrgUnits(List<String> parentOrgUnits) {
+    public void setParentOrgUnits(List<ObjectReferenceType<OrgType>> parentOrgUnits) {
         this.parentOrgUnits = parentOrgUnits;
     }
 
-    public List<String> getGovernors() {
+    public List<ObjectReferenceType<UserType>> getGovernors() {
         if(governors == null){
             governors = new ArrayList<>();
         }
@@ -180,11 +180,11 @@ public class OrgType extends ObjectType{
         return governors;
     }
 
-    public void setGovernors(List<String> governors) {
+    public void setGovernors(List<ObjectReferenceType<UserType>> governors) {
         this.governors = governors;
     }
 
-    public List<String> getResourceInducements() {
+    public List<InducementType<ResourceType>> getResourceInducements() {
         if(resourceInducements == null){
             resourceInducements = new ArrayList<>();
         }
@@ -192,11 +192,11 @@ public class OrgType extends ObjectType{
         return resourceInducements;
     }
 
-    public void setResourceInducements(List<String> resourceInducements) {
+    public void setResourceInducements(List<InducementType<ResourceType>> resourceInducements) {
         this.resourceInducements = resourceInducements;
     }
 
-    public List<String> getRoleInducements() {
+    public List<InducementType<RoleType>> getRoleInducements() {
         if(roleInducements == null){
             roleInducements = new ArrayList<>();
         }
@@ -204,7 +204,7 @@ public class OrgType extends ObjectType{
         return roleInducements;
     }
 
-    public void setRoleInducements(List<String> roleInducements) {
+    public void setRoleInducements(List<InducementType<RoleType>> roleInducements) {
         this.roleInducements = roleInducements;
     }
 

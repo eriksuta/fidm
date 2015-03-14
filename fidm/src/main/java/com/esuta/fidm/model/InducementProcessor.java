@@ -2,9 +2,7 @@ package com.esuta.fidm.model;
 
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
-import com.esuta.fidm.repository.schema.core.AccountType;
-import com.esuta.fidm.repository.schema.core.OrgType;
-import com.esuta.fidm.repository.schema.core.UserType;
+import com.esuta.fidm.repository.schema.core.*;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -49,7 +47,7 @@ public class InducementProcessor {
     }
 
     private void handleNewUserInducements(UserType user){
-        List<String> userOrgAssignments = user.getOrgUnitAssignments();
+        List<AssignmentType<OrgType>> userOrgAssignments = user.getOrgUnitAssignments();
 
         if(userOrgAssignments.isEmpty()){
             LOGGER.trace("Handled user with uid: '" + user.getName() + "' has no org. unit assignments. Inducement handling done.");
@@ -65,7 +63,7 @@ public class InducementProcessor {
     }
 
     private void handleExistingUserInducements(UserType user){
-        List<String> userOrgAssignments = user.getOrgUnitAssignments();
+        List<AssignmentType<OrgType>> userOrgAssignments = user.getOrgUnitAssignments();
 
         if(userOrgAssignments.isEmpty()){
             LOGGER.trace("Handled user with uid: '" + user.getUid() + "'(" + user.getName() +
@@ -81,31 +79,31 @@ public class InducementProcessor {
         }
     }
 
-    private List<OrgType> retrieveOrgUnits(List<String> orgUnitIdentifiers){
+    private List<OrgType> retrieveOrgUnits(List<AssignmentType<OrgType>> orgUnitAssignments){
         List<OrgType> orgUnitList = new ArrayList<>();
 
-        for(String orgUid: orgUnitIdentifiers){
+        for(AssignmentType assignment: orgUnitAssignments){
             try {
-                orgUnitList.add(modelService.readObject(OrgType.class, orgUid));
+                orgUnitList.add(modelService.readObject(OrgType.class, assignment.getUid()));
             } catch (DatabaseCommunicationException e) {
-                LOGGER.error("Could not retrieve org. unit with UID: '" + orgUid + "'.", e);
+                LOGGER.error("Could not retrieve org. unit with UID: '" + assignment.getUid() + "'.", e);
             }
         }
 
         return orgUnitList;
     }
 
-    private void handleExistingUserResourceInducements(UserType user, List<String> resourceInducementIdentifiers){
+    private void handleExistingUserResourceInducements(UserType user, List<InducementType<ResourceType>> resourceInducementIdentifiers){
         List<AccountType> userAccounts = new ArrayList<>();
-        List<String> resourcesWithAccounts = new ArrayList<>();
-        List<String> resourcesWithoutAccounts = new ArrayList<>();
+        List<ObjectReferenceType<ResourceType>> resourcesWithAccounts = new ArrayList<>();
+        List<ObjectReferenceType<ResourceType>> resourcesWithoutAccounts = new ArrayList<>();
 
         // Retrieve existing accounts of handled user
-        for(String accountUid: user.getAccounts()){
+        for(AssignmentType accountReferences: user.getAccounts()){
             try {
-                userAccounts.add(modelService.readObject(AccountType.class, accountUid));
+                userAccounts.add(modelService.readObject(AccountType.class, accountReferences.getUid()));
             } catch (DatabaseCommunicationException e) {
-                LOGGER.error("Could not retrieve account with uid: '" + accountUid + "' belonging to user: '" + user.getName() + "'.", e);
+                LOGGER.error("Could not retrieve account with uid: '" + accountReferences.getUid() + "' belonging to user: '" + user.getName() + "'.", e);
             }
         }
 
@@ -114,22 +112,30 @@ public class InducementProcessor {
         }
 
         // Find out, if we need to create any new account enforced by inducement
-        for(String resourceUid: resourceInducementIdentifiers){
-            if(!resourcesWithAccounts.contains(resourceUid)){
-                resourcesWithoutAccounts.add(resourceUid);
+        for(InducementType<ResourceType> resourceInducement: resourceInducementIdentifiers){
+            ObjectReferenceType<ResourceType> resourceReference = new ObjectReferenceType<>(resourceInducement.getUid(), ResourceType.class);
+
+            if(!resourcesWithAccounts.contains(resourceReference)){
+                resourcesWithoutAccounts.add(resourceReference);
             }
         }
 
         // Create missing accounts
-        for(String resourceUid: resourcesWithoutAccounts){
+        for(ObjectReferenceType<ResourceType> resourceReference: resourcesWithoutAccounts){
+            String resourceUid = resourceReference.getUid();
+
             AccountType newAccount = new AccountType();
-            newAccount.setResource(resourceUid);
-            newAccount.setOwner(user.getUid());
+            newAccount.setResource(resourceReference);
+
+            ObjectReferenceType<UserType> ownerReference = new ObjectReferenceType<>(user.getUid(), UserType.class);
+            newAccount.setOwner(ownerReference);
             newAccount.setName(user.getName());
 
             try {
                 newAccount = modelService.createObject(newAccount);
-                user.getAccounts().add(newAccount.getUid());
+
+                AssignmentType<AccountType> accountAssignment = new AssignmentType<>(newAccount.getUid(), AccountType.class);
+                user.getAccounts().add(accountAssignment);
                 LOGGER.debug("New account with uid: '" + newAccount.getUid() + "' created on resource: '" + resourceUid + "' for user: '" + user.getUid() + "'.");
             } catch (ObjectAlreadyExistsException | DatabaseCommunicationException e) {
                 LOGGER.error("Could not create new account for user: '" + user.getUid() + "' on resource: '" + resourceUid + "'. ", e);
@@ -137,38 +143,49 @@ public class InducementProcessor {
         }
     }
 
-    private void handleNewUserResourceInducements(UserType user, List<String> resourceIdentifiers){
-        for(String resourceUid: resourceIdentifiers){
+    private void handleNewUserResourceInducements(UserType user, List<InducementType<ResourceType>> resourceIdentifiers){
+        for(InducementType inducement: resourceIdentifiers){
+            String inducementUid = inducement.getUid();
             AccountType newAccount = new AccountType();
-            newAccount.setResource(resourceUid);
-            newAccount.setOwner(user.getUid());
+
+            ObjectReferenceType<ResourceType> resourceReference = new ObjectReferenceType<>(inducementUid, ResourceType.class);
+            newAccount.setResource(resourceReference);
+
+            ObjectReferenceType<UserType> ownerReference = new ObjectReferenceType<>(user.getUid(), UserType.class);
+            newAccount.setOwner(ownerReference);
             newAccount.setName(user.getName());
 
             try {
                 newAccount = modelService.createObject(newAccount);
-                user.getAccounts().add(newAccount.getUid());
-                LOGGER.debug("New account with uid: '" + newAccount.getUid() + "' created on resource: '" + resourceUid + "' for user: '" + user.getName() + "'.");
+
+                AssignmentType<AccountType> accountAssignment = new AssignmentType<>(newAccount.getUid(), AccountType.class);
+                user.getAccounts().add(accountAssignment);
+                LOGGER.debug("New account with uid: '" + newAccount.getUid() + "' created on resource: '" + inducementUid + "' for user: '" + user.getName() + "'.");
             } catch (ObjectAlreadyExistsException | DatabaseCommunicationException e) {
-                LOGGER.error("Could not create new account for user: '" + user.getName() + "' on resource: '" + resourceUid + "'. ", e);
+                LOGGER.error("Could not create new account for user: '" + user.getName() + "' on resource: '" + inducementUid + "'. ", e);
             }
         }
     }
 
-    private void handleExistingUserRoleInducements(UserType user, List<String> roleIdentifiers){
-        List<String> userRoleAssignments = user.getRoleAssignments();
+    private void handleExistingUserRoleInducements(UserType user, List<InducementType<RoleType>> roleIdentifiers){
+        List<AssignmentType<RoleType>> userRoleAssignments = user.getRoleAssignments();
 
-        for(String roleUid: roleIdentifiers){
-            if(!userRoleAssignments.contains(roleUid)){
-                user.getRoleAssignments().add(roleUid);
-                LOGGER.debug("New assignment of role with uid: '" + roleUid + "' added to user with uid: '" + user.getName() + "'.");
+        for(InducementType roleInducement: roleIdentifiers){
+            AssignmentType<RoleType> roleAssignment = new AssignmentType<>(roleInducement.getUid(), RoleType.class);
+
+            if(!userRoleAssignments.contains(roleAssignment)){
+
+                user.getRoleAssignments().add(roleAssignment);
+                LOGGER.debug("New assignment of role with uid: '" + roleInducement.getUid() + "' added to user with uid: '" + user.getName() + "'.");
             }
         }
     }
 
-    private void handleNewUserRoleInducements(UserType user, List<String> roleIdentifiers){
-        for(String roleUid: roleIdentifiers){
-            user.getRoleAssignments().add(roleUid);
-            LOGGER.debug("New assignment of role with uid: '" + roleUid + "' added to user with uid: '" + user.getUid() + "'.");
+    private void handleNewUserRoleInducements(UserType user, List<InducementType<RoleType>> roleInducements){
+        for(InducementType inducement: roleInducements){
+            AssignmentType<RoleType> roleAssignment = new AssignmentType<>(inducement.getUid(), RoleType.class);
+            user.getRoleAssignments().add(roleAssignment);
+            LOGGER.debug("New assignment of role with uid: '" + inducement.getUid() + "' added to user with uid: '" + user.getUid() + "'.");
         }
     }
 }

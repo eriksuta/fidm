@@ -2,6 +2,7 @@ package com.esuta.fidm.repository.schema.core;
 
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 
+import javax.persistence.Entity;
 import java.io.Serializable;
 
 /**
@@ -14,6 +15,7 @@ import java.io.Serializable;
  *
  *  @author shood
  * */
+@Entity
 public class ObjectReferenceType<T extends ObjectType> implements Serializable{
 
     /**
@@ -43,6 +45,11 @@ public class ObjectReferenceType<T extends ObjectType> implements Serializable{
     private boolean sharedInFederation;
 
     public ObjectReferenceType(){}
+
+    public ObjectReferenceType(String uid, Class<T> type) {
+        this.uid = uid;
+        this.type = type;
+    }
 
     public Class<T> getType() {
         return type;

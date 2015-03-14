@@ -6,10 +6,7 @@ import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.repository.schema.core.AccountType;
-import com.esuta.fidm.repository.schema.core.ResourceType;
-import com.esuta.fidm.repository.schema.core.UserType;
-import org.apache.commons.lang3.StringUtils;
+import com.esuta.fidm.repository.schema.core.*;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -74,7 +71,8 @@ public class PageAccount extends PageBase{
             if(!getPageParameters().get(PAGE_ACCOUNT_RESOURCE_UID).isEmpty()){
                 PageParameters parameters = getPageParameters();
                 String resourceUid = parameters.get(PAGE_ACCOUNT_RESOURCE_UID).toString();
-                newAccount.setResource(resourceUid);
+                ObjectReferenceType<ResourceType> resourceReference = new ObjectReferenceType<>(resourceUid, ResourceType.class);
+                newAccount.setResource(resourceReference);
             }
 
             return newAccount;
@@ -203,11 +201,12 @@ public class PageAccount extends PageBase{
             @Override
             public String getObject() {
                 if(model.getObject() != null && model.getObject().getOwner() != null &&
-                        StringUtils.isNotEmpty(model.getObject().getOwner())){
-                    String ownerUid = model.getObject().getOwner();
+                        model.getObject().getOwner() != null){
+
+                    ObjectReferenceType ownerReference = model.getObject().getOwner();
 
                     try {
-                        UserType owner = getModelService().readObject(UserType.class, ownerUid);
+                        UserType owner = getModelService().readObject(UserType.class, ownerReference.getUid());
 
                         return owner.getName();
                     } catch (DatabaseCommunicationException e) {
@@ -251,7 +250,8 @@ public class PageAccount extends PageBase{
         }
 
         String userUid = userModel.getObject().getUid();
-        model.getObject().setOwner(userUid);
+        ObjectReferenceType<UserType> ownerReference = new ObjectReferenceType<>(userUid, UserType.class);
+        model.getObject().setOwner(ownerReference);
 
         ModalWindow window = (ModalWindow) get(ID_OWNER_CHOOSER_MODAL);
         window.close(target);
@@ -273,8 +273,9 @@ public class PageAccount extends PageBase{
         account = model.getObject();
 
         try{
-            ResourceType resource = modelService.readObjectByName(ResourceType.class, account.getResource());
-            account.setResource(resource.getUid());
+            ResourceType resource = modelService.readObjectByName(ResourceType.class, account.getResource().getUid());
+            ObjectReferenceType<ResourceType> resourceReference = new ObjectReferenceType<>(resource.getUid(), ResourceType.class);
+            account.setResource(resourceReference);
 
             if(!isEditingAccount()){
                 account = modelService.createObject(account);
@@ -282,13 +283,15 @@ public class PageAccount extends PageBase{
                 modelService.updateObject(account);
             }
 
-            if(account.getOwner() == null || account.getOwner().isEmpty()){
-                String ownerUid = account.getOwner();
+            if(account.getOwner() == null){
+                ObjectReferenceType<UserType> owner = account.getOwner();
 
-                UserType user = modelService.readObject(UserType.class, ownerUid);
+                UserType user = modelService.readObject(UserType.class, owner.getUid());
+                AssignmentType<AccountType> accountAssignment = new AssignmentType<>(account.getUid(), AccountType.class);
 
-                if(!user.getAccounts().contains(account.getUid())){
-                    user.getAccounts().add(account.getUid());
+                if(!user.getAccounts().contains(accountAssignment)){
+                    user.getAccounts().add(accountAssignment);
+                    modelService.updateObject(user);
                 }
             }
 

@@ -7,6 +7,7 @@ import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
@@ -112,8 +113,8 @@ public class RestFederationService implements IFederationService{
 
         //First, retrieve all children of target org. unit
         for(OrgType orgUnit: allOrgUnits){
-            for(String orgUid: orgUnit.getParentOrgUnits()){
-                if(uid.equals(orgUid) && orgUnit.isSharedInFederation()){
+            for(ObjectReferenceType orgReference: orgUnit.getParentOrgUnits()){
+                if(uid.equals(orgReference.getUid()) && orgUnit.isSharedInFederation()){
                     orgHierarchy.add(orgUnit);
                     break;
                 }

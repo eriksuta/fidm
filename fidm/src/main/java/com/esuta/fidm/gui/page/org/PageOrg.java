@@ -16,10 +16,7 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.repository.schema.core.OrgType;
-import com.esuta.fidm.repository.schema.core.ResourceType;
-import com.esuta.fidm.repository.schema.core.RoleType;
-import com.esuta.fidm.repository.schema.core.UserType;
+import com.esuta.fidm.repository.schema.core.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -588,10 +585,12 @@ public class PageOrg extends PageBase {
                 List<UserType> managersList = new ArrayList<>();
 
                 if(model != null && model.getObject() != null){
-                    List<String> managersUid = model.getObject().getGovernors();
+                    List<ObjectReferenceType<UserType>> managers = model.getObject().getGovernors();
 
                     for(UserType user: list){
-                        if(managersUid.contains(user.getUid())){
+                        ObjectReferenceType<UserType> managerReference = new ObjectReferenceType<>(user.getUid(), UserType.class);
+
+                        if(managers.contains(managerReference)){
                             managersList.add(user);
                         }
                     }
@@ -725,7 +724,8 @@ public class PageOrg extends PageBase {
         }
 
         String resourceUid = resourceModel.getObject().getUid();
-        model.getObject().getResourceInducements().add(resourceUid);
+        InducementType<ResourceType> resourceInducement = new InducementType<>(resourceUid, ResourceType.class);
+        model.getObject().getResourceInducements().add(resourceInducement);
 
         ModalWindow window = (ModalWindow) get(ID_RESOURCE_INDUCEMENT_CHOOSER);
         window.close(target);
@@ -742,7 +742,8 @@ public class PageOrg extends PageBase {
         }
 
         String roleUid = roleModel.getObject().getUid();
-        model.getObject().getRoleInducements().add(roleUid);
+        InducementType<RoleType> roleInducement = new InducementType<>(roleUid, RoleType.class);
+        model.getObject().getRoleInducements().add(roleInducement);
 
         ModalWindow window = (ModalWindow) get(ID_ROLE_INDUCEMENT_CHOOSER);
         window.close(target);
@@ -759,7 +760,8 @@ public class PageOrg extends PageBase {
         }
 
         String governorUid = governorModel.getObject().getUid();
-        model.getObject().getGovernors().add(governorUid);
+        ObjectReferenceType<UserType> governorReference = new ObjectReferenceType<>(governorUid, UserType.class);
+        model.getObject().getGovernors().add(governorReference);
 
         ModalWindow window = (ModalWindow) get(ID_GOVERNOR_CHOOSER);
         window.close(target);
@@ -777,11 +779,13 @@ public class PageOrg extends PageBase {
             return list;
         }
 
-        List<String> parentOrgUnits = model.getObject().getParentOrgUnits();
+        List<ObjectReferenceType<OrgType>> parentOrgUnits = model.getObject().getParentOrgUnits();
         String currentOrgUid = model.getObject().getUid();
 
         for(OrgType org: list){
-            if(!parentOrgUnits.contains(org.getUid()) && !currentOrgUid.equals(org.getUid())){
+            ObjectReferenceType<OrgType> parentReference = new ObjectReferenceType<>(org.getUid(), OrgType.class);
+
+            if(!parentOrgUnits.contains(parentReference) && !currentOrgUid.equals(org.getUid())){
                 newOrgList.add(org);
             }
         }
@@ -796,10 +800,12 @@ public class PageOrg extends PageBase {
             return list;
         }
 
-        List<String> currentResourceInducements = model.getObject().getResourceInducements();
+        List<InducementType<ResourceType>> currentResourceInducements = model.getObject().getResourceInducements();
 
         for(ResourceType resource: list){
-            if(!currentResourceInducements.contains(resource.getUid())){
+            InducementType<ResourceType> resourceInducement = new InducementType<>(resource.getUid(), ResourceType.class);
+
+            if(!currentResourceInducements.contains(resourceInducement)){
                 newResourceList.add(resource);
             }
         }
@@ -814,10 +820,12 @@ public class PageOrg extends PageBase {
             return list;
         }
 
-        List<String> currentRoleInducements = model.getObject().getRoleInducements();
+        List<InducementType<RoleType>> currentRoleInducements = model.getObject().getRoleInducements();
 
         for(RoleType role: list){
-            if(!currentRoleInducements.contains(role.getUid())){
+            InducementType<RoleType> roleInducement = new InducementType<>(role.getUid(), RoleType.class);
+
+            if(!currentRoleInducements.contains(roleInducement)){
                 newRoleList.add(role);
             }
         }
@@ -832,10 +840,12 @@ public class PageOrg extends PageBase {
             return list;
         }
 
-        List<String> currentGovernors = model.getObject().getGovernors();
+        List<ObjectReferenceType<UserType>> currentGovernors = model.getObject().getGovernors();
 
         for(UserType user: list){
-            if(!currentGovernors.contains(user.getUid())){
+            ObjectReferenceType<UserType> governorReference = new ObjectReferenceType<>(user.getUid(), UserType.class);
+
+            if(!currentGovernors.contains(governorReference)){
                 newUserList.add(user);
             }
         }
@@ -862,7 +872,8 @@ public class PageOrg extends PageBase {
         }
 
         String uid = rowModel.getObject().getUid();
-        model.getObject().getParentOrgUnits().add(uid);
+        ObjectReferenceType<OrgType> parentReference = new ObjectReferenceType<>(uid, OrgType.class);
+        model.getObject().getParentOrgUnits().add(parentReference);
 
         ModalWindow dialog = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
         dialog.close(target);
@@ -1005,8 +1016,8 @@ public class PageOrg extends PageBase {
 
             //First, retrieve all children of target org. unit
             for(OrgType orgUnit: allOrgUnits){
-                for(String orgUid: orgUnit.getParentOrgUnits()){
-                    if(uid.equals(orgUid)){
+                for(ObjectReferenceType orgReference: orgUnit.getParentOrgUnits()){
+                    if(uid.equals(orgReference.getUid())){
                         children.add(orgUnit);
                         break;
                     }
@@ -1057,16 +1068,6 @@ public class PageOrg extends PageBase {
         }
         orgUnit.getOrgType().clear();
         orgUnit.getOrgType().addAll(newOrgTypes);
-
-        //Filtering empty org. unit parents
-        List<String> newOrgParents = new ArrayList<>();
-        for(String parent: orgUnit.getParentOrgUnits()){
-            if(parent != null && StringUtils.isNotEmpty(parent)){
-                newOrgParents.add(parent);
-            }
-        }
-        orgUnit.getParentOrgUnits().clear();
-        orgUnit.getParentOrgUnits().addAll(newOrgParents);
 
         try{
             if(!isEditingOrgUnit()){

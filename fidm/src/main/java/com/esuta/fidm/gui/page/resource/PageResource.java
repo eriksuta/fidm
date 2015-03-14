@@ -11,9 +11,7 @@ import com.esuta.fidm.gui.page.users.PageUser;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.repository.schema.core.AccountType;
-import com.esuta.fidm.repository.schema.core.ResourceType;
-import com.esuta.fidm.repository.schema.core.UserType;
+import com.esuta.fidm.repository.schema.core.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -230,13 +228,13 @@ public class PageResource extends PageBase {
 
             @Override
             public String getObject() {
-                String userUid = rowModel.getObject().getOwner();
+                ObjectReferenceType<UserType> ownerReference = rowModel.getObject().getOwner();
                 UserType owner = null;
 
                 try {
-                    owner = getModelService().readObject(UserType.class, userUid);
+                    owner = getModelService().readObject(UserType.class, ownerReference.getUid());
                 } catch (DatabaseCommunicationException e) {
-                    LOGGER.error("Could not load user with oid: '" + userUid + "' from the repository.");
+                    LOGGER.error("Could not load user with uid: '" + ownerReference.getUid() + "' from the repository.");
                 }
 
                 return owner != null ? owner.getName() : null;
@@ -270,11 +268,12 @@ public class PageResource extends PageBase {
             getModelService().deleteObject(account);
 
             //We also have to remove account reference from its owner
-            String ownerUid = account.getOwner();
+            ObjectReferenceType<UserType> ownerReference = account.getOwner();
 
-            if(ownerUid != null || StringUtils.isNotEmpty(ownerUid)){
-                UserType owner = getModelService().readObject(UserType.class, ownerUid);
-                owner.getAccounts().remove(ownerUid);
+            if(ownerReference != null){
+                UserType owner = getModelService().readObject(UserType.class, ownerReference.getUid());
+                AssignmentType<AccountType> accountAssignment = new AssignmentType<>(account.getUid(), AccountType.class);
+                owner.getAccounts().remove(accountAssignment);
                 getModelService().updateObject(owner);
             }
 

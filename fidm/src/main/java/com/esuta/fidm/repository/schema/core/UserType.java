@@ -45,9 +45,9 @@ public class UserType extends ObjectType{
 
     private String password;
 
-    private List<String> roleAssignments;
-    private List<String> orgUnitAssignments;
-    private List<String> accounts;
+    private List<AssignmentType<RoleType>> roleAssignments;
+    private List<AssignmentType<OrgType>> orgUnitAssignments;
+    private List<AssignmentType<AccountType>> accounts;
 
     /**
      *  A federation identifier used to uniquely identify the user
@@ -170,7 +170,7 @@ public class UserType extends ObjectType{
         this.password = password;
     }
 
-    public List<String> getRoleAssignments() {
+    public List<AssignmentType<RoleType>> getRoleAssignments() {
         if(roleAssignments == null){
             roleAssignments = new ArrayList<>();
         }
@@ -178,11 +178,11 @@ public class UserType extends ObjectType{
         return roleAssignments;
     }
 
-    public void setRoleAssignments(List<String> roleAssignments) {
+    public void setRoleAssignments(List<AssignmentType<RoleType>> roleAssignments) {
         this.roleAssignments = roleAssignments;
     }
 
-    public List<String> getOrgUnitAssignments() {
+    public List<AssignmentType<OrgType>> getOrgUnitAssignments() {
         if(orgUnitAssignments == null){
             orgUnitAssignments = new ArrayList<>();
         }
@@ -190,11 +190,11 @@ public class UserType extends ObjectType{
         return orgUnitAssignments;
     }
 
-    public void setOrgUnitAssignments(List<String> orgUnitAssignments) {
+    public void setOrgUnitAssignments(List<AssignmentType<OrgType>> orgUnitAssignments) {
         this.orgUnitAssignments = orgUnitAssignments;
     }
 
-    public List<String> getAccounts() {
+    public List<AssignmentType<AccountType>> getAccounts() {
         if(accounts == null){
             accounts = new ArrayList<>();
         }
@@ -202,7 +202,7 @@ public class UserType extends ObjectType{
         return accounts;
     }
 
-    public void setAccounts(List<String> accounts) {
+    public void setAccounts(List<AssignmentType<AccountType>> accounts) {
         this.accounts = accounts;
     }
 

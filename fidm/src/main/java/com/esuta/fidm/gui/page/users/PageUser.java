@@ -414,7 +414,8 @@ public class PageUser extends PageBase {
                 }
 
                 AccountType account = rowModel.getObject();
-                String resourceUid = account.getResource();
+                ObjectReferenceType<ResourceType> resourceReference = account.getResource();
+                String resourceUid = resourceReference.getUid();
 
                 ResourceType resource;
 
@@ -471,7 +472,8 @@ public class PageUser extends PageBase {
         }
 
         RoleType role = rowModel.getObject();
-        model.getObject().getUser().getRoleAssignments().add(role.getUid());
+        AssignmentType<RoleType> roleAssignment = new AssignmentType<>(role.getUid(), RoleType.class);
+        model.getObject().getUser().getRoleAssignments().add(roleAssignment);
 
         ModalWindow dialog = (ModalWindow) get(ID_ROLE_ASSIGNABLE_POPUP);
         dialog.close(target);
@@ -484,7 +486,8 @@ public class PageUser extends PageBase {
         }
 
         OrgType org = rowModel.getObject();
-        model.getObject().getUser().getOrgUnitAssignments().add(org.getUid());
+        AssignmentType<OrgType> roleAssignment = new AssignmentType<>(org.getUid(), OrgType.class);
+        model.getObject().getUser().getOrgUnitAssignments().add(roleAssignment);
 
         ModalWindow dialog = (ModalWindow) get(ID_ORG_ASSIGNABLE_POPUP);
         dialog.close(target);
@@ -498,8 +501,12 @@ public class PageUser extends PageBase {
 
         ResourceType resource = rowModel.getObject();
         AccountType account = new AccountType();
-        account.setOwner(model.getObject().getUser().getUid());
-        account.setResource(resource.getUid());
+
+        ObjectReferenceType<UserType> ownerReference = new ObjectReferenceType<>(model.getObject().getUser().getUid(), UserType.class);
+        account.setOwner(ownerReference);
+
+        ObjectReferenceType<ResourceType> resourceReference = new ObjectReferenceType<>(resource.getUid(), ResourceType.class);
+        account.setResource(resourceReference);
 
         try {
             account = getModelService().createObject(account);
@@ -512,7 +519,8 @@ public class PageUser extends PageBase {
             error("Can't add account to the user. Reason: " + e.getExceptionMessage());
         }
 
-        model.getObject().getUser().getAccounts().add(account.getUid());
+        AssignmentType<AccountType> accountAssignment = new AssignmentType<>(account.getUid(), AccountType.class);
+        model.getObject().getUser().getAccounts().add(accountAssignment);
         LOGGER.info("Account " + account.getUid() + " added to the user.");
 
         ModalWindow dialog = (ModalWindow) get(ID_ACCOUNT_POPUP);
