@@ -434,6 +434,7 @@ public class RestFederationService implements IFederationService{
                     FederationIdentifierType federationIdentifier = new FederationIdentifierType();
                     federationIdentifier.setFederationMemberId(getLocalFederationMemberIdentifier());
                     federationIdentifier.setUniqueAttributeValue(getUniqueAttributeValue(org, currentMember));
+                    federationIdentifier.setObjectType(OrgType.class.getCanonicalName());
                     org.setFederationIdentifier(federationIdentifier);
                     org.setUid(null);
                     sharedOrgUnits.add(org);
