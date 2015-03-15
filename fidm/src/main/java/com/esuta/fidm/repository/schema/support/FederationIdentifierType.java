@@ -1,6 +1,7 @@
 package com.esuta.fidm.repository.schema.support;
 
 import javax.persistence.Embeddable;
+import javax.persistence.Entity;
 import java.io.Serializable;
 
 /**

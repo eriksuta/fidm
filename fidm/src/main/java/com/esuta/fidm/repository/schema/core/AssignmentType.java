@@ -16,7 +16,7 @@ import java.io.Serializable;
  *
  *  @author shood
  * */
-@Embeddable
+//@Embeddable
 public class AssignmentType<T extends ObjectType> implements Serializable{
 
     /**

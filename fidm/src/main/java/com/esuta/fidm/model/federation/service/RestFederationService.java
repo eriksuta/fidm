@@ -6,10 +6,8 @@ import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.repository.schema.core.FederationMemberType;
-import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
-import com.esuta.fidm.repository.schema.core.OrgType;
-import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
+import com.esuta.fidm.model.util.JsonUtil;
+import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.google.gson.Gson;
 import org.apache.log4j.Logger;
@@ -50,11 +48,6 @@ public class RestFederationService implements IFederationService{
 
     public void initRestFederationService(){
         this.modelService = ModelService.getInstance();
-    }
-
-    private String objectToJson(Object object){
-        Gson gson = new Gson();
-        return gson.toJson(object);
     }
 
     private String getLocalFederationMemberIdentifier() throws DatabaseCommunicationException {
@@ -127,6 +120,48 @@ public class RestFederationService implements IFederationService{
         }
 
         return orgHierarchy;
+    }
+
+    private void resolveOrgReferenceSharing(OrgType org){
+        //Resolve parent org. ref sharing
+        List<ObjectReferenceType<OrgType>> newParentOrgRefs = new ArrayList<>();
+        for(ObjectReferenceType<OrgType> parentRef: org.getParentOrgUnits()){
+            if(parentRef.isSharedInFederation()){
+                newParentOrgRefs.add(parentRef);
+            }
+        }
+        org.getParentOrgUnits().clear();
+        org.getParentOrgUnits().addAll(newParentOrgRefs);
+
+        //Resolve governors sharing
+        List<ObjectReferenceType<UserType>> newGovernorRefs = new ArrayList<>();
+        for(ObjectReferenceType<UserType> governorRef: org.getGovernors()){
+            if(governorRef.isSharedInFederation()){
+                newGovernorRefs.add(governorRef);
+            }
+        }
+        org.getGovernors().clear();
+        org.getGovernors().addAll(newGovernorRefs);
+
+        //Resolve resource inducements sharing
+        List<InducementType<ResourceType>> newResourceInducements = new ArrayList<>();
+        for(InducementType<ResourceType> inducementRef: org.getResourceInducements()){
+            if(inducementRef.isSharedInFederation()){
+                newResourceInducements.add(inducementRef);
+            }
+        }
+        org.getResourceInducements().clear();
+        org.getResourceInducements().addAll(newResourceInducements);
+
+        //Resolve role inducements sharing
+        List<InducementType<RoleType>> newRoleInducements = new ArrayList<>();
+        for(InducementType<RoleType> inducementRef: org.getRoleInducements()){
+            if(inducementRef.isSharedInFederation()){
+                newRoleInducements.add(inducementRef);
+            }
+        }
+        org.getRoleInducements().clear();
+        org.getRoleInducements().addAll(newRoleInducements);
     }
 
     @GET
@@ -391,7 +426,7 @@ public class RestFederationService implements IFederationService{
                 }
             }
 
-            return Response.status(HttpStatus.OK_200).entity(objectToJson(count)).build();
+            return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(count)).build();
 
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not load org. units from the repository.", e);
@@ -437,11 +472,12 @@ public class RestFederationService implements IFederationService{
                     federationIdentifier.setObjectType(OrgType.class.getCanonicalName());
                     org.setFederationIdentifier(federationIdentifier);
                     org.setUid(null);
+                    resolveOrgReferenceSharing(org);
                     sharedOrgUnits.add(org);
                 }
             }
 
-            return Response.status(HttpStatus.OK_200).entity(objectToJson(sharedOrgUnits)).build();
+            return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(sharedOrgUnits)).build();
 
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not load org. units from the repository.", e);
@@ -489,7 +525,8 @@ public class RestFederationService implements IFederationService{
                         .entity("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue).build();
             }
 
-            return Response.status(HttpStatus.OK_200).entity(objectToJson(org)).build();
+            resolveOrgReferenceSharing(org);
+            return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(org)).build();
 
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not load org. unit from the repository.", e);
@@ -537,7 +574,10 @@ public class RestFederationService implements IFederationService{
                         .entity("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue).build();
             }
 
-            return Response.status(HttpStatus.OK_200).entity(objectToJson(orgHierarchy)).build();
+            for(OrgType org: orgHierarchy){
+                resolveOrgReferenceSharing(org);
+            }
+            return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(orgHierarchy)).build();
 
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not load org. unit from the repository.", e);

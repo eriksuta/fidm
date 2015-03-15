@@ -136,7 +136,7 @@ public class PageOrgPreview extends PageBase{
 
             @Override
             public String getObject() {
-                return "Governors (" + model.getObject().getResourceInducements().size() + ")";
+                return "Resource Inducements (" + model.getObject().getResourceInducements().size() + ")";
             }
         });
         mainForm.add(resourceInducementsLabel);
@@ -145,7 +145,7 @@ public class PageOrgPreview extends PageBase{
 
             @Override
             public String getObject() {
-                return "Governors (" + model.getObject().getRoleInducements().size() + ")";
+                return "RoleInducements (" + model.getObject().getRoleInducements().size() + ")";
             }
         });
         mainForm.add(roleInducementsLabel);
