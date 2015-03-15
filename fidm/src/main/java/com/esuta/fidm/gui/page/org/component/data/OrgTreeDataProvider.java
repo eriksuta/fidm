@@ -3,6 +3,7 @@ package com.esuta.fidm.gui.page.org.component.data;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.Component;
@@ -72,8 +73,11 @@ public class OrgTreeDataProvider extends SortableTreeProvider<OrgType, String>{
             List<OrgType> allOrgUnits = getModelService().getAllObjectsOfType(OrgType.class);
 
             for(OrgType org: allOrgUnits){
-                if(org.getParentOrgUnits().contains(nodeUid)){
-                    children.add(org);
+                for(ObjectReferenceType<OrgType> parentRef: org.getParentOrgUnits()){
+                    if(parentRef.getUid().equals(nodeUid)){
+                        children.add(org);
+                        break;
+                    }
                 }
             }
 
