@@ -5,13 +5,16 @@ import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.repository.schema.core.ObjectType;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +25,12 @@ import java.util.List;
 public class ObjectChooserDialog<T extends ObjectType> extends ModalWindow{
 
     private static final String ID_TABLE = "table";
+    private static final String ID_SHARED_IN_FEDERATION = "sharedInFederation";
     private static final String ID_CANCEL = "cancelButton";
 
     private boolean initialized;
     private Class<T> type;
+    private boolean sharedInFederation = false;
 
     public ObjectChooserDialog(String id, Class<T> type){
         super(id);
@@ -58,6 +63,15 @@ public class ObjectChooserDialog<T extends ObjectType> extends ModalWindow{
     }
 
     private void initLayout(WebMarkupContainer content){
+        CheckBox sharedInFederation = new CheckBox(ID_SHARED_IN_FEDERATION,
+                new PropertyModel<Boolean>(this, "sharedInFederation"));
+        sharedInFederation.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {}
+        });
+        content.add(sharedInFederation);
+
         List<IColumn<T, String>> columns = initColumns();
 
         ObjectDataProvider<T> provider = new ObjectDataProvider<T>(this, type){
@@ -106,6 +120,10 @@ public class ObjectChooserDialog<T extends ObjectType> extends ModalWindow{
         });
 
         return columns;
+    }
+
+    public boolean isSharedInFederation() {
+        return sharedInFederation;
     }
 
     /**

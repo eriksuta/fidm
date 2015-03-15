@@ -309,7 +309,7 @@ public class PageOrg extends PageBase {
 
             @Override
             public void objectChoosePerformed(AjaxRequestTarget target, IModel<ResourceType> rowModel) {
-                resourceInducementChoosePerformed(target, rowModel);
+                resourceInducementChoosePerformed(target, rowModel, isSharedInFederation());
             }
 
             @Override
@@ -328,7 +328,7 @@ public class PageOrg extends PageBase {
 
             @Override
             public void objectChoosePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
-                roleInducementChoosePerformed(target, rowModel);
+                roleInducementChoosePerformed(target, rowModel, isSharedInFederation());
             }
 
             @Override
@@ -347,7 +347,7 @@ public class PageOrg extends PageBase {
 
             @Override
             public void objectChoosePerformed(AjaxRequestTarget target, IModel<OrgType> rowModel) {
-                parentOrgUnitChoosePerformed(target, rowModel);
+                parentOrgUnitChoosePerformed(target, rowModel, isSharedInFederation());
             }
 
             @Override
@@ -366,7 +366,7 @@ public class PageOrg extends PageBase {
 
             @Override
             public void objectChoosePerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
-                governorChoosePerformed(target, rowModel);
+                governorChoosePerformed(target, rowModel, isSharedInFederation());
             }
 
             @Override
@@ -722,7 +722,7 @@ public class PageOrg extends PageBase {
         };
     }
 
-    private void resourceInducementChoosePerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel){
+    private void resourceInducementChoosePerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel, boolean isSharedInFederation){
         if(resourceModel == null || resourceModel.getObject() == null){
             return;
         }
@@ -733,6 +733,7 @@ public class PageOrg extends PageBase {
 
         String resourceUid = resourceModel.getObject().getUid();
         InducementType<ResourceType> resourceInducement = new InducementType<>(resourceUid, ResourceType.class);
+        resourceInducement.setSharedInFederation(isSharedInFederation);
         model.getObject().getResourceInducements().add(resourceInducement);
 
         ModalWindow window = (ModalWindow) get(ID_RESOURCE_INDUCEMENT_CHOOSER);
@@ -740,7 +741,7 @@ public class PageOrg extends PageBase {
         target.add(getResourceInducementsContainer());
     }
 
-    private void roleInducementChoosePerformed(AjaxRequestTarget target, IModel<RoleType> roleModel){
+    private void roleInducementChoosePerformed(AjaxRequestTarget target, IModel<RoleType> roleModel, boolean isSharedInFederation){
         if(roleModel == null || roleModel.getObject() == null){
             return;
         }
@@ -751,6 +752,7 @@ public class PageOrg extends PageBase {
 
         String roleUid = roleModel.getObject().getUid();
         InducementType<RoleType> roleInducement = new InducementType<>(roleUid, RoleType.class);
+        roleInducement.setSharedInFederation(isSharedInFederation);
         model.getObject().getRoleInducements().add(roleInducement);
 
         ModalWindow window = (ModalWindow) get(ID_ROLE_INDUCEMENT_CHOOSER);
@@ -758,7 +760,7 @@ public class PageOrg extends PageBase {
         target.add(getRoleInducementsContainer());
     }
 
-    private void governorChoosePerformed(AjaxRequestTarget target, IModel<UserType> governorModel){
+    private void governorChoosePerformed(AjaxRequestTarget target, IModel<UserType> governorModel, boolean sharedInFederation){
         if(governorModel == null || governorModel.getObject() == null){
             return;
         }
@@ -769,6 +771,7 @@ public class PageOrg extends PageBase {
 
         String governorUid = governorModel.getObject().getUid();
         ObjectReferenceType<UserType> governorReference = new ObjectReferenceType<>(governorUid, UserType.class);
+        governorReference.setSharedInFederation(sharedInFederation);
         model.getObject().getGovernors().add(governorReference);
 
         ModalWindow window = (ModalWindow) get(ID_GOVERNOR_CHOOSER);
@@ -866,7 +869,7 @@ public class PageOrg extends PageBase {
         modal.show(target);
     }
 
-    private void parentOrgUnitChoosePerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
+    private void parentOrgUnitChoosePerformed(AjaxRequestTarget target, IModel<OrgType> rowModel, boolean isSharedInFederation){
         if(rowModel == null || rowModel.getObject() == null){
             error("Chosen value is not a valid org. unit.");
             target.add(getFeedbackPanel());
@@ -881,6 +884,7 @@ public class PageOrg extends PageBase {
 
         String uid = rowModel.getObject().getUid();
         ObjectReferenceType<OrgType> parentReference = new ObjectReferenceType<>(uid, OrgType.class);
+        parentReference.setSharedInFederation(isSharedInFederation);
         model.getObject().getParentOrgUnits().add(parentReference);
 
         ModalWindow dialog = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
