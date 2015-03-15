@@ -403,7 +403,7 @@ public class PageUser extends PageBase {
     private List<IColumn> createAccountColumns(){
         List<IColumn> columns = new ArrayList<>();
 
-        columns.add(new PropertyColumn<AccountType, String>(new Model<>("Name"), "accountName", "accountName"));
+        columns.add(new PropertyColumn<AccountType, String>(new Model<>("Name"), "name", "name"));
         columns.add(new AbstractColumn<AccountType, String>(new Model<>("Resource")) {
 
 
@@ -564,7 +564,15 @@ public class PageUser extends PageBase {
 
         String roleUid = rowModel.getObject().getUid();
 
-        model.getObject().getUser().getRoleAssignments().remove(roleUid);
+        AssignmentType<RoleType> toRemove = new AssignmentType<>();
+        for(AssignmentType<RoleType> roleRef: model.getObject().getUser().getRoleAssignments()){
+            if(roleRef.getUid().equals(roleUid)){
+                toRemove = roleRef;
+                break;
+            }
+        }
+
+        model.getObject().getUser().getRoleAssignments().remove(toRemove);
         target.add(getRoleContainer());
     }
 
@@ -589,7 +597,15 @@ public class PageUser extends PageBase {
 
         String orgUid = rowModel.getObject().getUid();
 
-        model.getObject().getUser().getOrgUnitAssignments().remove(orgUid);
+        AssignmentType<OrgType> toRemove = new AssignmentType<>();
+        for(AssignmentType<OrgType> orgRef: model.getObject().getUser().getOrgUnitAssignments()){
+            if(orgRef.getUid().equals(orgUid)){
+                toRemove = orgRef;
+                break;
+            }
+        }
+
+        model.getObject().getUser().getOrgUnitAssignments().remove(toRemove);
         target.add(getOrgContainer());
     }
 
@@ -628,7 +644,15 @@ public class PageUser extends PageBase {
             target.add(getFeedbackPanel());
         }
 
-        model.getObject().getUser().getAccounts().remove(accountUid);
+        AssignmentType<AccountType> toRemove = new AssignmentType<>();
+        for(AssignmentType<AccountType> accountRef: model.getObject().getUser().getAccounts()){
+            if(accountRef.getUid().equals(accountUid)){
+                toRemove = accountRef;
+                break;
+            }
+        }
+
+        model.getObject().getUser().getAccounts().remove(toRemove);
         target.add(getAccountContainer());
     }
 

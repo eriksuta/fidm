@@ -103,7 +103,7 @@ public class PageAccount extends PageBase{
         mainForm.setOutputMarkupId(true);
         add(mainForm);
 
-        TextField name = new TextField<>(ID_NAME, new PropertyModel<String>(model, "accountName"));
+        TextField name = new TextField<>(ID_NAME, new PropertyModel<String>(model, "name"));
         name.setRequired(true);
         mainForm.add(name);
 
@@ -126,22 +126,22 @@ public class PageAccount extends PageBase{
         };
         mainForm.add(ownerEdit);
 
-        DropDownChoice resource = new DropDownChoice<>(ID_RESOURCE, new PropertyModel<String>(model, "resource"),
+        DropDownChoice resource = new DropDownChoice<>(ID_RESOURCE, new PropertyModel<ObjectReferenceType<ResourceType>>(model, "resource"),
 
-                new AbstractReadOnlyModel<List<String>>() {
+                new AbstractReadOnlyModel<List<ObjectReferenceType<ResourceType>>>() {
 
                     @Override
-                    public List<String> getObject() {
+                    public List<ObjectReferenceType<ResourceType>> getObject() {
                         return getResourceNames();
                     }
-                }, new IChoiceRenderer<String>() {
+                }, new IChoiceRenderer<ObjectReferenceType<ResourceType>>() {
             @Override
-            public String getDisplayValue(String object) {
-                return object;
+            public String getDisplayValue(ObjectReferenceType<ResourceType> object) {
+                return getNameFromReference(object);
             }
 
             @Override
-            public String getIdValue(String object, int index) {
+            public String getIdValue(ObjectReferenceType<ResourceType> object, int index) {
                 return Integer.toString(index);
             }
         });
@@ -219,20 +219,32 @@ public class PageAccount extends PageBase{
         };
     }
 
-    private List<String> getResourceNames(){
-        List<String> resourceNames = new ArrayList<>();
+    private List<ObjectReferenceType<ResourceType>> getResourceNames(){
+        List<ObjectReferenceType<ResourceType>> resourceReferences = new ArrayList<>();
 
         try {
             List<ResourceType> resources = getModelService().getAllObjectsOfType(ResourceType.class);
 
             for(ResourceType resource: resources){
-                resourceNames.add(resource.getName());
+                ObjectReferenceType<ResourceType> ref = new ObjectReferenceType<>(resource.getUid(), ResourceType.class);
+                resourceReferences.add(ref);
             }
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not retrieve the list of resources.");
         }
 
-        return resourceNames;
+        return resourceReferences;
+    }
+
+    private String getNameFromReference(ObjectReferenceType<ResourceType> resourceRef){
+        try {
+            ResourceType resource = getModelService().readObject(ResourceType.class, resourceRef.getUid());
+            return resource.getName();
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not retrieve the resource: '" + resourceRef.getUid() + "'.");
+        }
+
+        return null;
     }
 
     private void ownerEditPerformed(AjaxRequestTarget target){

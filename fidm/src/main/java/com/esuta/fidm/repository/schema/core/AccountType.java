@@ -21,7 +21,6 @@ public class AccountType extends ObjectType{
      *  A reference to the resource, on which the account
      *  is located
      * */
-    @Index
     private ObjectReferenceType<ResourceType> resource;
 
     /**

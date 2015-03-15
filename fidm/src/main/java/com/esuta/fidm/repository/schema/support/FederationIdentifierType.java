@@ -1,10 +1,12 @@
 package com.esuta.fidm.repository.schema.support;
 
+import javax.persistence.Embeddable;
 import java.io.Serializable;
 
 /**
  *  @author shood
  * */
+@Embeddable
 public class FederationIdentifierType implements Serializable {
 
     /**

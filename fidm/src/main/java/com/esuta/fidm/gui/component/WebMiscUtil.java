@@ -1,6 +1,7 @@
 package com.esuta.fidm.gui.component;
 
 import com.esuta.fidm.repository.schema.core.*;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -96,6 +97,10 @@ public final class WebMiscUtil {
         xStream.alias("user", UserType.class);
         xStream.alias("federationMember", FederationMemberType.class);
         xStream.alias("systemConfiguration", SystemConfigurationType.class);
+        xStream.alias("assignment", AssignmentType.class);
+        xStream.alias("inducement", InducementType.class);
+        xStream.alias("objectRef", ObjectReferenceType.class);
+        xStream.alias("federationID", FederationIdentifierType.class);
         return xStream;
     }
 
@@ -131,9 +136,13 @@ public final class WebMiscUtil {
         } else if(clazz.equals(ResourceType.class)){
             return gson.fromJson(jsonObject, ResourceType.class);
         } else if(clazz.equals(RoleType.class)){
-            return gson.fromJson(jsonObject, ResourceType.class);
+            return gson.fromJson(jsonObject, RoleType.class);
         } else if(clazz.equals(UserType.class)){
             return gson.fromJson(jsonObject, UserType.class);
+        } else if(clazz.equals(SystemConfigurationType.class)){
+            return gson.fromJson(jsonObject, SystemConfigurationType.class);
+        } else if(clazz.equals(FederationMemberType.class)){
+            return gson.fromJson(jsonObject, FederationMemberType.class);
         }
 
         return gson.fromJson(jsonObject, ObjectType.class);

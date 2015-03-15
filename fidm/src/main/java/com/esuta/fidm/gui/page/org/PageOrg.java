@@ -182,21 +182,21 @@ public class PageOrg extends PageBase {
                 new PropertyModel<List<String>>(model, "orgType"), false);
         mainForm.add(orgType);
 
-        MultiValueTextEditPanel parentOrgUnit = new MultiValueTextEditPanel<String>(ID_PARENT_ORG_UNIT,
-                new PropertyModel<List<String>>(model, "parentOrgUnits"), false, true){
+        MultiValueTextEditPanel parentOrgUnit = new MultiValueTextEditPanel<ObjectReferenceType<OrgType>>(ID_PARENT_ORG_UNIT,
+                new PropertyModel<List<ObjectReferenceType<OrgType>>>(model, "parentOrgUnits"), false, true){
 
             @Override
-            protected IModel<String> createTextModel(IModel<String> model) {
+            protected IModel<String> createTextModel(IModel<ObjectReferenceType<OrgType>> model) {
                 return createParentOrgUnitDisplayModel(model);
             }
 
             @Override
-            protected String createNewEmptyItem() {
-                return "";
+            protected ObjectReferenceType<OrgType> createNewEmptyItem() {
+                return new ObjectReferenceType<>();
             }
 
             @Override
-            protected void editPerformed(AjaxRequestTarget target, String object) {
+            protected void editPerformed(AjaxRequestTarget target, ObjectReferenceType<OrgType> object) {
                 PageOrg.this.editParentOrgUnitPerformed(target);
             }
         };
@@ -409,8 +409,11 @@ public class PageOrg extends PageBase {
                     OrgType org = model.getObject();
 
                     for(ResourceType resource: list){
-                        if(org.getResourceInducements().contains(resource.getUid())){
-                            resourceInducementList.add(resource);
+                        for(InducementType<ResourceType> resourceInducement: org.getResourceInducements()){
+                            if(resourceInducement.getUid().equals(resource.getUid())){
+                                resourceInducementList.add(resource);
+                                break;
+                            }
                         }
                     }
                 }
@@ -457,8 +460,11 @@ public class PageOrg extends PageBase {
                     OrgType org = model.getObject();
 
                     for(RoleType role: list){
-                        if(org.getRoleInducements().contains(role.getUid())){
-                            roleInducementList.add(role);
+                        for(InducementType<RoleType> roleInducement: org.getRoleInducements()){
+                            if(roleInducement.getUid().equals(role.getUid())){
+                                roleInducementList.add(role);
+                                break;
+                            }
                         }
                     }
                 }
@@ -541,8 +547,10 @@ public class PageOrg extends PageBase {
                     String orgUid = model.getObject().getUid();
 
                     for(UserType user: list){
-                        if(user.getOrgUnitAssignments().contains(orgUid)){
-                            memberList.add(user);
+                        for(AssignmentType<OrgType> orgAssignment: user.getOrgUnitAssignments()){
+                            if(orgAssignment.getUid().equals(orgUid)){
+                                memberList.add(user);
+                            }
                         }
                     }
                 }
@@ -588,10 +596,10 @@ public class PageOrg extends PageBase {
                     List<ObjectReferenceType<UserType>> managers = model.getObject().getGovernors();
 
                     for(UserType user: list){
-                        ObjectReferenceType<UserType> managerReference = new ObjectReferenceType<>(user.getUid(), UserType.class);
-
-                        if(managers.contains(managerReference)){
-                            managersList.add(user);
+                        for(ObjectReferenceType<UserType> managerRef: managers){
+                            if(managerRef.getUid().equals(user.getUid())){
+                                managersList.add(user);
+                            }
                         }
                     }
                 }
@@ -686,23 +694,23 @@ public class PageOrg extends PageBase {
         return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_GOVERNORS_CONTAINER);
     }
 
-    private IModel<String> createParentOrgUnitDisplayModel(final IModel<String> uidModel){
+    private IModel<String> createParentOrgUnitDisplayModel(final IModel<ObjectReferenceType<OrgType>> parentRef){
         return new LoadableModel<String>() {
 
             @Override
             protected String load() {
-                if(uidModel == null || uidModel.getObject() == null || StringUtils.isEmpty(uidModel.getObject())){
+                if(parentRef == null || parentRef.getObject() == null || parentRef.getObject().getUid() == null){
                     return null;
                 }
 
-                String uid = uidModel.getObject();
+                String orgUid = parentRef.getObject().getUid();
                 OrgType parent = null;
 
                 try {
-                    parent = getModelService().readObject(OrgType.class, uid);
+                    parent = getModelService().readObject(OrgType.class, orgUid);
                 } catch (DatabaseCommunicationException e) {
-                    LOGGER.error("Parent org. unit with uid: '" + uid + "' does not exist.");
-                    error("Parent org. unit with uid: '" + uid + "' does not exist.");
+                    LOGGER.error("Parent org. unit with uid: '" + orgUid + "' does not exist.");
+                    error("Parent org. unit with uid: '" + orgUid + "' does not exist.");
                 }
 
                 if(parent == null){
@@ -946,7 +954,16 @@ public class PageOrg extends PageBase {
         }
 
         String governorUid = rowModel.getObject().getUid();
-        model.getObject().getGovernors().remove(governorUid);
+
+        ObjectReferenceType<UserType> governorToRemove = new ObjectReferenceType<>();
+        for(ObjectReferenceType<UserType> governorRef: model.getObject().getGovernors()){
+            if(governorRef.getUid().equals(governorUid)){
+                governorToRemove = governorRef;
+                break;
+            }
+        }
+
+        model.getObject().getGovernors().remove(governorToRemove);
         success("Governor with uid: '" + governorUid + "' was removed successfully.");
         target.add(getGovernorsContainer(), getFeedbackPanel());
     }
@@ -959,7 +976,15 @@ public class PageOrg extends PageBase {
         }
 
         String resourceInducementUid = resourceModel.getObject().getUid();
-        model.getObject().getResourceInducements().remove(resourceInducementUid);
+
+        InducementType<ResourceType> resourceInducementToRemove = new InducementType<>();
+        for(InducementType<ResourceType> inducementRef: model.getObject().getResourceInducements()){
+            if(inducementRef.getUid().equals(resourceInducementUid)){
+                resourceInducementToRemove = inducementRef;
+                break;
+            }
+        }
+        model.getObject().getResourceInducements().remove(resourceInducementToRemove);
         success("Resource inducement with to resource with uid: '" + resourceInducementUid + "' was removed successfully.");
         target.add(getResourceInducementsContainer(), getFeedbackPanel());
     }
@@ -972,7 +997,16 @@ public class PageOrg extends PageBase {
         }
 
         String roleInducementUid = roleModel.getObject().getUid();
-        model.getObject().getRoleInducements().remove(roleInducementUid);
+
+        InducementType<RoleType> roleInducementToRemove = new InducementType<>();
+        for(InducementType<RoleType> inducementRef: model.getObject().getRoleInducements()){
+            if(inducementRef.getUid().equals(roleInducementUid)){
+                roleInducementToRemove = inducementRef;
+                break;
+            }
+        }
+
+        model.getObject().getRoleInducements().remove(roleInducementToRemove);
         success("Role inducement with to resource with uid: '" + roleInducementUid + "' was removed successfully.");
         target.add(getRoleInducementsContainer(), getFeedbackPanel());
     }
@@ -1068,6 +1102,17 @@ public class PageOrg extends PageBase {
         }
         orgUnit.getOrgType().clear();
         orgUnit.getOrgType().addAll(newOrgTypes);
+
+        //Filtering empty parent references
+        List<ObjectReferenceType<OrgType>> newParentReferences = new ArrayList<>();
+        for(ObjectReferenceType<OrgType> parentRef: orgUnit.getParentOrgUnits()){
+            if(parentRef != null && parentRef.getUid() != null && parentRef.getType() != null){
+                newParentReferences.add(parentRef);
+            }
+        }
+        orgUnit.getParentOrgUnits().clear();
+        orgUnit.getParentOrgUnits().addAll(newParentReferences);
+
 
         try{
             if(!isEditingOrgUnit()){

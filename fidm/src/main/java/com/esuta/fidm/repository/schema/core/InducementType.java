@@ -2,6 +2,7 @@ package com.esuta.fidm.repository.schema.core;
 
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import java.io.Serializable;
 
@@ -17,7 +18,7 @@ import java.io.Serializable;
  *
  *  @author shood
  * */
-@Entity
+@Embeddable
 public class InducementType<T extends ObjectType> implements Serializable{
 
     /**
