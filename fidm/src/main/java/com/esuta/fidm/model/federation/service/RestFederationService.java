@@ -73,7 +73,7 @@ public class RestFederationService implements IFederationService{
         List<OrgType> allOrgUnits = modelService.getAllObjectsOfType(OrgType.class);
 
         for(OrgType org: allOrgUnits){
-            Field uniqueAttribute = org.getClass().getSuperclass().getDeclaredField(uniqueAttributeName);
+            Field uniqueAttribute = org.getClass().getDeclaredField(uniqueAttributeName);
             uniqueAttribute.setAccessible(true);
             String attributeValue = (String)uniqueAttribute.get(org);
 

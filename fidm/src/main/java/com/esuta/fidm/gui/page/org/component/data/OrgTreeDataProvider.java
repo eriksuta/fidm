@@ -74,7 +74,7 @@ public class OrgTreeDataProvider extends SortableTreeProvider<OrgType, String>{
 
             for(OrgType org: allOrgUnits){
                 for(ObjectReferenceType<OrgType> parentRef: org.getParentOrgUnits()){
-                    if(parentRef.getUid().equals(nodeUid)){
+                    if(parentRef.getUid() != null && parentRef.getUid().equals(nodeUid)){
                         children.add(org);
                         break;
                     }

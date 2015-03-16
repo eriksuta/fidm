@@ -6,6 +6,7 @@ import com.esuta.fidm.gui.page.config.PageDebugList;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
+import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -17,6 +18,8 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+
+import java.util.List;
 
 /**
  *  @author shood
@@ -122,5 +125,24 @@ public abstract class PageBase extends WebPage{
         }
 
         return systemConfiguration;
+    }
+
+    public FederationMemberType getFederationMemberByName(String federationMemberName){
+        FederationMemberType memberToRetrieve = null;
+
+        try {
+            List<FederationMemberType> allMembers = getModelService().getAllObjectsOfType(FederationMemberType.class);
+
+            for(FederationMemberType member: allMembers){
+                if(member.getFederationMemberName().equals(federationMemberName)){
+                    memberToRetrieve = member;
+                }
+            }
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not retrieve all federation member from the repository.", e);
+            error("Could not retrieve all federation member from the repository. Reason: " + e);
+        }
+
+        return memberToRetrieve;
     }
 }

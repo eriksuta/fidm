@@ -49,10 +49,11 @@ public class FederatedIDMApplication extends WebApplication{
 //        TODO - this is just a temporary hack, so we can run multiple application instances to test federation functions
         if(getLocalPort() == 8080){
             systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository.odb");
+            systemConfig.setIdentityProviderIdentifier("Local-Identity-Provider-1");
         } else {
             systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository2.odb");
+            systemConfig.setIdentityProviderIdentifier("Local-Identity-Provider-2");
         }
-        systemConfig.setIdentityProviderIdentifier("Local-Identity-Provider");
         systemConfig.setName("System Configuration - Initial");
         systemConfig.setPort(getLocalPort());
         systemConfig.setLocalAddress("localhost");

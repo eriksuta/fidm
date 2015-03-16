@@ -2,7 +2,13 @@ package com.esuta.fidm.gui.page.federation;
 
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.org.PageOrgList;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
+import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
+import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.OrgType;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
@@ -10,6 +16,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.eclipse.jetty.http.HttpStatus;
 
 /**
  *  @author shood
@@ -206,8 +213,46 @@ public class PageOrgPreview extends PageBase{
     }
 
     private void sharePerformed(AjaxRequestTarget target){
-//        TODO
-        warn("Not implemented yet.");
+        if(model == null || model.getObject() == null){
+            warn("Can't share the org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        OrgType orgToShare = model.getObject();
+        FederationIdentifierType orgIdentifier = orgToShare.getFederationIdentifier();
+        FederationMemberType member = getFederationMemberByName(orgIdentifier.getFederationMemberId());
+
+        if(member == null){
+            warn("There currently isn't a membership with federation member: '" + orgIdentifier.getFederationMemberId() + "'.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        try {
+            ObjectTypeRestResponse<OrgType> response = getFederationServiceClient().createGetOrgUnitRequest(member, orgIdentifier);
+
+            int status = response.getStatus();
+            if(HttpStatus.OK_200 == status){
+                OrgType org = response.getValue();
+                org = getModelService().createObject(org);
+                info("Org. unit sharef correctly. New org.: '" + org.getName() + "'(" + org.getUid() + ").");
+
+            } else {
+                String message = response.getMessage();
+                LOGGER.error("Could not share org. unit. REST response: " + status + ", message: " + message);
+                error("Could not share org. unit. REST response: " + status + ", message: " + message);
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not create and process request to share selected org. unit.", e);
+            error("Could not create and process request to share selected org. unit. Reason: " + e);
+        } catch (ObjectAlreadyExistsException e) {
+            LOGGER.error("Could not create org. unit. Conflicting object already exists.", e);
+            error("Could not create org. unit. Conflicting object already exists. Reason: " + e);
+        }
+
+        setResponsePage(PageOrgList.class);
         target.add(getFeedbackPanel());
     }
 }
