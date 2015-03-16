@@ -18,7 +18,7 @@ import java.io.Serializable;
  *
  *  @author shood
  * */
-//@Embeddable
+@Embeddable
 public class InducementType<T extends ObjectType> implements Serializable{
 
     /**

@@ -31,7 +31,7 @@ public class PageOrgPreview extends PageBase{
     private static final String ID_ROLE_INDUCEMENT_LABEL = "roleInducementsLabel";
 
     private static final String ID_BUTTON_SHARE = "shareButton";
-    private static final String ID_BUTTON_RESOLVE = "resolveButton";
+    private static final String ID_BUTTON_SHARE_HIERARCHY = "shareHierarchyButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
     private IModel<OrgType> model;
@@ -162,11 +162,11 @@ public class PageOrgPreview extends PageBase{
         cancel.setDefaultFormProcessing(false);
         mainForm.add(cancel);
 
-        AjaxSubmitLink resolve = new AjaxSubmitLink(ID_BUTTON_RESOLVE) {
+        AjaxSubmitLink shareHierarchy = new AjaxSubmitLink(ID_BUTTON_SHARE_HIERARCHY) {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                resolvePerformed(target);
+                shareHierarchyPerformed(target);
             }
 
             @Override
@@ -174,7 +174,7 @@ public class PageOrgPreview extends PageBase{
                 target.add(getFeedbackPanel());
             }
         };
-        mainForm.add(resolve);
+        mainForm.add(shareHierarchy);
 
         AjaxSubmitLink share = new AjaxSubmitLink(ID_BUTTON_SHARE) {
 
@@ -199,7 +199,7 @@ public class PageOrgPreview extends PageBase{
         setResponsePage(PageFederationList.class);
     }
 
-    private void resolvePerformed(AjaxRequestTarget target){
+    private void shareHierarchyPerformed(AjaxRequestTarget target){
 //        TODO
         warn("Not implemented yet.");
         target.add(getFeedbackPanel());
