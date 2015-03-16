@@ -38,6 +38,7 @@ public class FederatedIDMApplication extends WebApplication{
 	@Override
 	public void init(){
 		super.init();
+        System.setProperty("objectdb.conf", "F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\objectdb-2.4.0\\objectdb.conf");
 
 //        Initialization of system configuration object
         SystemConfigurationType systemConfig = new SystemConfigurationType();
