@@ -5,6 +5,7 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
+import com.esuta.fidm.model.federation.service.ObjectInformation;
 import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.OrgType;
@@ -271,6 +272,34 @@ public class RestFederationServiceClient {
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
             responseObject.setValues(jsonListToObject(responseMessage, OrgType[].class));
+        } else {
+            responseObject.setMessage(responseMessage);
+        }
+
+        return responseObject;
+    }
+
+    public ObjectInformationResponse createGetObjectInformationRequest(FederationMemberType federationMember, FederationIdentifierType federationIdentifier)
+            throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetObjectInformationUrl(address, port,
+                getLocalFederationMemberIdentifier(), federationIdentifier.getUniqueAttributeValue(), federationIdentifier.getObjectType());
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        ObjectInformationResponse responseObject = new ObjectInformationResponse();
+        responseObject.setStatus(responseStatus);
+        if(responseStatus == HttpStatus.OK_200){
+            responseObject.setInformationObject((ObjectInformation)jsonToObject(responseMessage, ObjectInformation.class));
         } else {
             responseObject.setMessage(responseMessage);
         }

@@ -660,7 +660,7 @@ public class RestFederationService implements IFederationService{
             if(object == null){
                 LOGGER.error("No object exists with defined unique attribute value: " + uniqueAttributeValue);
                 return Response.status(HttpStatus.BAD_REQUEST_400)
-                        .entity("No oobject exists with defined unique attribute value: " + uniqueAttributeValue).build();
+                        .entity("No object exists with defined unique attribute value: " + uniqueAttributeValue).build();
             }
 
             ObjectInformation informationObject = new ObjectInformation();
