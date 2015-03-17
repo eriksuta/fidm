@@ -9,7 +9,6 @@ import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
-import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -82,6 +81,42 @@ public class RestFederationService implements IFederationService{
             }
         }
 
+
+        return null;
+    }
+
+    private ObjectType getObjectFromUniqueValue(FederationMemberType member, String uniqueAttributeValue, String className)
+            throws ClassNotFoundException, DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
+
+        String uniqueAttributeName;
+        Class<?> clazz = Class.forName(className);
+        List<? extends ObjectType> allObjectList = new ArrayList<>();
+
+        if(OrgType.class.equals(clazz)){
+            uniqueAttributeName = member.getUniqueOrgIdentifier();
+            allObjectList = modelService.getAllObjectsOfType(OrgType.class);
+        } else if (UserType.class.equals(clazz)){
+            uniqueAttributeName = member.getUniqueUserIdentifier();
+            allObjectList = modelService.getAllObjectsOfType(UserType.class);
+        } else if (RoleType.class.equals(clazz)){
+            uniqueAttributeName = member.getUniqueRoleIdentifier();
+            allObjectList = modelService.getAllObjectsOfType(RoleType.class);
+        } else if (ResourceType.class.equals(clazz)){
+            uniqueAttributeName = member.getUniqueResourceIdentifier();
+            allObjectList = modelService.getAllObjectsOfType(ResourceType.class);
+        } else {
+            return null;
+        }
+
+        for(ObjectType obj: allObjectList){
+            Field uniqueAttribute = obj.getClass().getDeclaredField(uniqueAttributeName);
+            uniqueAttribute.setAccessible(true);
+            String attributeValue = (String)uniqueAttribute.get(obj);
+
+            if(uniqueAttributeValue.equals(attributeValue)){
+                return obj;
+            }
+        }
 
         return null;
     }
@@ -587,6 +622,61 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: ", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: " + e).build();
+        }
+    }
+
+    @GET
+    @Path(RestFederationServiceUtil.GET_OBJECT_INFORMATION_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getObjectInformation(@PathParam("memberIdentifier")String memberIdentifier, @PathParam("uniqueAttributeValue")String uniqueAttributeValue,
+                                         @PathParam("objectType")String objectType) {
+
+        if(memberIdentifier == null || memberIdentifier.isEmpty() ||
+                uniqueAttributeValue == null || uniqueAttributeValue.isEmpty() ||
+                objectType == null || objectType.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
+            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
+            FederationMemberType currentMember = null;
+
+            for(FederationMemberType member: federationMembers){
+                if(memberIdentifier.equals(member.getFederationMemberName())){
+                    currentMember = member;
+                }
+            }
+
+            if(currentMember == null){
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            ObjectType object = getObjectFromUniqueValue(currentMember, uniqueAttributeValue, objectType);
+
+            if(object == null){
+                LOGGER.error("No object exists with defined unique attribute value: " + uniqueAttributeValue);
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No oobject exists with defined unique attribute value: " + uniqueAttributeValue).build();
+            }
+
+            ObjectInformation informationObject = new ObjectInformation();
+            informationObject.setObjectName(object.getName());
+            informationObject.setObjectDescription(object.getDescription());
+
+            return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(informationObject)).build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load requested object from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal problem: " + e).build();
+        } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Incorrect unique attribute for object is set. Can't find the requested object identifier. Reason: ", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Incorrect unique attribute for object is set. Can't find the requested object identifier.. Reason: " + e).build();
         }
     }
 }

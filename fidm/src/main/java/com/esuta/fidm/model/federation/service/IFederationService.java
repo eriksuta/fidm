@@ -302,4 +302,51 @@ public interface IFederationService {
      *                   as problems with reading objects in repository.
      * */
     public Response getOrgUnitHierarchy(String memberIdentifier, String uniqueAttributeValue);
+
+    /**
+     *  <p>
+     *      A method that retrieves information about the requested object. The information about
+     *      the object are composed of object name and description. The description of the object
+     *      depends purely on the specific implementation.
+     *  </p>
+     *
+     *  @param memberIdentifier
+     *      unique identifier of federation member in identity federation performing the
+     *      request
+     *
+     *  @param uniqueAttributeValue
+     *      A unique value of attribute specified by targeted federation member. By this value
+     *      and the value of objectType, requested federation member is able to uniquely
+     *      identify the requested object.
+     *
+     *  @param objectType
+     *      A String representation of type of the object that this request needs information
+     *      about. This also depends on specific implementation, for example, in Java, this would
+     *      be a canonical name of the class.
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing either an object with information about requested
+     *      object (ObjectInformation), if the request was processed
+     *      properly, or a message informing requester about the error that happened
+     *      during request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when request to
+     *                   retrieve an org. unit is handled correctly and in this case,
+     *                   HTTP response contains requested an org. unit hierarchy in response
+     *                   body.
+     *
+     *      <b>400</b> - response with HTTP cod 400 should be returned when the request is
+     *                   malformed, e.g. the memberIdentifier or uniqueAttributeValue is not
+     *                   set or there is no existing membership relation between
+     *                   requesting and requested federation members. Another situation
+     *                   handled as bad request is when there is no org. unit for provided
+     *                   unique attribute value.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     * */
+    public Response getObjectInformation(String memberIdentifier, String uniqueAttributeValue, String objectType);
+
+
 }

@@ -23,6 +23,8 @@ public class RestFederationServiceUtil implements Serializable{
     public static final String GET_ORG_UNIT_HIERARCHY = "/getOrgUnitHierarchy/";
     public static final String GET_ORG_UNIT_PARAM = "/getOrgUnit/{memberIdentifier}/{uniqueAttributeValue}";
     public static final String GET_ORG_UNIT_HIERARCHY_PARAM = "/getOrgUnitHierarchy/{memberIdentifier}/{uniqueAttributeValue}";
+    public static final String GET_OBJECT_INFORMATION = "/getObjectInformation/";
+    public static final String GET_OBJECT_INFORMATION_PARAM = "/getObjectInformation/{memberIdentifier}/{uniqueAttributeValue}/{objectType}";
 
     public static String createGetFederationMemberIdentifier(String address, int port){
         StringBuilder sb = new StringBuilder();
@@ -128,6 +130,22 @@ public class RestFederationServiceUtil implements Serializable{
         sb.append(memberIdentifier);
         sb.append("/");
         sb.append(uniqueAttributeValue);
+        return sb.toString();
+    }
+
+    public static String createGetObjectInformationUrl(String address, int port, String memberIdentifier, String uniqueAttributeValue, String objectType){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_OBJECT_INFORMATION);
+        sb.append(memberIdentifier);
+        sb.append("/");
+        sb.append(uniqueAttributeValue);
+        sb.append("/");
+        sb.append(objectType);
         return sb.toString();
     }
 }

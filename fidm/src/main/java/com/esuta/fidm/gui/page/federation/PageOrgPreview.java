@@ -236,7 +236,7 @@ public class PageOrgPreview extends PageBase{
             if(HttpStatus.OK_200 == status){
                 OrgType org = response.getValue();
                 org = getModelService().createObject(org);
-                info("Org. unit sharef correctly. New org.: '" + org.getName() + "'(" + org.getUid() + ").");
+                info("Org. unit shared correctly. New org.: '" + org.getName() + "'(" + org.getUid() + ").");
 
             } else {
                 String message = response.getMessage();
