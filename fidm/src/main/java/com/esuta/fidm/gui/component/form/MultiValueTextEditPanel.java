@@ -1,13 +1,12 @@
 package com.esuta.fidm.gui.component.form;
 
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -18,7 +17,6 @@ import org.apache.wicket.model.Model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,37 +31,42 @@ public class MultiValueTextEditPanel<T extends Serializable> extends Panel {
     private static final String ID_ADD = "add";
     private static final String ID_REMOVE = "delete";
     private static final String ID_EDIT = "edit";
+    private static final String ID_ADD_IF_EMPTY = "addIfEmpty";
 
     private static final String CSS_DISABLED = " disabled";
 
     private IModel<List<T>> model;
 
-    public MultiValueTextEditPanel(String id, IModel<List<T>> model, boolean inputEnabled,
-                                   boolean prepareModel){
+    public MultiValueTextEditPanel(String id, IModel<List<T>> model, boolean inputEnabled){
         super(id);
         this.model = model;
         setOutputMarkupId(true);
 
-        initLayout(inputEnabled, prepareModel);
+        initLayout(inputEnabled);
     }
 
     public IModel<List<T>> getModel(){
         return model;
     }
 
-    private IModel<List<T>> prepareModel(boolean prepareModel){
-        if(prepareModel){
-            if(getModel().getObject() == null){
-                getModel().setObject(new ArrayList<>(Arrays.asList(createNewEmptyItem())));
-            } else if(getModel().getObject().isEmpty()){
-                getModel().getObject().add(createNewEmptyItem());
-            }
-        }
-        return getModel();
-    }
+    private void initLayout(final boolean inputEnabled){
+        AjaxLink addIfEmpty = new AjaxLink(ID_ADD_IF_EMPTY) {
 
-    private void initLayout(final boolean inputEnabled, boolean prepareModel){
-        ListView repeater = new ListView<T>(ID_REPEATER, prepareModel(prepareModel)){
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                addFirstPerformed(target);
+            }
+        };
+        addIfEmpty.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return getModel() == null || getModel().getObject() == null || getModel().getObject().isEmpty();
+            }
+        });
+        add(addIfEmpty);
+
+        ListView repeater = new ListView<T>(ID_REPEATER, getModel()){
 
             @Override
             protected void populateItem(final ListItem<T> item) {
@@ -85,6 +88,13 @@ public class MultiValueTextEditPanel<T extends Serializable> extends Panel {
                 initButtons(buttonGroup, item);
             }
         };
+        repeater.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return getModel() != null && getModel().getObject() != null && !getModel().getObject().isEmpty();
+            }
+        });
         add(repeater);
     }
 
@@ -147,7 +157,7 @@ public class MultiValueTextEditPanel<T extends Serializable> extends Panel {
 
     protected String getMinusClassModifier(){
         int size = getModel().getObject().size();
-        if (size > 1) {
+        if (size > 0) {
             return "";
         }
 
@@ -171,6 +181,14 @@ public class MultiValueTextEditPanel<T extends Serializable> extends Panel {
             public void detach() {
             }
         };
+    }
+
+    protected void addFirstPerformed(AjaxRequestTarget target){
+        if(getModel().getObject() == null){
+            getModel().setObject(new ArrayList<T>());
+        }
+
+        addValuePerformed(target);
     }
 
     protected void addValuePerformed(AjaxRequestTarget target){

@@ -183,7 +183,7 @@ public class PageOrg extends PageBase {
         mainForm.add(orgType);
 
         MultiValueTextEditPanel parentOrgUnit = new MultiValueTextEditPanel<ObjectReferenceType<OrgType>>(ID_PARENT_ORG_UNIT,
-                new PropertyModel<List<ObjectReferenceType<OrgType>>>(model, "parentOrgUnits"), false, true){
+                new PropertyModel<List<ObjectReferenceType<OrgType>>>(model, "parentOrgUnits"), false){
 
             @Override
             protected IModel<String> createTextModel(IModel<ObjectReferenceType<OrgType>> model) {
