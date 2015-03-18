@@ -22,6 +22,8 @@ import java.util.List;
 
 /**
  *  TODO - unite common methods with ObjectDataProvider class - make a superclass - refactor
+ *  TODO - refactor size methods to reuse data previously loaded in iterator, currently, we
+ *  are doing too many unnecessary REST requests
  *
  *  A data provider that retrieve a set of information objects about
  *  federation objects using REST Api.

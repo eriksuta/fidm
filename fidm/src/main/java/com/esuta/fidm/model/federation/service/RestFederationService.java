@@ -54,13 +54,12 @@ public class RestFederationService implements IFederationService{
         return systemConfiguration.getIdentityProviderIdentifier();
     }
 
-    private String getUniqueAttributeValue(OrgType org, FederationMemberType federationMember) throws NoSuchFieldException, IllegalAccessException {
-        String attributeName = federationMember.getUniqueOrgIdentifier();
+    private String getUniqueAttributeValue(ObjectType object, String uniqueAttributeName) throws NoSuchFieldException, IllegalAccessException {
         String attributeValue;
 
-        Field attribute = org.getClass().getDeclaredField(attributeName);
+        Field attribute = object.getClass().getDeclaredField(uniqueAttributeName);
         attribute.setAccessible(true);
-        attributeValue = (String)attribute.get(org);
+        attributeValue = (String)attribute.get(object);
         return attributeValue;
     }
 
@@ -80,7 +79,6 @@ public class RestFederationService implements IFederationService{
                 return org;
             }
         }
-
 
         return null;
     }
@@ -197,6 +195,70 @@ public class RestFederationService implements IFederationService{
         }
         org.getRoleInducements().clear();
         org.getRoleInducements().addAll(newRoleInducements);
+    }
+
+    private void prepareOrgReferences(OrgType org, FederationMemberType member)
+            throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
+
+        for(ObjectReferenceType ref: org.getParentOrgUnits()){
+            FederationIdentifierType identifier = new FederationIdentifierType();
+            identifier.setObjectType(OrgType.class.getCanonicalName());
+
+            OrgType parent = modelService.readObject(OrgType.class, ref.getUid());
+            if(parent == null){
+                continue;
+            }
+
+            identifier.setUniqueAttributeValue(getUniqueAttributeValue(parent, member.getUniqueOrgIdentifier()));
+            identifier.setFederationMemberId(getLocalFederationMemberIdentifier());
+            ref.setFederationIdentifier(identifier);
+            ref.setUid(null);
+        }
+
+        for(ObjectReferenceType ref: org.getGovernors()){
+            FederationIdentifierType identifier = new FederationIdentifierType();
+            identifier.setObjectType(UserType.class.getCanonicalName());
+
+            UserType user = modelService.readObject(UserType.class, ref.getUid());
+            if(user == null){
+                continue;
+            }
+
+            identifier.setUniqueAttributeValue(getUniqueAttributeValue(user, member.getUniqueUserIdentifier()));
+            identifier.setFederationMemberId(getLocalFederationMemberIdentifier());
+            ref.setFederationIdentifier(identifier);
+            ref.setUid(null);
+        }
+
+        for(InducementType inducement: org.getResourceInducements()){
+            FederationIdentifierType identifier = new FederationIdentifierType();
+            identifier.setObjectType(ResourceType.class.getCanonicalName());
+
+            ResourceType resource = modelService.readObject(ResourceType.class, inducement.getUid());
+            if(resource == null){
+                continue;
+            }
+
+            identifier.setUniqueAttributeValue(getUniqueAttributeValue(resource, member.getUniqueResourceIdentifier()));
+            identifier.setFederationMemberId(getLocalFederationMemberIdentifier());
+            inducement.setFederationIdentifier(identifier);
+            inducement.setUid(null);
+        }
+
+        for(InducementType inducement: org.getRoleInducements()){
+            FederationIdentifierType identifier = new FederationIdentifierType();
+            identifier.setObjectType(RoleType.class.getCanonicalName());
+
+            RoleType role = modelService.readObject(RoleType.class, inducement.getUid());
+            if(role == null){
+                continue;
+            }
+
+            identifier.setUniqueAttributeValue(getUniqueAttributeValue(role, member.getUniqueRoleIdentifier()));
+            identifier.setFederationMemberId(getLocalFederationMemberIdentifier());
+            inducement.setFederationIdentifier(identifier);
+            inducement.setUid(null);
+        }
     }
 
     @GET
@@ -503,11 +565,12 @@ public class RestFederationService implements IFederationService{
                 if(org.isSharedInFederation()){
                     FederationIdentifierType federationIdentifier = new FederationIdentifierType();
                     federationIdentifier.setFederationMemberId(getLocalFederationMemberIdentifier());
-                    federationIdentifier.setUniqueAttributeValue(getUniqueAttributeValue(org, currentMember));
+                    federationIdentifier.setUniqueAttributeValue(getUniqueAttributeValue(org, currentMember.getUniqueOrgIdentifier()));
                     federationIdentifier.setObjectType(OrgType.class.getCanonicalName());
                     org.setFederationIdentifier(federationIdentifier);
                     org.setUid(null);
                     resolveOrgReferenceSharing(org);
+                    prepareOrgReferences(org, currentMember);
                     sharedOrgUnits.add(org);
                 }
             }
@@ -561,6 +624,7 @@ public class RestFederationService implements IFederationService{
             }
 
             resolveOrgReferenceSharing(org);
+            prepareOrgReferences(org, currentMember);
             return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(org)).build();
 
         } catch (DatabaseCommunicationException e) {
@@ -611,6 +675,7 @@ public class RestFederationService implements IFederationService{
 
             for(OrgType org: orgHierarchy){
                 resolveOrgReferenceSharing(org);
+                prepareOrgReferences(org, currentMember);
             }
             return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(orgHierarchy)).build();
 
