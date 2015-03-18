@@ -19,7 +19,7 @@ import java.util.List;
  * */
 public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvider<T, String>{
 
-    private transient Logger LOGGER = Logger.getLogger(ObjectDataProvider.class);
+    private static final Logger LOGGER = Logger.getLogger(ObjectDataProvider.class);
 
     private Component component;
     private Class<T> type;

@@ -1,22 +1,36 @@
 package com.esuta.fidm.gui.page.federation;
 
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
+import com.esuta.fidm.gui.component.data.FederationObjectInformationProvider;
+import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.gui.page.org.PageOrgList;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
+import com.esuta.fidm.model.federation.service.ObjectInformation;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
 import com.esuta.fidm.repository.schema.core.OrgType;
+import com.esuta.fidm.repository.schema.core.UserType;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.eclipse.jetty.http.HttpStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  @author shood
@@ -33,7 +47,11 @@ public class PageOrgPreview extends PageBase{
     private static final String ID_TYPE = "type";
     private static final String ID_PARENT_ORG = "parentOrgUnits";
 
+    private static final String ID_GOVERNOR_CONTAINER = "governorsContainer";
     private static final String ID_GOVERNOR_LABEL = "governorsLabel";
+    private static final String ID_GOVERNOR_BUTTON_RESOLVE = "resolveGovernors";
+    private static final String ID_GOVERNOR_TABLE = "governorsTable";
+
     private static final String ID_RESOURCE_INDUCEMENT_LABEL = "resourceInducementsLabel";
     private static final String ID_ROLE_INDUCEMENT_LABEL = "roleInducementsLabel";
 
@@ -125,11 +143,21 @@ public class PageOrgPreview extends PageBase{
         });
         mainForm.add(parentOrgLabel);
 
-        initGovernorInducementPanel(mainForm);
+        initOrgHierarchyPreview(mainForm);
+        initGovernorPreview(mainForm);
+        initInducementsPreview(mainForm);
         initButtons(mainForm);
     }
 
-    private void initGovernorInducementPanel(Form mainForm){
+    private void initOrgHierarchyPreview(Form mainForm){
+//        TODO
+    }
+
+    private void initGovernorPreview(Form mainForm){
+        WebMarkupContainer governorContainer = new WebMarkupContainer(ID_GOVERNOR_CONTAINER);
+        governorContainer.setOutputMarkupId(true);
+        mainForm.add(governorContainer);
+
         Label governorsLabel = new Label(ID_GOVERNOR_LABEL, new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -137,8 +165,42 @@ public class PageOrgPreview extends PageBase{
                 return "Governors (" + model.getObject().getGovernors().size() + ")";
             }
         });
-        mainForm.add(governorsLabel);
+        governorContainer.add(governorsLabel);
 
+        AjaxLink resolveGovernors = new AjaxLink(ID_GOVERNOR_BUTTON_RESOLVE) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                resolveGovernorsPerformed(target);
+            }
+        };
+        governorContainer.add(resolveGovernors);
+
+        final FederationObjectInformationProvider governorProvider = new FederationObjectInformationProvider(getPage(), getGovernorIdentifiers());
+        List<IColumn> governorColumns = createObjectInformationColumns();
+        TablePanel governorTable = new TablePanel(ID_GOVERNOR_TABLE, governorProvider, governorColumns, 10);
+        governorTable.add(new VisibleEnableBehavior() {
+
+            @Override
+            public boolean isVisible() {
+                return governorProvider.size() > 0;
+            }
+        });
+        governorTable.setShowPaging(false);
+        governorContainer.add(governorTable);
+    }
+
+    private List<FederationIdentifierType> getGovernorIdentifiers(){
+        List<FederationIdentifierType> list = new ArrayList<>();
+
+        for(ObjectReferenceType<UserType> ref: model.getObject().getGovernors()){
+            list.add(ref.getFederationIdentifier());
+        }
+
+        return list;
+    }
+
+    private void initInducementsPreview(Form mainForm){
         Label resourceInducementsLabel = new Label(ID_RESOURCE_INDUCEMENT_LABEL, new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -156,6 +218,13 @@ public class PageOrgPreview extends PageBase{
             }
         });
         mainForm.add(roleInducementsLabel);
+    }
+
+    private List<IColumn> createObjectInformationColumns(){
+        List<IColumn> columns = new ArrayList<>();
+        columns.add(new PropertyColumn<ObjectInformation, String>(new Model<>("Name"), "objectName", "objectName"));
+        columns.add(new PropertyColumn<ObjectInformation, String>(new Model<>("Description"), "objectDescription", "objectDescription"));
+        return columns;
     }
 
     private void initButtons(Form mainForm){
@@ -204,6 +273,10 @@ public class PageOrgPreview extends PageBase{
 
     private void cancelPerformed(){
         setResponsePage(PageFederationList.class);
+    }
+
+    private void resolveGovernorsPerformed(AjaxRequestTarget target){
+//        TODO
     }
 
     private void shareHierarchyPerformed(AjaxRequestTarget target){
