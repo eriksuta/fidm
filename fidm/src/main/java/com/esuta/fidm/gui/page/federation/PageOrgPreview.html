@@ -62,7 +62,7 @@
 
                     </div>
 
-                    <!-- Inducements and Governors Panel -->
+                    <!-- Inducements, governors and org. hierarchy panel -->
                     <div class="col-lg-6">
                         <span>Org. Hierarchy</span>
                         <hr class="assignmentDelimiter">
@@ -70,17 +70,29 @@
                         <div wicket:id="governorsContainer">
                             <span wicket:id="governorsLabel"/>
                             <div style="float: right">
-                                <a class="btn btn-success btn-xs" wicket:id="resolveGovernors">Resolve</a>
+                                <a class="btn btn-success btn-sm" wicket:id="resolveGovernors">Resolve</a>
                             </div>
                             <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="governorsTable"></table>
                             <hr class="assignmentDelimiter">
                         </div>
 
-                        <span wicket:id="resourceInducementsLabel"/>
-                        <hr class="assignmentDelimiter">
+                        <div wicket:id="resourceInducementsContainer">
+                            <span wicket:id="resourceInducementsLabel"/>
+                            <div style="float: right">
+                                <a class="btn btn-success btn-sm" wicket:id="resolveResourceInducements">Resolve</a>
+                            </div>
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="resourceInducementsTable"></table>
+                            <hr class="assignmentDelimiter">
+                        </div>
 
-                        <span wicket:id="roleInducementsLabel"/>
-                        <hr class="assignmentDelimiter">
+                        <div wicket:id="roleInducementsContainer">
+                            <span wicket:id="roleInducementsLabel"/>
+                            <div style="float: right">
+                                <a class="btn btn-success btn-sm" wicket:id="resolveRoleInducements">Resolve</a>
+                            </div>
+                            <table class="table table-striped table-condensed table-bordered table-hover assignmentTable" wicket:id="roleInducementsTable"></table>
+                            <hr class="assignmentDelimiter">
+                        </div>
                     </div>
                 </div>
 

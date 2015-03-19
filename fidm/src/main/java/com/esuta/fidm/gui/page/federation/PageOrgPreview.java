@@ -10,10 +10,7 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
 import com.esuta.fidm.model.federation.service.ObjectInformation;
-import com.esuta.fidm.repository.schema.core.FederationMemberType;
-import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
-import com.esuta.fidm.repository.schema.core.OrgType;
-import com.esuta.fidm.repository.schema.core.UserType;
+import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -52,8 +49,15 @@ public class PageOrgPreview extends PageBase{
     private static final String ID_GOVERNOR_BUTTON_RESOLVE = "resolveGovernors";
     private static final String ID_GOVERNOR_TABLE = "governorsTable";
 
+    private static final String ID_RESOURCE_IND_CONTAINER = "resourceInducementsContainer";
     private static final String ID_RESOURCE_INDUCEMENT_LABEL = "resourceInducementsLabel";
+    private static final String ID_RESOURCE_IND_BUTTON_RESOLVE = "resolveResourceInducements";
+    private static final String ID_RESOURCE_IND_TABLE = "resourceInducementsTable";
+
+    private static final String ID_ROLE_IND_CONTAINER = "roleInducementsContainer";
     private static final String ID_ROLE_INDUCEMENT_LABEL = "roleInducementsLabel";
+    private static final String ID_ROLE_IND_BUTTON_RESOLVE = "resolveRoleInducements";
+    private static final String ID_ROLE_IND_TABLE = "roleInducementsTable";
 
     private static final String ID_BUTTON_SHARE = "shareButton";
     private static final String ID_BUTTON_SHARE_HIERARCHY = "shareHierarchyButton";
@@ -176,7 +180,8 @@ public class PageOrgPreview extends PageBase{
         };
         governorContainer.add(resolveGovernors);
 
-        final FederationObjectInformationProvider governorProvider = new FederationObjectInformationProvider(getPage(), getGovernorIdentifiers());
+        final FederationObjectInformationProvider governorProvider = new FederationObjectInformationProvider(getPage(),
+                getGovernorIdentifiers());
         List<IColumn> governorColumns = createObjectInformationColumns();
         TablePanel governorTable = new TablePanel(ID_GOVERNOR_TABLE, governorProvider, governorColumns, 10);
         governorTable.add(new VisibleEnableBehavior() {
@@ -201,6 +206,11 @@ public class PageOrgPreview extends PageBase{
     }
 
     private void initInducementsPreview(Form mainForm){
+        //Resource Inducements Container
+        WebMarkupContainer resourceInducementsContainer = new WebMarkupContainer(ID_RESOURCE_IND_CONTAINER);
+        resourceInducementsContainer.setOutputMarkupId(true);
+        mainForm.add(resourceInducementsContainer);
+
         Label resourceInducementsLabel = new Label(ID_RESOURCE_INDUCEMENT_LABEL, new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -208,7 +218,35 @@ public class PageOrgPreview extends PageBase{
                 return "Resource Inducements (" + model.getObject().getResourceInducements().size() + ")";
             }
         });
-        mainForm.add(resourceInducementsLabel);
+        resourceInducementsContainer.add(resourceInducementsLabel);
+
+        AjaxLink resourceInducementsResolve = new AjaxLink(ID_RESOURCE_IND_BUTTON_RESOLVE) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                resolveResourceInducementsPerformed(target);
+            }
+        };
+        resourceInducementsContainer.add(resourceInducementsResolve);
+
+        final FederationObjectInformationProvider resourceInducementsProvider = new FederationObjectInformationProvider(getPage(),
+                getResourceInducementsIdentifier());
+        List<IColumn> resourceInducementsColumns = createObjectInformationColumns();
+        TablePanel resourceInducementsTable = new TablePanel(ID_RESOURCE_IND_TABLE, resourceInducementsProvider, resourceInducementsColumns, 10);
+        resourceInducementsTable.add(new VisibleEnableBehavior() {
+
+            @Override
+            public boolean isVisible() {
+                return resourceInducementsProvider.size() > 0;
+            }
+        });
+        resourceInducementsTable.setShowPaging(false);
+        resourceInducementsContainer.add(resourceInducementsTable);
+
+        //Role Inducements Container
+        WebMarkupContainer roleInducementsContainer = new WebMarkupContainer(ID_ROLE_IND_CONTAINER);
+        roleInducementsContainer.setOutputMarkupId(true);
+        mainForm.add(roleInducementsContainer);
 
         Label roleInducementsLabel = new Label(ID_ROLE_INDUCEMENT_LABEL, new AbstractReadOnlyModel<String>() {
 
@@ -217,7 +255,50 @@ public class PageOrgPreview extends PageBase{
                 return "RoleInducements (" + model.getObject().getRoleInducements().size() + ")";
             }
         });
-        mainForm.add(roleInducementsLabel);
+        roleInducementsContainer.add(roleInducementsLabel);
+
+        AjaxLink roleInducementsResolve = new AjaxLink(ID_ROLE_IND_BUTTON_RESOLVE) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                resolveRoleInducementsPerformed(target);
+            }
+        };
+        roleInducementsContainer.add(roleInducementsResolve);
+
+        final FederationObjectInformationProvider roleInducementsProvider = new FederationObjectInformationProvider(getPage(),
+                getRoleInducementsIdentifiers());
+        List<IColumn> roleInducementsColumns = createObjectInformationColumns();
+        TablePanel roleInducementTable = new TablePanel(ID_ROLE_IND_TABLE, roleInducementsProvider, roleInducementsColumns, 10);
+        roleInducementTable.add(new VisibleEnableBehavior() {
+
+            @Override
+            public boolean isVisible() {
+                return roleInducementsProvider.size() > 0;
+            }
+        });
+        roleInducementTable.setShowPaging(false);
+        roleInducementsContainer.add(roleInducementTable);
+    }
+
+    private List<FederationIdentifierType> getResourceInducementsIdentifier(){
+        List<FederationIdentifierType> list = new ArrayList<>();
+
+        for(InducementType<ResourceType> ref: model.getObject().getResourceInducements()){
+            list.add(ref.getFederationIdentifier());
+        }
+
+        return list;
+    }
+
+    private List<FederationIdentifierType> getRoleInducementsIdentifiers(){
+        List<FederationIdentifierType> list = new ArrayList<>();
+
+        for(InducementType<RoleType> ref: model.getObject().getRoleInducements()){
+            list.add(ref.getFederationIdentifier());
+        }
+
+        return list;
     }
 
     private List<IColumn> createObjectInformationColumns(){
@@ -277,6 +358,22 @@ public class PageOrgPreview extends PageBase{
 
     private void resolveGovernorsPerformed(AjaxRequestTarget target){
 //        TODO
+        warn("Not implemented yet.");
+        target.add(getFeedbackPanel());
+    }
+
+    private void resolveResourceInducementsPerformed(AjaxRequestTarget target){
+//        TODO
+        warn("Not implemented yet.");
+        target.add(getFeedbackPanel());
+
+    }
+
+    private void resolveRoleInducementsPerformed(AjaxRequestTarget target){
+//        TODO
+        warn("Not implemented yet.");
+        target.add(getFeedbackPanel());
+
     }
 
     private void shareHierarchyPerformed(AjaxRequestTarget target){
