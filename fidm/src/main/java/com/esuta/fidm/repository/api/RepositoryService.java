@@ -62,6 +62,8 @@ public class RepositoryService implements IRepositoryService{
             throw new DatabaseCommunicationException();
         }
 
+        entityManager.clear();
+
         if(type == null || uid == null){
             return null;
         }
@@ -85,6 +87,8 @@ public class RepositoryService implements IRepositoryService{
         if(entityManager == null){
             throw new DatabaseCommunicationException();
         }
+
+        entityManager.clear();
 
         if(type == null || name == null){
             return null;
@@ -209,6 +213,8 @@ public class RepositoryService implements IRepositoryService{
         if(entityManager == null){
             throw new DatabaseCommunicationException();
         }
+
+        entityManager.clear();
 
         if(type == null){
             return null;
