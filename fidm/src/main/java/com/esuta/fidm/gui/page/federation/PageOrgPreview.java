@@ -245,7 +245,7 @@ public class PageOrgPreview extends PageBase{
 
             @Override
             protected Item<OrgType> newRowItem(String id, int index, final IModel<OrgType> model) {
-                Item item = super.newRowItem(id, index, model);
+                Item<OrgType> item = super.newRowItem(id, index, model);
                 item.add(AttributeModifier.append("class", new AbstractReadOnlyModel<String>() {
 
                     @Override
@@ -444,21 +444,24 @@ public class PageOrgPreview extends PageBase{
     }
 
     private void treeExpandPerformed(AjaxRequestTarget target){
-//    TODO
-        warn("Not implemented yet");
-        target.add(getFeedbackPanel());
+        TableTree tree = getTree();
+        TreeStateModel model = (TreeStateModel) tree.getDefaultModel();
+        model.expandAll();
+
+        target.add(tree);
     }
 
     private void treeCollapsePerformed(AjaxRequestTarget target){
-//            TODO
-        warn("Not implemented yet");
-        target.add(getFeedbackPanel());
+        TableTree tree = getTree();
+        TreeStateModel model = (TreeStateModel) tree.getDefaultModel();
+        model.collapseAll();
+
+        target.add(tree);
     }
 
     private void selectTreeItemPerformed(AjaxRequestTarget target){
-        //            TODO
-        warn("Not implemented yet");
         target.add(getFeedbackPanel());
+        setResponsePage(new PageOrgPreview(selectedOrgInHierarchy.getObject(), providedOrgUnits, uniqueOrgAttribute));
     }
 
     private void cancelPerformed(){

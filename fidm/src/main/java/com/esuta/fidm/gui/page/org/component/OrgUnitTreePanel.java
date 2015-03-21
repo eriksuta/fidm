@@ -16,6 +16,8 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.repository.schema.core.AssignmentType;
+import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.UserType;
 import org.apache.log4j.Logger;
@@ -294,10 +296,11 @@ public class OrgUnitTreePanel extends Panel {
         String selectedOrgUid = selected.getObject().getUid();
 
         for(OrgType org: list){
-            if(org.getParentOrgUnits().contains(selectedOrgUid)){
-                filteredList.add(org);
+            for(ObjectReferenceType parentRef: org.getParentOrgUnits()){
+                if(selectedOrgUid.equals(parentRef.getUid())){
+                    filteredList.add(org);
+                }
             }
-
         }
 
         return filteredList;
@@ -353,8 +356,10 @@ public class OrgUnitTreePanel extends Panel {
         String selectedOrgUid = selected.getObject().getUid();
 
         for(UserType user: list){
-            if(user.getOrgUnitAssignments().contains(selectedOrgUid)){
-                filteredList.add(user);
+            for(AssignmentType orgRef: user.getOrgUnitAssignments()){
+                if(selectedOrgUid.equals(orgRef.getUid())){
+                    filteredList.add(user);
+                }
             }
         }
 
