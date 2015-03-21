@@ -4,6 +4,8 @@ import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 
 import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,14 +55,16 @@ public class OrgType extends ObjectType{
      *      - org. unit can't have a children that is somewhere
      *        in the chain of it's parents (to prevent cycles)
      * */
-    private List<ObjectReferenceType<OrgType>> parentOrgUnits;
+    @OneToMany(fetch= FetchType.EAGER)
+     private List<ObjectReferenceType<OrgType>> parentOrgUnits;
 
     /**
      *  A list of governors, a references to the users that
      *  possess some level of control over org. units and
      *  decisions made with org. units
      * */
-    private List<ObjectReferenceType<UserType>> governors;
+    @OneToMany(fetch= FetchType.EAGER)
+     private List<ObjectReferenceType<UserType>> governors;
 
     /**
      *  A list of references to relying parties (service providers,
@@ -71,12 +75,14 @@ public class OrgType extends ObjectType{
      *  at ALL times. If they do not, such state is considered
      *  as inconsistent.
      * */
+    @OneToMany(fetch= FetchType.EAGER)
     private List<InducementType<ResourceType>> resourceInducements;
 
     /**
      *  The same concept as with the attribute 'resourceInducements', but
      *  with roles.
      * */
+    @OneToMany(fetch= FetchType.EAGER)
     private List<InducementType<RoleType>> roleInducements;
 
     /**

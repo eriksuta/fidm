@@ -4,6 +4,8 @@ import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 
 import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +47,25 @@ public class UserType extends ObjectType{
 
     private String password;
 
+    /**
+     *  A list of AssignmentType references that point to roles
+     *  that user has assigned
+     * */
+    @OneToMany(fetch= FetchType.EAGER)
     private List<AssignmentType<RoleType>> roleAssignments;
+
+    /**
+     *  A list of AssignmentType references that point to org. units
+     *  that user has assigned
+     * */
+    @OneToMany(fetch= FetchType.EAGER)
     private List<AssignmentType<OrgType>> orgUnitAssignments;
+
+    /**
+     *  A list of AssignmentType references that point to accounts
+     *  that user has assigned
+     * */
+    @OneToMany(fetch= FetchType.EAGER)
     private List<AssignmentType<AccountType>> accounts;
 
     /**

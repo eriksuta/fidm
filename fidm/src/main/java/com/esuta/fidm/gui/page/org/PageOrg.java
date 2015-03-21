@@ -123,17 +123,17 @@ public class PageOrg extends PageBase {
 
         PageParameters parameters = getPageParameters();
         String uid = parameters.get(UID_PAGE_PARAMETER_NAME).toString();
-        OrgType role;
+        OrgType org;
 
         try {
-            role = getModelService().readObject(OrgType.class, uid);
+            org = getModelService().readObject(OrgType.class, uid);
         } catch (DatabaseCommunicationException exc){
             error("Couldn't retrieve org. unit with oid: '" + uid + "' from the repository. Reason: " + exc.getExceptionMessage());
             LOGGER.error("Couldn't retrieve org. unit with oid: '" + uid + "' from the repository. Reason: ", exc);
             throw new RestartResponseException(PageOrgList.class);
         }
 
-        return role;
+        return org;
     }
 
     private boolean isEditingOrgUnit(){
