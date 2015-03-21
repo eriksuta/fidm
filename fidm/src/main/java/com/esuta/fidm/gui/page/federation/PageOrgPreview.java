@@ -5,7 +5,10 @@ import com.esuta.fidm.gui.component.data.FederationObjectInformationProvider;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.federation.component.FederationOrgTreeDataProvider;
 import com.esuta.fidm.gui.page.org.PageOrgList;
+import com.esuta.fidm.gui.page.org.component.data.SelectableFolderContent;
+import com.esuta.fidm.gui.page.org.component.data.TreeStateSet;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
@@ -13,21 +16,32 @@ import com.esuta.fidm.model.federation.service.ObjectInformation;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.log4j.Logger;
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.extensions.markup.html.repeater.tree.ISortableTreeProvider;
+import org.apache.wicket.extensions.markup.html.repeater.tree.ITreeProvider;
+import org.apache.wicket.extensions.markup.html.repeater.tree.TableTree;
+import org.apache.wicket.extensions.markup.html.repeater.tree.table.TreeColumn;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  *  @author shood
@@ -43,6 +57,13 @@ public class PageOrgPreview extends PageBase{
     private static final String ID_LOCALITY = "locality";
     private static final String ID_TYPE = "type";
     private static final String ID_PARENT_ORG = "parentOrgUnits";
+
+    private static final String ID_TREE_CONTAINER = "treeContainer";
+    private static final String ID_TREE_BODY_CONTAINER = "treeBodyContainer";
+    private static final String ID_TREE = "tree";
+    private static final String ID_TREE_HEADER = "treeHeader";
+    private static final String ID_TREE_EXPAND = "treeExpand";
+    private static final String ID_TREE_COLLAPSE = "treeCollapse";
 
     private static final String ID_GOVERNOR_CONTAINER = "governorsContainer";
     private static final String ID_GOVERNOR_LABEL = "governorsLabel";
@@ -61,12 +82,21 @@ public class PageOrgPreview extends PageBase{
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
     private IModel<OrgType> model;
+    private List<OrgType> providedOrgUnits;
+    private String uniqueOrgAttribute;
+    private IModel<OrgType> selectedOrgInHierarchy = new LoadableModel<OrgType>() {
+
+        @Override
+        protected OrgType load() {
+            return getSelectedOrgInHierarchy();
+        }
+    };
 
     public PageOrgPreview(){
-        this(null);
+        this(null, null, null);
     }
 
-    public PageOrgPreview(final OrgType org){
+    public PageOrgPreview(final OrgType org, List<OrgType> providedOrgUnits, String uniqueOrgAttribute){
         model = new LoadableModel<OrgType>(false) {
 
             @Override
@@ -75,6 +105,8 @@ public class PageOrgPreview extends PageBase{
             }
         };
 
+        this.uniqueOrgAttribute = uniqueOrgAttribute;
+        this.providedOrgUnits = providedOrgUnits;
         initLayout();
     }
 
@@ -151,7 +183,100 @@ public class PageOrgPreview extends PageBase{
     }
 
     private void initOrgHierarchyPreview(Form mainForm){
-//        TODO
+        WebMarkupContainer treeContainer = new WebMarkupContainer(ID_TREE_CONTAINER);
+        treeContainer.setOutputMarkupId(true);
+        mainForm.add(treeContainer);
+
+        WebMarkupContainer treeHeader = new WebMarkupContainer(ID_TREE_HEADER);
+        treeHeader.setOutputMarkupId(true);
+        treeContainer.add(treeHeader);
+
+        AjaxLink treeExpand = new AjaxLink(ID_TREE_EXPAND) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                treeExpandPerformed(target);
+            }
+        };
+        treeHeader.add(treeExpand);
+
+        AjaxLink treeCollapse = new AjaxLink(ID_TREE_COLLAPSE) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                treeCollapsePerformed(target);
+            }
+        };
+        treeHeader.add(treeCollapse);
+
+        FederationOrgTreeDataProvider treeProvider = new FederationOrgTreeDataProvider(model, providedOrgUnits, uniqueOrgAttribute);
+        List<IColumn<OrgType, String>> columns = new ArrayList<>();
+        columns.add(new TreeColumn<OrgType, String>(new Model<>("Org. Unit Hierarchy")));
+
+        WebMarkupContainer treeBodyContainer = new WebMarkupContainer(ID_TREE_BODY_CONTAINER) {
+
+            @Override
+            public void renderHead(IHeaderResponse response) {
+                super.renderHead(response);
+
+                //method computes height based on document.innerHeight() - screen height;
+                response.render(OnDomReadyHeaderItem.forScript("updateHeight('" + getMarkupId()
+                        + "', ['#" + PageOrgPreview.this.get(ID_MAIN_FORM).getMarkupId() + "'], ['#"
+                        + PageOrgPreview.this.get(ID_MAIN_FORM + ":" + ID_TREE_CONTAINER + ":" + ID_TREE_HEADER).getMarkupId() + "'])"));
+            }
+        };
+        treeContainer.add(treeBodyContainer);
+
+        TableTree<OrgType, String> tree = new TableTree<OrgType, String>(ID_TREE, columns, treeProvider,
+                Integer.MAX_VALUE, new TreeStateModel(treeProvider)) {
+
+            @Override
+            protected Component newContentComponent(String id, IModel<OrgType> model) {
+                return new SelectableFolderContent(id, this, model, selectedOrgInHierarchy) {
+
+                    @Override
+                    protected void onClick(AjaxRequestTarget target) {
+                        super.onClick(target);
+
+                        selectTreeItemPerformed(target);
+                    }
+                };
+            }
+
+            @Override
+            protected Item<OrgType> newRowItem(String id, int index, final IModel<OrgType> model) {
+                Item item = super.newRowItem(id, index, model);
+                item.add(AttributeModifier.append("class", new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        OrgType itemObject = model.getObject();
+                        if (itemObject != null && itemObject.equals(selectedOrgInHierarchy.getObject())) {
+                            return "success";
+                        }
+
+                        return null;
+                    }
+                }));
+                return item;
+            }
+        };
+
+        tree.getTable().add(AttributeModifier.replace("class", "table table-striped table-condensed"));
+        treeBodyContainer.add(tree);
+    }
+
+    private TableTree getTree() {
+        return (TableTree) get(ID_MAIN_FORM + ":" + ID_TREE_CONTAINER + ":" +
+                ID_TREE_BODY_CONTAINER + ":" + ID_TREE);
+    }
+
+    private OrgType getSelectedOrgInHierarchy() {
+        TableTree<OrgType, String> tree = getTree();
+        ITreeProvider<OrgType> provider = tree.getProvider();
+        Iterator<? extends OrgType> iterator = provider.getRoots();
+
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     private void initGovernorPreview(Form mainForm){
@@ -318,6 +443,24 @@ public class PageOrgPreview extends PageBase{
         mainForm.add(share);
     }
 
+    private void treeExpandPerformed(AjaxRequestTarget target){
+//    TODO
+        warn("Not implemented yet");
+        target.add(getFeedbackPanel());
+    }
+
+    private void treeCollapsePerformed(AjaxRequestTarget target){
+//            TODO
+        warn("Not implemented yet");
+        target.add(getFeedbackPanel());
+    }
+
+    private void selectTreeItemPerformed(AjaxRequestTarget target){
+        //            TODO
+        warn("Not implemented yet");
+        target.add(getFeedbackPanel());
+    }
+
     private void cancelPerformed(){
         setResponsePage(PageFederationList.class);
     }
@@ -370,5 +513,36 @@ public class PageOrgPreview extends PageBase{
 
         setResponsePage(PageOrgList.class);
         target.add(getFeedbackPanel());
+    }
+
+    private static class TreeStateModel extends AbstractReadOnlyModel<Set<OrgType>> {
+
+        private TreeStateSet<OrgType> set = new TreeStateSet<>();
+        private ISortableTreeProvider provider;
+
+        TreeStateModel(ISortableTreeProvider provider) {
+            this.provider = provider;
+        }
+
+        @Override
+        public Set<OrgType> getObject() {
+            //just to have root expanded at all time
+            if (set.isEmpty()) {
+                Iterator<OrgType> iterator = provider.getRoots();
+                if (iterator.hasNext()) {
+                    set.add(iterator.next());
+                }
+
+            }
+            return set;
+        }
+
+        public void expandAll() {
+            set.expandAll();
+        }
+
+        public void collapseAll() {
+            set.collapseAll();
+        }
     }
 }

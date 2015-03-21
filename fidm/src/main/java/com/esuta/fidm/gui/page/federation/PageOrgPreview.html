@@ -64,7 +64,28 @@
 
                     <!-- Inducements, governors and org. hierarchy panel -->
                     <div class="col-lg-6">
-                        <span>Org. Hierarchy</span>
+                        <div wicket:id="treeContainer" class="org-tree-container">
+                            <div wicket:id="treeHeader" class="row" style="margin: 10px 0 0; border-bottom: 1px solid #ddd;">
+                                <div class="col-xs-9" style="padding-left: 5px;">
+                                    <div class="org-table-header">
+                                        <span>Org. Unit Hierarchy</span>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="float: right">
+                                    <a class="btn btn-sm" wicket:id="treeExpand">
+                                        <i class="fa fa-expand fa-fw fa-lg" />
+                                    </a>
+                                    <a class="btn btn-sm" wicket:id="treeCollapse">
+                                        <i class="fa fa-compress fa-fw fa-lg" />
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div wicket:id="treeBodyContainer" class="org-tree-container">
+                                <div wicket:id="tree"/>
+                            </div>
+                        </div>
                         <hr class="assignmentDelimiter">
 
                         <div wicket:id="governorsContainer">

@@ -34,10 +34,6 @@ public class OrgTreeDataProvider extends SortableTreeProvider<OrgType, String>{
         this.rootUidModel = rootUidModel;
     }
 
-    private PageBase getPage() {
-        return (PageBase) component.getPage();
-    }
-
     private ModelService getModelService() {
         PageBase page = (PageBase) component.getPage();
         return page.getModelService();

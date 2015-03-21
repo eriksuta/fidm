@@ -531,6 +531,18 @@ public class PageFederation extends PageBase {
         return list;
     }
 
+    private List<OrgType> getProvidedOrgList(){
+        TablePanel table = (TablePanel) get(ID_MAIN_FORM + ":" + ID_TABLE_CONTAINER + ":" +
+                ID_PROVIDED_ORG_CONTAINER + ":" + ID_PROVIDED_ORG_TABLE);
+
+        ObjectDataProvider<OrgType> provider = (ObjectDataProvider<OrgType>) table.getDataTable().getDataProvider();
+        return provider.getData();
+    }
+
+    private String getOrgUniqueAttributeName(){
+        return model.getObject().getUniqueOrgIdentifier();
+    }
+
     private void sharedOrgUnitEditPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             warn("Could not show shared org. unit");
@@ -554,7 +566,7 @@ public class PageFederation extends PageBase {
         }
 
         OrgType org = rowModel.getObject();
-        setResponsePage(new PageOrgPreview(org));
+        setResponsePage(new PageOrgPreview(org, getProvidedOrgList(), getOrgUniqueAttributeName()));
     }
 
     private void cancelPerformed(){

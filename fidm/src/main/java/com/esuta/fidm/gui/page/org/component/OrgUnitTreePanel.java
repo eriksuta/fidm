@@ -95,7 +95,6 @@ public class OrgUnitTreePanel extends Panel {
         treeHeader.setOutputMarkupId(true);
         add(treeHeader);
 
-
         AjaxLink editRoot = new AjaxLink(ID_BUTTON_EDIT_ROOT) {
 
             @Override
