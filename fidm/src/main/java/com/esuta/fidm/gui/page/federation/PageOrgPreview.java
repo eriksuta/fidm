@@ -46,17 +46,14 @@ public class PageOrgPreview extends PageBase{
 
     private static final String ID_GOVERNOR_CONTAINER = "governorsContainer";
     private static final String ID_GOVERNOR_LABEL = "governorsLabel";
-    private static final String ID_GOVERNOR_BUTTON_RESOLVE = "resolveGovernors";
     private static final String ID_GOVERNOR_TABLE = "governorsTable";
 
     private static final String ID_RESOURCE_IND_CONTAINER = "resourceInducementsContainer";
     private static final String ID_RESOURCE_INDUCEMENT_LABEL = "resourceInducementsLabel";
-    private static final String ID_RESOURCE_IND_BUTTON_RESOLVE = "resolveResourceInducements";
     private static final String ID_RESOURCE_IND_TABLE = "resourceInducementsTable";
 
     private static final String ID_ROLE_IND_CONTAINER = "roleInducementsContainer";
     private static final String ID_ROLE_INDUCEMENT_LABEL = "roleInducementsLabel";
-    private static final String ID_ROLE_IND_BUTTON_RESOLVE = "resolveRoleInducements";
     private static final String ID_ROLE_IND_TABLE = "roleInducementsTable";
 
     private static final String ID_BUTTON_SHARE = "shareButton";
@@ -171,15 +168,6 @@ public class PageOrgPreview extends PageBase{
         });
         governorContainer.add(governorsLabel);
 
-        AjaxLink resolveGovernors = new AjaxLink(ID_GOVERNOR_BUTTON_RESOLVE) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                resolveGovernorsPerformed(target);
-            }
-        };
-        governorContainer.add(resolveGovernors);
-
         final FederationObjectInformationProvider governorProvider = new FederationObjectInformationProvider(getPage(),
                 getGovernorIdentifiers());
         List<IColumn> governorColumns = createObjectInformationColumns();
@@ -220,15 +208,6 @@ public class PageOrgPreview extends PageBase{
         });
         resourceInducementsContainer.add(resourceInducementsLabel);
 
-        AjaxLink resourceInducementsResolve = new AjaxLink(ID_RESOURCE_IND_BUTTON_RESOLVE) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                resolveResourceInducementsPerformed(target);
-            }
-        };
-        resourceInducementsContainer.add(resourceInducementsResolve);
-
         final FederationObjectInformationProvider resourceInducementsProvider = new FederationObjectInformationProvider(getPage(),
                 getResourceInducementsIdentifier());
         List<IColumn> resourceInducementsColumns = createObjectInformationColumns();
@@ -256,15 +235,6 @@ public class PageOrgPreview extends PageBase{
             }
         });
         roleInducementsContainer.add(roleInducementsLabel);
-
-        AjaxLink roleInducementsResolve = new AjaxLink(ID_ROLE_IND_BUTTON_RESOLVE) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                resolveRoleInducementsPerformed(target);
-            }
-        };
-        roleInducementsContainer.add(roleInducementsResolve);
 
         final FederationObjectInformationProvider roleInducementsProvider = new FederationObjectInformationProvider(getPage(),
                 getRoleInducementsIdentifiers());
@@ -348,32 +318,8 @@ public class PageOrgPreview extends PageBase{
         mainForm.add(share);
     }
 
-    public Form getMainForm(){
-        return (Form) get(ID_MAIN_FORM);
-    }
-
     private void cancelPerformed(){
         setResponsePage(PageFederationList.class);
-    }
-
-    private void resolveGovernorsPerformed(AjaxRequestTarget target){
-//        TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
-    }
-
-    private void resolveResourceInducementsPerformed(AjaxRequestTarget target){
-//        TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
-
-    }
-
-    private void resolveRoleInducementsPerformed(AjaxRequestTarget target){
-//        TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
-
     }
 
     private void shareHierarchyPerformed(AjaxRequestTarget target){

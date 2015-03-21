@@ -121,7 +121,17 @@ public class FederationObjectInformationProvider extends SortableDataProvider<Ob
 
     @Override
     public long size() {
-        return getData() != null ? getData().size() : 0;
+        long count = 0;
+
+        try {
+            List<ObjectInformation> dataList = retrieveObjectInformationList();
+            List<ObjectInformation> filteredDataList = applyDataFilter(dataList);
+            count = filteredDataList.size();
+        } catch (Exception e){
+            LOGGER.error("Could not retrieve the size of information federation objects. Reason: ", e);
+        }
+
+        return count;
     }
 
     private List<ObjectInformation> retrieveObjectInformationList() throws DatabaseCommunicationException {
