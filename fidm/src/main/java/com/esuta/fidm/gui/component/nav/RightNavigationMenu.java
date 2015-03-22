@@ -9,8 +9,6 @@ import com.esuta.fidm.gui.page.federation.PageFederation;
 import com.esuta.fidm.gui.page.federation.PageFederationList;
 import com.esuta.fidm.gui.page.org.PageOrg;
 import com.esuta.fidm.gui.page.org.PageOrgList;
-import com.esuta.fidm.gui.page.project.PageProject;
-import com.esuta.fidm.gui.page.project.PageProjectList;
 import com.esuta.fidm.gui.page.resource.PageResource;
 import com.esuta.fidm.gui.page.resource.PageResourceList;
 import com.esuta.fidm.gui.page.roles.PageRole;
@@ -86,12 +84,6 @@ public class RightNavigationMenu extends Panel {
         orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.new"), PageOrg.class));
         orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.list"), PageOrgList.class));
         menuItemList.add(orgSection);
-
-        //init Project section
-        NavigationMenuTopLevelItem projectSection = new NavigationMenuTopLevelItem(createStringResource("page.link.project"), "fa fa-gamepad fa-fw", null);
-        projectSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.project.new"), PageProject.class));
-        projectSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.project.list"), PageProjectList.class));
-        menuItemList.add(projectSection);
 
         //init Federation section
         NavigationMenuTopLevelItem federationSection = new NavigationMenuTopLevelItem(createStringResource("page.link.federation"), "fa fa-institution fa-fw", null);
