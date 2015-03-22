@@ -11,6 +11,7 @@ import com.esuta.fidm.gui.page.org.component.data.SelectableFolderContent;
 import com.esuta.fidm.gui.page.org.component.data.TreeStateSet;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
 import com.esuta.fidm.model.federation.service.ObjectInformation;
 import com.esuta.fidm.repository.schema.core.*;
@@ -20,24 +21,21 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.tree.ISortableTreeProvider;
 import org.apache.wicket.extensions.markup.html.repeater.tree.ITreeProvider;
 import org.apache.wicket.extensions.markup.html.repeater.tree.TableTree;
 import org.apache.wicket.extensions.markup.html.repeater.tree.table.TreeColumn;
-import org.apache.wicket.markup.head.IHeaderResponse;
-import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.eclipse.jetty.http.HttpStatus;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -50,7 +48,6 @@ public class PageOrgPreview extends PageBase{
 
     private static final transient Logger LOGGER = Logger.getLogger(PageOrgPreview.class);
 
-    private static final String ID_MAIN_FORM = "mainForm";
     private static final String ID_NAME = "name";
     private static final String ID_DISPLAY_NAME = "displayName";
     private static final String ID_DESCRIPTION = "description";
@@ -111,10 +108,6 @@ public class PageOrgPreview extends PageBase{
     }
 
     private void initLayout(){
-        Form mainForm = new Form(ID_MAIN_FORM);
-        mainForm.setOutputMarkupId(true);
-        add(mainForm);
-
         Label name = new Label(ID_NAME, new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -122,7 +115,7 @@ public class PageOrgPreview extends PageBase{
                 return model.getObject().getName();
             }
         });
-        mainForm.add(name);
+        add(name);
 
         Label displayName = new Label(ID_DISPLAY_NAME, new AbstractReadOnlyModel<String>() {
 
@@ -131,7 +124,7 @@ public class PageOrgPreview extends PageBase{
                 return model.getObject().getDisplayName();
             }
         });
-        mainForm.add(displayName);
+        add(displayName);
 
         Label description = new Label(ID_DESCRIPTION, new AbstractReadOnlyModel<String>() {
 
@@ -140,7 +133,7 @@ public class PageOrgPreview extends PageBase{
                 return model.getObject().getDescription();
             }
         });
-        mainForm.add(description);
+        add(description);
 
         Label locality = new Label(ID_LOCALITY, new AbstractReadOnlyModel<String>() {
 
@@ -149,7 +142,7 @@ public class PageOrgPreview extends PageBase{
                 return model.getObject().getLocality();
             }
         });
-        mainForm.add(locality);
+        add(locality);
 
         Label type = new Label(ID_TYPE, new AbstractReadOnlyModel<String>() {
 
@@ -165,7 +158,7 @@ public class PageOrgPreview extends PageBase{
                 return sb.toString();
             }
         });
-        mainForm.add(type);
+        add(type);
 
         Label parentOrgLabel = new Label(ID_PARENT_ORG, new AbstractReadOnlyModel<String>() {
 
@@ -174,18 +167,18 @@ public class PageOrgPreview extends PageBase{
                 return Integer.toString(model.getObject().getParentOrgUnits().size());
             }
         });
-        mainForm.add(parentOrgLabel);
+        add(parentOrgLabel);
 
-        initOrgHierarchyPreview(mainForm);
-        initGovernorPreview(mainForm);
-        initInducementsPreview(mainForm);
-        initButtons(mainForm);
+        initOrgHierarchyPreview();
+        initGovernorPreview();
+        initInducementsPreview();
+        initButtons();
     }
 
-    private void initOrgHierarchyPreview(Form mainForm){
+    private void initOrgHierarchyPreview(){
         WebMarkupContainer treeContainer = new WebMarkupContainer(ID_TREE_CONTAINER);
         treeContainer.setOutputMarkupId(true);
-        mainForm.add(treeContainer);
+        add(treeContainer);
 
         WebMarkupContainer treeHeader = new WebMarkupContainer(ID_TREE_HEADER);
         treeHeader.setOutputMarkupId(true);
@@ -213,18 +206,7 @@ public class PageOrgPreview extends PageBase{
         List<IColumn<OrgType, String>> columns = new ArrayList<>();
         columns.add(new TreeColumn<OrgType, String>(new Model<>("Org. Unit Hierarchy")));
 
-        WebMarkupContainer treeBodyContainer = new WebMarkupContainer(ID_TREE_BODY_CONTAINER) {
-
-            @Override
-            public void renderHead(IHeaderResponse response) {
-                super.renderHead(response);
-
-                //method computes height based on document.innerHeight() - screen height;
-                response.render(OnDomReadyHeaderItem.forScript("updateHeight('" + getMarkupId()
-                        + "', ['#" + PageOrgPreview.this.get(ID_MAIN_FORM).getMarkupId() + "'], ['#"
-                        + PageOrgPreview.this.get(ID_MAIN_FORM + ":" + ID_TREE_CONTAINER + ":" + ID_TREE_HEADER).getMarkupId() + "'])"));
-            }
-        };
+        WebMarkupContainer treeBodyContainer = new WebMarkupContainer(ID_TREE_BODY_CONTAINER);
         treeContainer.add(treeBodyContainer);
 
         TableTree<OrgType, String> tree = new TableTree<OrgType, String>(ID_TREE, columns, treeProvider,
@@ -267,8 +249,7 @@ public class PageOrgPreview extends PageBase{
     }
 
     private TableTree getTree() {
-        return (TableTree) get(ID_MAIN_FORM + ":" + ID_TREE_CONTAINER + ":" +
-                ID_TREE_BODY_CONTAINER + ":" + ID_TREE);
+        return (TableTree) get(ID_TREE_CONTAINER + ":" + ID_TREE_BODY_CONTAINER + ":" + ID_TREE);
     }
 
     private OrgType getSelectedOrgInHierarchy() {
@@ -279,10 +260,10 @@ public class PageOrgPreview extends PageBase{
         return iterator.hasNext() ? iterator.next() : null;
     }
 
-    private void initGovernorPreview(Form mainForm){
+    private void initGovernorPreview(){
         WebMarkupContainer governorContainer = new WebMarkupContainer(ID_GOVERNOR_CONTAINER);
         governorContainer.setOutputMarkupId(true);
-        mainForm.add(governorContainer);
+        add(governorContainer);
 
         Label governorsLabel = new Label(ID_GOVERNOR_LABEL, new AbstractReadOnlyModel<String>() {
 
@@ -318,11 +299,11 @@ public class PageOrgPreview extends PageBase{
         return list;
     }
 
-    private void initInducementsPreview(Form mainForm){
+    private void initInducementsPreview(){
         //Resource Inducements Container
         WebMarkupContainer resourceInducementsContainer = new WebMarkupContainer(ID_RESOURCE_IND_CONTAINER);
         resourceInducementsContainer.setOutputMarkupId(true);
-        mainForm.add(resourceInducementsContainer);
+        add(resourceInducementsContainer);
 
         Label resourceInducementsLabel = new Label(ID_RESOURCE_INDUCEMENT_LABEL, new AbstractReadOnlyModel<String>() {
 
@@ -350,7 +331,7 @@ public class PageOrgPreview extends PageBase{
         //Role Inducements Container
         WebMarkupContainer roleInducementsContainer = new WebMarkupContainer(ID_ROLE_IND_CONTAINER);
         roleInducementsContainer.setOutputMarkupId(true);
-        mainForm.add(roleInducementsContainer);
+        add(roleInducementsContainer);
 
         Label roleInducementsLabel = new Label(ID_ROLE_INDUCEMENT_LABEL, new AbstractReadOnlyModel<String>() {
 
@@ -403,44 +384,34 @@ public class PageOrgPreview extends PageBase{
         return columns;
     }
 
-    private void initButtons(Form mainForm){
-        AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
+//    private void initButtons(Form mainForm){
+    private void initButtons(){
+        AjaxLink cancel = new AjaxLink(ID_BUTTON_CANCEL) {
 
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            public void onClick(AjaxRequestTarget target) {
                 cancelPerformed();
             }
         };
-        cancel.setDefaultFormProcessing(false);
-        mainForm.add(cancel);
+        add(cancel);
 
-        AjaxSubmitLink shareHierarchy = new AjaxSubmitLink(ID_BUTTON_SHARE_HIERARCHY) {
+        AjaxLink shareHierarchy = new AjaxLink(ID_BUTTON_SHARE_HIERARCHY) {
 
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            public void onClick(AjaxRequestTarget target) {
                 shareHierarchyPerformed(target);
             }
-
-            @Override
-            protected void onError(AjaxRequestTarget target, Form<?> form) {
-                target.add(getFeedbackPanel());
-            }
         };
-        mainForm.add(shareHierarchy);
+        add(shareHierarchy);
 
-        AjaxSubmitLink share = new AjaxSubmitLink(ID_BUTTON_SHARE) {
+        AjaxLink share = new AjaxLink(ID_BUTTON_SHARE) {
 
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            public void onClick(AjaxRequestTarget target) {
                 sharePerformed(target);
             }
-
-            @Override
-            protected void onError(AjaxRequestTarget target, Form<?> form) {
-                target.add(getFeedbackPanel());
-            }
         };
-        mainForm.add(share);
+        add(share);
     }
 
     private void treeExpandPerformed(AjaxRequestTarget target){
@@ -469,9 +440,139 @@ public class PageOrgPreview extends PageBase{
     }
 
     private void shareHierarchyPerformed(AjaxRequestTarget target){
-//        TODO
-        warn("Not implemented yet.");
+        if(model == null || model.getObject() == null){
+            warn("Can't share the org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        OrgType rootToShare = model.getObject();
+        clearOrgParentReferences(rootToShare);
+        try {
+            List<OrgType> hierarchyToShare = getOrgHierarchyToShare(rootToShare, new ArrayList<OrgType>(), providedOrgUnits);
+
+            List<OrgType> createdOrgUnits = new ArrayList<>();
+            for(OrgType org: hierarchyToShare){
+                FederationIdentifierType orgIdentifier = org.getFederationIdentifier();
+                FederationMemberType member = getFederationMemberByName(orgIdentifier.getFederationMemberId());
+
+                ObjectTypeRestResponse<OrgType> response = getFederationServiceClient().createGetOrgUnitRequest(member, orgIdentifier);
+
+                int status = response.getStatus();
+                if(HttpStatus.OK_200 == status){
+                    OrgType o = response.getValue();
+                    o = getModelService().createObject(o);
+                    createdOrgUnits.add(o);
+                    info("Org. unit shared correctly. New org.: '" + o.getName() + "'(" + o.getUid() + ").");
+
+                } else {
+                    String message = response.getMessage();
+                    LOGGER.error("Could not share org. unit. REST response: " + status + ", message: " + message);
+                    error("Could not share org. unit. REST response: " + status + ", message: " + message);
+                }
+            }
+
+            //Prepare correct parent references and update existing units
+            prepareParentOrgReferences(findRoot(createdOrgUnits), createdOrgUnits);
+
+            //And update existing org. hierarchy with correct parent org. references
+            for(OrgType org: createdOrgUnits){
+                getModelService().updateObject(org);
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not create and process request to share selected org. unit.", e);
+            error("Could not create and process request to share selected org. unit. Reason: " + e);
+        } catch (ObjectAlreadyExistsException e) {
+            LOGGER.error("Could not create org. unit. Conflicting object already exists.", e);
+            error("Could not create org. unit. Conflicting object already exists. Reason: " + e);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Could not create org. unit. Can't determine the origin of org. unit.", e);
+            error("Could not create org. unit. Can't determine the origin of org. unit." + e);
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Could not update org. unit. Could not find target org. unit to update.", e);
+            error("Could not update org. unit. Could not find target org. unit to update." + e);
+        }
+
+        setResponsePage(PageOrgList.class);
         target.add(getFeedbackPanel());
+    }
+
+    private List<OrgType> getOrgHierarchyToShare(OrgType root, List<OrgType> hierarchy, List<OrgType> allOrgUnits)
+            throws NoSuchFieldException, IllegalAccessException {
+
+        hierarchy.add(root);
+        List<OrgType> children = new ArrayList<>();
+
+        //First, get the children for root from all provided org. units
+        for(OrgType org: allOrgUnits){
+            for(ObjectReferenceType parent: org.getParentOrgUnits()){
+                String uniqueAttributeValue = parent.getFederationIdentifier().getUniqueAttributeValue();
+
+                if(isChild(root, uniqueAttributeValue)){
+                    children.add(org);
+                }
+            }
+        }
+
+        //Then repeat the process for all the children units
+        for(OrgType child: children){
+            getOrgHierarchyToShare(child, hierarchy, allOrgUnits);
+        }
+
+        //Finally, then return the hierarchy to be shared
+        return hierarchy;
+    }
+
+    private boolean isChild(OrgType org, String uniqueAttributeValue) throws NoSuchFieldException, IllegalAccessException {
+        Field uniqueAttribute = org.getClass().getDeclaredField(uniqueOrgAttribute);
+        uniqueAttribute.setAccessible(true);
+        String attributeValue = (String)uniqueAttribute.get(org);
+
+        return uniqueAttributeValue.equals(attributeValue);
+    }
+
+    private void prepareParentOrgReferences(OrgType root, List<OrgType> hierarchy)
+            throws NoSuchFieldException, IllegalAccessException {
+
+        if(root == null){
+            return;
+        }
+
+        //First, get the children of the root
+        List<OrgType> children = new ArrayList<>();
+        for(OrgType org: hierarchy){
+            for(ObjectReferenceType parent: org.getParentOrgUnits()){
+                String uniqueAttributeValue = parent.getFederationIdentifier().getUniqueAttributeValue();
+
+                if(isChild(root, uniqueAttributeValue)){
+                    children.add(org);
+                }
+            }
+        }
+
+        //Prepare references for current children
+        for(OrgType child: children){
+            for(ObjectReferenceType<OrgType> parent: child.getParentOrgUnits()){
+                parent.setType(OrgType.class);
+                parent.setUid(root.getUid());
+            }
+        }
+
+        //Repeat the process for all the children
+        for(OrgType child: children){
+            prepareParentOrgReferences(child, hierarchy);
+        }
+    }
+
+    private OrgType findRoot(List<OrgType> hierarchy){
+        for(OrgType org: hierarchy){
+            if(org.getParentOrgUnits().isEmpty()){
+                return org;
+            }
+        }
+
+        return null;
     }
 
     private void sharePerformed(AjaxRequestTarget target){
@@ -497,6 +598,7 @@ public class PageOrgPreview extends PageBase{
             int status = response.getStatus();
             if(HttpStatus.OK_200 == status){
                 OrgType org = response.getValue();
+                clearOrgParentReferences(org);
                 org = getModelService().createObject(org);
                 info("Org. unit shared correctly. New org.: '" + org.getName() + "'(" + org.getUid() + ").");
 
@@ -516,6 +618,10 @@ public class PageOrgPreview extends PageBase{
 
         setResponsePage(PageOrgList.class);
         target.add(getFeedbackPanel());
+    }
+
+    private void clearOrgParentReferences(OrgType org){
+        org.getParentOrgUnits().clear();
     }
 
     private static class TreeStateModel extends AbstractReadOnlyModel<Set<OrgType>> {
