@@ -86,6 +86,14 @@ public class OrgType extends ObjectType{
     private List<InducementType<RoleType>> roleInducements;
 
     /**
+     *  A unique sharing policy - or a set of sharing rules that
+     *  are applied during interaction in identity federation and
+     *  determines, what can be changed by the copies of this
+     *  org. unit.
+     * */
+    private FederationSharingPolicyType sharingPolicy;
+
+    /**
      *  A federation identifier used to uniquely identify the org. unit
      *  across federation. More specifically, it is a link to the origin
      *  of this org. unit. If this attribute is empty, the org. unit is
@@ -246,6 +254,14 @@ public class OrgType extends ObjectType{
         this.overrideParentSharing = overrideParentSharing;
     }
 
+    public FederationSharingPolicyType getSharingPolicy() {
+        return sharingPolicy;
+    }
+
+    public void setSharingPolicy(FederationSharingPolicyType sharingPolicy) {
+        this.sharingPolicy = sharingPolicy;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -271,6 +287,8 @@ public class OrgType extends ObjectType{
             return false;
         if (roleInducements != null ? !roleInducements.equals(orgType1.roleInducements) : orgType1.roleInducements != null)
             return false;
+        if (sharingPolicy != null ? !sharingPolicy.equals(orgType1.sharingPolicy) : orgType1.sharingPolicy != null)
+            return false;
 
         return true;
     }
@@ -286,6 +304,7 @@ public class OrgType extends ObjectType{
         result = 31 * result + (governors != null ? governors.hashCode() : 0);
         result = 31 * result + (resourceInducements != null ? resourceInducements.hashCode() : 0);
         result = 31 * result + (roleInducements != null ? roleInducements.hashCode() : 0);
+        result = 31 * result + (sharingPolicy != null ? sharingPolicy.hashCode() : 0);
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         result = 31 * result + (sharedInFederation ? 1 : 0);
         result = 31 * result + (sharedSubtree ? 1 : 0);
