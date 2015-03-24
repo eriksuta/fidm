@@ -15,6 +15,7 @@ import com.esuta.fidm.repository.schema.core.FederationSharingRuleType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
@@ -262,18 +263,45 @@ public class PageSharingPolicy extends PageBase{
                     }
                 });
                 attributeSelector.setRequired(true);
+                attributeSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        target.add(getRuleContainer());
+                    }
+                });
                 ruleBody.add(attributeSelector);
 
                 DropDownChoice singleValueTolerance = new DropDownChoice<>(ID_RULE_SV_TOLERANCE,
                         new PropertyModel<FederationSharingRuleType.SingleValueTolerance>(item.getModelObject(), "singleValueTolerance"),
                         WebMiscUtil.createReadonlyModelFromEnum(FederationSharingRuleType.SingleValueTolerance.class),
                         new EnumChoiceRenderer<FederationSharingRuleType.SingleValueTolerance>(this));
+                singleValueTolerance.add(new VisibleEnableBehavior(){
+
+                    @Override
+                    public boolean isEnabled() {
+                        String attributeName = item.getModelObject().getAttributeName();
+
+                        return !(attributeName == null || attributeName.isEmpty()) && isAttributeSingleValue(item.getModelObject().getAttributeName());
+
+                    }
+                });
                 ruleBody.add(singleValueTolerance);
 
                 DropDownChoice multiValueTolerance = new DropDownChoice<>(ID_RULE_MV_TOLERANCE,
                         new PropertyModel<FederationSharingRuleType.MultiValueTolerance>(item.getModelObject(), "multiValueTolerance"),
                         WebMiscUtil.createReadonlyModelFromEnum(FederationSharingRuleType.MultiValueTolerance.class),
                         new EnumChoiceRenderer<FederationSharingRuleType.MultiValueTolerance>(this));
+                multiValueTolerance.add(new VisibleEnableBehavior(){
+
+                    @Override
+                    public boolean isEnabled() {
+                        String attributeName = item.getModelObject().getAttributeName();
+
+                        return !(attributeName == null || attributeName.isEmpty()) && !isAttributeSingleValue(item.getModelObject().getAttributeName());
+
+                    }
+                });
                 ruleBody.add(multiValueTolerance);
             }
         };
@@ -307,6 +335,10 @@ public class PageSharingPolicy extends PageBase{
         };
         cancel.setDefaultFormProcessing(false);
         container.add(cancel);
+    }
+
+    private boolean isAttributeSingleValue(String attributeName){
+        return attributeName.equals("name") || attributeName.equals("displayName") || attributeName.equals("locality");
     }
 
     private IModel<String> createCollapseItemId(final ListItem<FederationSharingRuleType> item, final boolean includeSelector){
