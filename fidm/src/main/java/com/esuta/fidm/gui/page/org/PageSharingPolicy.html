@@ -9,12 +9,17 @@
                 <div class="col-lg-6">
                     <form wicket:id="listForm" class="clearfix form-horizontal">
                         <table class="table table-striped table-condensed table-bordered table-hover" wicket:id="sharingPolicyTable"></table>
+                        <div class="row main-button-bar">
+                            <a class="btn btn-success" wicket:id="addPolicyButton">Add New Policy</a>
+                        </div>
                     </form>
                 </div>
 
                 <!-- Configuration panel for single sharing policy -->
                 <form wicket:id="policyForm" class="form-horizontal inputForm">
                     <div class="col-lg-6" wicket:id="policyContainer">
+                        <h4 wicket:id="policyLabel"></h4>
+                        <hr class="assignmentDelimiter" />
                         <dl class="dl-horizontal">
                             <dt>
                                 <label>Name</label>

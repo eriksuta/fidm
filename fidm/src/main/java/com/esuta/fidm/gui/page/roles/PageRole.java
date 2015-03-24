@@ -129,6 +129,8 @@ public class PageRole extends PageBase {
         RoleType role;
 
         if(model == null || model.getObject() == null){
+            warn("Could not save role. Malformed data.");
+            target.add(getFeedbackPanel());
             return;
         }
 

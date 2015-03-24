@@ -1,11 +1,15 @@
 package com.esuta.fidm.gui.page.org;
 
 import com.esuta.fidm.gui.component.WebMiscUtil;
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.schema.core.FederationSharingPolicyType;
 import com.esuta.fidm.repository.schema.core.FederationSharingRuleType;
 import org.apache.log4j.Logger;
@@ -40,9 +44,11 @@ public class PageSharingPolicy extends PageBase{
 
     private static final String ID_LIST_FORM = "listForm";
     private static final String ID_POLICY_TABLE = "sharingPolicyTable";
+    private static final String ID_BUTTON_ADD_POLICY = "addPolicyButton";
 
     private static final String ID_POLICY_FORM = "policyForm";
     private static final String ID_POLICY_CONTAINER = "policyContainer";
+    private static final String ID_POLICY_LABEL = "policyLabel";
     private static final String ID_NAME = "name";
     private static final String ID_DISPLAY_NAME = "displayName";
     private static final String ID_DESCRIPTION = "description";
@@ -95,6 +101,10 @@ public class PageSharingPolicy extends PageBase{
         return (Form) get(ID_POLICY_FORM);
     }
 
+    private WebMarkupContainer getRuleContainer(){
+        return (WebMarkupContainer) get(ID_POLICY_FORM + ":" + ID_POLICY_CONTAINER + ":" + ID_RULES_CONTAINER);
+    }
+
     private void initPolicyList(Form form){
         ObjectDataProvider<FederationSharingPolicyType> provider = new ObjectDataProvider<>(getPage(), FederationSharingPolicyType.class);
         List<IColumn> columns = createSharingPolicyColumns();
@@ -102,6 +112,15 @@ public class PageSharingPolicy extends PageBase{
         TablePanel table = new TablePanel(ID_POLICY_TABLE, provider, columns, 10);
         table.setOutputMarkupId(true);
         form.add(table);
+
+        AjaxLink addPolicy = new AjaxLink(ID_BUTTON_ADD_POLICY) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                addPolicyPerformed(target);
+            }
+        };
+        form.add(addPolicy);
     }
 
     private List<IColumn> createSharingPolicyColumns(){
@@ -113,7 +132,7 @@ public class PageSharingPolicy extends PageBase{
 
             @Override
             public void populateItem(Item<ICellPopulator<FederationSharingPolicyType>> cellItem, String componentId, final IModel<FederationSharingPolicyType> rowModel) {
-                add(new Label(componentId, new AbstractReadOnlyModel<String>() {
+                cellItem.add(new Label(componentId, new AbstractReadOnlyModel<String>() {
 
                     @Override
                     public String getObject() {
@@ -141,7 +160,24 @@ public class PageSharingPolicy extends PageBase{
     private void initPolicyContainer(Form form){
         WebMarkupContainer policyContainer = new WebMarkupContainer(ID_POLICY_CONTAINER);
         policyContainer.setOutputMarkupId(true);
+        policyContainer.setOutputMarkupPlaceholderTag(true);
+        policyContainer.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return selected.getObject() != null;
+            }
+        });
         form.add(policyContainer);
+
+        Label policyLabel = new Label(ID_POLICY_LABEL, new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return "Create/Edit policy (" + selected.getObject().getName() + ")";
+            }
+        });
+        policyContainer.add(policyLabel);
 
         TextField policyName = new TextField<>(ID_NAME, new PropertyModel<String>(selected, "name"));
         policyName.setRequired(true);
@@ -158,11 +194,16 @@ public class PageSharingPolicy extends PageBase{
         rulesContainer.setOutputMarkupId(true);
         policyContainer.add(rulesContainer);
 
-        AjaxLink addRule = new AjaxLink(ID_BUTTON_ADD_RULE) {
+        AjaxSubmitLink addRule = new AjaxSubmitLink(ID_BUTTON_ADD_RULE) {
 
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 addRulePerformed(target);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.add(getFeedbackPanel());
             }
         };
         rulesContainer.add(addRule);
@@ -197,7 +238,9 @@ public class PageSharingPolicy extends PageBase{
 
                 WebMarkupContainer ruleBody = new WebMarkupContainer(ID_RULE_BODY_CONTAINER);
                 ruleBody.setOutputMarkupId(true);
+                ruleBody.setOutputMarkupPlaceholderTag(true);
                 ruleBody.setMarkupId(createCollapseItemId(item, false).getObject());
+                item.add(ruleBody);
 
                 DropDownChoice attributeSelector = new DropDownChoice<>(ID_RULE_ATTRIBUTE, new PropertyModel<String>(item.getModelObject(), "attributeName"),
                         new AbstractReadOnlyModel<List<String>>() {
@@ -285,48 +328,147 @@ public class PageSharingPolicy extends PageBase{
     }
 
     private String createRuleLabel(FederationSharingRuleType rule){
-//        TODO
-        return rule.getAttributeName();
+        StringBuilder sb = new StringBuilder();
+
+        if(rule.getAttributeName() == null){
+            return "Create new rule";
+        }
+
+        sb.append(rule.getAttributeName());
+
+        if(rule.getSingleValueTolerance() != null){
+            sb.append(" - (");
+            sb.append(rule.getSingleValueTolerance());
+            sb.append(")");
+        } else if(rule.getMultiValueTolerance() != null){
+            sb.append(" - (");
+            sb.append(rule.getMultiValueTolerance());
+            sb.append(")");
+        }
+
+        return sb.toString();
     }
 
     private List<String> createOrgAttributeList(){
-//        TODO
-        return new ArrayList<>();
+        List<String> attributeList = new ArrayList<>();
+        attributeList.add("name");
+        attributeList.add("displayName");
+        attributeList.add("orgType");
+        attributeList.add("locality");
+        attributeList.add("parentOrgUnits");
+        attributeList.add("governors");
+        attributeList.add("resourceInducements");
+        attributeList.add("roleInducements");
+        return attributeList;
+    }
+
+    private void addPolicyPerformed(AjaxRequestTarget target){
+        selected.setObject(new FederationSharingPolicyType());
+        target.add(getPolicyForm());
     }
 
     private void editPolicyPerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel){
-//        TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        if(rowModel == null || rowModel.getObject() == null){
+            warn("Could not edit sharing policy. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        selected.setObject(rowModel.getObject());
+        target.add(getPolicyForm());
     }
 
     private void removePolicyPerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel){
-//        TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        if(rowModel == null || rowModel.getObject() == null){
+            warn("Could not remove sharing policy. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        FederationSharingPolicyType policy = rowModel.getObject();
+
+        try {
+            getModelService().deleteObject(policy);
+            success("Sharing policy: '" + policy.getName() + "'(" + policy.getUid() + ") removed.");
+            LOGGER.info("Sharing policy: '" + policy.getName() + "'(" + policy.getUid() + ") removed.");
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Could not remove sharing policy with name: '" + policy.getName() + "'. Policy not found in repository.", e);
+            error("Could not remove sharing policy with name: '" + policy.getName() + "'. Policy not found in repository. Reason: " + e);
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not remove sharing policy with name: '" + policy.getName() + "'. Repository error.", e);
+            error("Could not remove sharing policy with name: '" + policy.getName() + "'. Repository error. Reason: " + e);
+        }
+
+        selected.setObject(null);
+        target.add(getFeedbackPanel(), getPolicyForm(), getListForm());
     }
 
-    private void deleteRulePerformed(AjaxRequestTarget target, FederationSharingRuleType rowModel){
-//        TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+    private void deleteRulePerformed(AjaxRequestTarget target, FederationSharingRuleType rule){
+        if(rule == null || selected.getObject() == null){
+            warn("Could not remove sharing rule. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        selected.getObject().getRules().remove(rule);
+        target.add(getRuleContainer());
     }
 
     private void addRulePerformed(AjaxRequestTarget target){
-//       TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        if(selected.getObject() == null){
+            warn("Could not add sharing rule. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        selected.getObject().getRules().add(new FederationSharingRuleType());
+        target.add(getRuleContainer());
     }
 
     private void cancelPerformed(AjaxRequestTarget target){
-     //       TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        selected.setObject(null);
+        target.add(getPolicyForm());
     }
 
     private void savePolicyPerformed(AjaxRequestTarget target){
-//       TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        if(selected == null || selected.getObject() == null){
+            warn("Could not save policy. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        FederationSharingPolicyType policy = selected.getObject();
+
+        try {
+            if(policy.getUid() == null){
+                //We are creating new sharing policy
+
+                FederationSharingPolicyType created = getModelService().createObject(policy);
+                success("New Federation sharing policy created: '" + created.getName() + "'(" + created.getUid() + ").");
+                LOGGER.info("New Federation sharing policy created: '" + created.getName() + "'(" + created.getUid() + ").");
+                selected.setObject(null);
+                target.add(getFeedbackPanel(), getListForm(), getPolicyForm());
+
+            } else {
+                getModelService().updateObject(policy);
+                success("Federation sharing policy updated: '" + policy.getName() + "'(" + policy.getUid() + ").");
+                LOGGER.info("Federation sharing policy updated: '" + policy.getName() + "'(" + policy.getUid() + ").");
+                selected.setObject(null);
+                target.add(getFeedbackPanel(), getListForm(), getPolicyForm());
+            }
+
+        } catch (ObjectAlreadyExistsException e) {
+            LOGGER.error("Could not create a sharing policy with name: '" + policy.getName() + "'. It already exists.", e);
+            error("Could not create a sharing policy with name: '" + policy.getName() + "'. It already exists. Reason: " + e);
+            target.add(getFeedbackPanel());
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not create a sharing policy with name: '" + policy.getName() + "'. Repository error.", e);
+            error("Could not create a sharing policy with name: '" + policy.getName() + "'. Repository error. Reason: " + e);
+            target.add(getFeedbackPanel());
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Could not update a sharing policy with name: '" + policy.getName() + "'. Policy does not exist.", e);
+            error("Could not update a sharing policy with name: '" + policy.getName() + "'. Policy does not exist. Reason: " + e);
+            target.add(getFeedbackPanel());
+        }
     }
 }

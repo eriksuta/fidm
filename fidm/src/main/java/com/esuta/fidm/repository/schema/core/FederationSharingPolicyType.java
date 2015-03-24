@@ -2,6 +2,9 @@ package com.esuta.fidm.repository.schema.core;
 
 import javax.jdo.annotations.Index;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,7 +38,8 @@ public class FederationSharingPolicyType extends ObjectType{
      *  A list of sharing rules that together compose a policy of
      *  this object.
      * */
-    List<FederationSharingRuleType> rules;
+    @OneToMany(fetch= FetchType.EAGER)
+     List<FederationSharingRuleType> rules;
 
     public FederationSharingPolicyType() {}
 
@@ -56,6 +60,10 @@ public class FederationSharingPolicyType extends ObjectType{
     }
 
     public List<FederationSharingRuleType> getRules() {
+        if(rules == null){
+            rules = new ArrayList<>();
+        }
+
         return rules;
     }
 
