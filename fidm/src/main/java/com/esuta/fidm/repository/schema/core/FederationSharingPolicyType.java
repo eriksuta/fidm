@@ -1,6 +1,7 @@
 package com.esuta.fidm.repository.schema.core;
 
 import javax.jdo.annotations.Index;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;

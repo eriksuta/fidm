@@ -6,6 +6,7 @@
             <div wicket:id="governorChooser" />
             <div wicket:id="resourceInducementChooser" />
             <div wicket:id="roleInducementChooser" />
+            <div wicket:id="sharingPolicyChooser" />
 
             <form wicket:id="mainForm" class="form-horizontal inputForm">
 
@@ -74,6 +75,25 @@
                         <!-- Federation attributes -->
                         <div wicket:id="federationContainer">
                             <h4>Federation options</h4>
+
+                            <!-- Sharing Policy Config -->
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Sharing Policy</label>
+                                </dt>
+                                <dd>
+                                    <div class="input-group">
+                                        <input wicket:id="sharingPolicyLabel" type="text" class="form-control input-sm" />
+
+                                        <div class="input-group-btn">
+                                            <a wicket:id="sharingPolicyEdit" class="btn btn-sm btn-primary" title="Edit">
+                                                <i class="fa fa-pencil-square-o"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </dd>
+                            </dl>
+
                             <dl class="dl-horizontal">
                                 <dt>
                                     <label>Share In Federation</label>

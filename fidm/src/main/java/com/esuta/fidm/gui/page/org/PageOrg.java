@@ -24,6 +24,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
@@ -76,11 +77,14 @@ public class PageOrg extends PageBase {
     private static final String ID_GOVERNORS_CONTAINER = "governorsContainer";
     private static final String ID_BUTTON_ADD_GOVERNOR = "addGovernor";
     private static final String ID_GOVERNORS_TABLE = "governorsTable";
+    private static final String ID_SHARING_POLICY_LABEL = "sharingPolicyLabel";
+    private static final String ID_SHARING_POLICY_EDIT = "sharingPolicyEdit";
 
     private static final String ID_PARENT_ORG_UNIT_CHOOSER = "parentOrgUnitChooser";
     private static final String ID_GOVERNOR_CHOOSER = "governorChooser";
     private static final String ID_RESOURCE_INDUCEMENT_CHOOSER = "resourceInducementChooser";
     private static final String ID_ROLE_INDUCEMENT_CHOOSER = "roleInducementChooser";
+    private static final String ID_SHARING_POLICY_CHOOSER = "sharingPolicyChooser";
 
     private IModel<OrgType> model;
 
@@ -215,6 +219,21 @@ public class PageOrg extends PageBase {
         });
         mainForm.add(federationContainer);
 
+        TextField sharingPolicyLabel = new TextField<>(ID_SHARING_POLICY_LABEL, createSharingPolicyModel());
+        sharingPolicyLabel.setOutputMarkupId(true);
+        sharingPolicyLabel.add(AttributeAppender.replace("placeholder", "Sed policy"));
+        sharingPolicyLabel.setEnabled(false);
+        federationContainer.add(sharingPolicyLabel);
+
+        AjaxLink sharingPolicyEdit = new AjaxLink(ID_SHARING_POLICY_EDIT) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                sharingPolicyEditPerformed(target);
+            }
+        };
+        federationContainer.add(sharingPolicyEdit);
+
         CheckBox sharedInFederation = new CheckBox(ID_SHARE_IN_FEDERATION, new PropertyModel<Boolean>(model, "sharedInFederation"));
         sharedInFederation.add(new OnChangeAjaxBehavior() {
 
@@ -254,6 +273,19 @@ public class PageOrg extends PageBase {
         initModalWindows();
         initInducements(mainForm);
         initContainers(mainForm);
+    }
+
+    private IModel<String> createSharingPolicyModel(){
+        return new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                if(model == null || model.getObject() == null || model.getObject().getSharingPolicy() == null){
+                    return "Set Policy";
+                }
+
+                return model.getObject().getSharingPolicy().getName();             }
+        };
     }
 
     private void initButtons(Form mainForm){
@@ -371,7 +403,7 @@ public class PageOrg extends PageBase {
 
             @Override
             public String getChooserTitle() {
-                return "Choose parent org. unit";
+                return "Choose governor.";
             }
 
             @Override
@@ -380,6 +412,21 @@ public class PageOrg extends PageBase {
             }
         };
         add(governorChooser);
+
+        ModalWindow sharingPolicyChooser = new ObjectChooserDialog<FederationSharingPolicyType>(ID_SHARING_POLICY_CHOOSER, FederationSharingPolicyType.class){
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel) {
+                sharingPolicyChoosePerformed(target, rowModel);
+            }
+
+            @Override
+            public String getChooserTitle() {
+                return "Choose parent org. unit";
+            }
+
+        };
+        add(sharingPolicyChooser);
     }
 
     private void initInducements(Form mainForm){
@@ -722,6 +769,11 @@ public class PageOrg extends PageBase {
         };
     }
 
+    private void sharingPolicyEditPerformed(AjaxRequestTarget target){
+        ModalWindow window = (ModalWindow) get(ID_SHARING_POLICY_CHOOSER);
+        window.show(target);
+    }
+
     private void resourceInducementChoosePerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel, boolean isSharedInFederation){
         if(resourceModel == null || resourceModel.getObject() == null){
             return;
@@ -777,6 +829,24 @@ public class PageOrg extends PageBase {
         ModalWindow window = (ModalWindow) get(ID_GOVERNOR_CHOOSER);
         window.close(target);
         target.add(getGovernorsContainer());
+    }
+
+    private void sharingPolicyChoosePerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            return;
+        }
+
+        if(model.getObject() == null){
+            return;
+        }
+
+        OrgType org = model.getObject();
+        org.setSharingPolicy(rowModel.getObject());
+
+        ModalWindow window = (ModalWindow) get(ID_SHARING_POLICY_CHOOSER);
+        window.close(target);
+
+        target.add(get(ID_MAIN_FORM + ":" + ID_FEDERATION_CONTAINER + ":" + ID_SHARING_POLICY_LABEL));
     }
 
     /**
