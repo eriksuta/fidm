@@ -106,6 +106,7 @@ public class PageDebugList extends PageBase{
         list.add(OrgType.class);
         list.add(ResourceType.class);
         list.add(RoleType.class);
+        list.add(FederationSharingPolicyType.class);
         list.add(SystemConfigurationType.class);
         list.add(UserType.class);
         return list;
@@ -158,6 +159,8 @@ public class PageDebugList extends PageBase{
             setResponsePage(new PageDebugObject(parameters, FederationMemberType.class));
         } else if(object instanceof SystemConfigurationType){
             setResponsePage(new PageDebugObject(parameters, SystemConfigurationType.class));
+        } else if(object instanceof FederationSharingPolicyType){
+            setResponsePage(new PageDebugObject(parameters, FederationSharingPolicyType.class));
         }
     }
 

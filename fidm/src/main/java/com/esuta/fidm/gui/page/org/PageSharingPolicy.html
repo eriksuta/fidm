@@ -13,104 +13,106 @@
                 </div>
 
                 <!-- Configuration panel for single sharing policy -->
-                <div class="col-lg-6" wicket:id="policyContainer">
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Name</label>
-                        </dt>
-                        <dd>
-                            <input wicket:id="name" type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                <form wicket:id="policyForm" class="form-horizontal inputForm">
+                    <div class="col-lg-6" wicket:id="policyContainer">
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="name" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Display Name</label>
-                        </dt>
-                        <dd>
-                            <input wicket:id="displayName" type="text" class="form-control input-sm"/>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Display Name</label>
+                            </dt>
+                            <dd>
+                                <input wicket:id="displayName" type="text" class="form-control input-sm"/>
+                            </dd>
+                        </dl>
 
-                    <dl class="dl-horizontal">
-                        <dt>
-                            <label>Description</label>
-                        </dt>
-                        <dd>
-                            <textarea wicket:id="description" rows="2" class="form-control input-sm"></textarea>
-                        </dd>
-                    </dl>
+                        <dl class="dl-horizontal">
+                            <dt>
+                                <label>Description</label>
+                            </dt>
+                            <dd>
+                                <textarea wicket:id="description" rows="2" class="form-control input-sm"></textarea>
+                            </dd>
+                        </dl>
 
-                    <!-- A list of sharing rules -->
-                    <div wicket:id="rulesContainer">
-                        <span>Sharing Rules</span>
-                        <div style="float: right">
-                            <a class="btn btn-success btn-xs" wicket:id="addRuleButton">Add Rule</a>
-                        </div>
-                        <hr class="assignmentDelimiter">
-
-                        <wicket:container wicket:id="repeater">
-                            <div class="panel panel-default">
-
-                                <div class="panel-heading">
-                                    <h4 class="panel-title">
-                                        <a wicket:id="ruleLink" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                                            <button wicket:id="ruleDelete" type="button" class="close">
-                                                <span aria-hidden="true">&times;</span>
-                                                <span class="sr-only">Close</span>
-                                            </button>
-                                            <span class="close">&nbsp;</span>
-                                            <button type="button" class="close">
-                                                <span aria-hidden="true">&#8628;</span>
-                                                <span class="sr-only">Expand</span>
-                                            </button>
-                                            <span wicket:id="ruleLabel"></span>
-                                        </a>
-                                    </h4>
-                                </div>
-
-                                <div wicket:id="ruleBodyContainer" id="collapseOne" class="panel-collapse collapse">
-                                    <div class="panel-body">
-                                        <dl class="dl-horizontal">
-                                            <dt>
-                                                <label>Attribute</label>
-                                            </dt>
-                                            <dd>
-                                                <select wicket:id="ruleAttributeSelect" class="form-control"></select>
-                                            </dd>
-                                        </dl>
-
-                                        <dl class="dl-horizontal">
-                                            <dt>
-                                                <label>Tolerance (single)</label>
-                                            </dt>
-                                            <dd>
-                                                <select wicket:id="singleValueTolerance" class="form-control"></select>
-                                            </dd>
-                                        </dl>
-
-                                        <dl class="dl-horizontal">
-                                            <dt>
-                                                <label>Tolerance (multi)</label>
-                                            </dt>
-                                            <dd>
-                                                <select wicket:id="multiValueTolerance" class="form-control"></select>
-                                            </dd>
-                                        </dl>
-                                    </div>
-                                </div>
-
+                        <!-- A list of sharing rules -->
+                        <div wicket:id="rulesContainer">
+                            <span>Sharing Rules</span>
+                            <div style="float: right">
+                                <a class="btn btn-success btn-xs" wicket:id="addRuleButton">Add Rule</a>
                             </div>
-                        </wicket:container>
-                    </div>
+                            <hr class="assignmentDelimiter">
 
-                    <!-- Button Bar -->
-                    <div class="row main-button-bar">
-                        <input type="submit" wicket:id="saveButton" class="btn btn-primary" value="Save"/>
-                        <input type="submit" wicket:id="cancelButton" class="btn btn-default" value="Cancel"/>
-                    </div>
+                            <wicket:container wicket:id="repeater">
+                                <div class="panel panel-default">
 
-                </div>
+                                    <div class="panel-heading">
+                                        <h4 class="panel-title">
+                                            <a wicket:id="ruleHeader" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                                                <button wicket:id="ruleDelete" type="button" class="close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                    <span class="sr-only">Close</span>
+                                                </button>
+                                                <span class="close">&nbsp;</span>
+                                                <button type="button" class="close">
+                                                    <span aria-hidden="true">&#8628;</span>
+                                                    <span class="sr-only">Expand</span>
+                                                </button>
+                                                <span wicket:id="ruleLabel"></span>
+                                            </a>
+                                        </h4>
+                                    </div>
+
+                                    <div wicket:id="ruleBodyContainer" id="collapseOne" class="panel-collapse collapse">
+                                        <div class="panel-body">
+                                            <dl class="dl-horizontal">
+                                                <dt>
+                                                    <label>Attribute</label>
+                                                </dt>
+                                                <dd>
+                                                    <select wicket:id="ruleAttributeSelect" class="form-control"></select>
+                                                </dd>
+                                            </dl>
+
+                                            <dl class="dl-horizontal">
+                                                <dt>
+                                                    <label>Tolerance (single)</label>
+                                                </dt>
+                                                <dd>
+                                                    <select wicket:id="singleValueTolerance" class="form-control"></select>
+                                                </dd>
+                                            </dl>
+
+                                            <dl class="dl-horizontal">
+                                                <dt>
+                                                    <label>Tolerance (multi)</label>
+                                                </dt>
+                                                <dd>
+                                                    <select wicket:id="multiValueTolerance" class="form-control"></select>
+                                                </dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </wicket:container>
+                        </div>
+
+                        <!-- Button Bar -->
+                        <div class="row main-button-bar">
+                            <input type="submit" wicket:id="saveButton" class="btn btn-primary" value="Save"/>
+                            <input type="submit" wicket:id="cancelButton" class="btn btn-default" value="Cancel"/>
+                        </div>
+
+                    </div>
+                </form>
             </div>
 
         </wicket:extend>

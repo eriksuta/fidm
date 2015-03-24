@@ -127,7 +127,6 @@ public class PageAccount extends PageBase{
         mainForm.add(ownerEdit);
 
         DropDownChoice resource = new DropDownChoice<>(ID_RESOURCE, new PropertyModel<ObjectReferenceType<ResourceType>>(model, "resource"),
-
                 new AbstractReadOnlyModel<List<ObjectReferenceType<ResourceType>>>() {
 
                     @Override

@@ -22,7 +22,7 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
  * */
 public class PageRole extends PageBase {
 
-    private transient Logger LOGGER = Logger.getLogger(PageRole.class);
+    private static final Logger LOGGER = Logger.getLogger(PageRole.class);
 
     public static final String ID_MAIN_FORM = "mainForm";
     public static final String ID_NAME = "name";
