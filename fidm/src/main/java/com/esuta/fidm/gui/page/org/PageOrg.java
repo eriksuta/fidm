@@ -959,7 +959,7 @@ public class PageOrg extends PageBase {
 
         ModalWindow dialog = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
         dialog.close(target);
-        target.add(getMainForm());
+        target.add(get(ID_MAIN_FORM + ":" + ID_PARENT_ORG_UNIT));
     }
 
     private void editResourceInducementPerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel){
