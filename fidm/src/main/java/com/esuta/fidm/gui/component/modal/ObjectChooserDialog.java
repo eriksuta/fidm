@@ -1,5 +1,6 @@
 package com.esuta.fidm.gui.component.modal;
 
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
@@ -50,6 +51,10 @@ public class ObjectChooserDialog<T extends ObjectType> extends ModalWindow{
         setContent(content);
     }
 
+    public void setSharedInFederation(boolean sharedInFederation) {
+        this.sharedInFederation = sharedInFederation;
+    }
+
     @Override
     protected void onBeforeRender(){
         super.onBeforeRender();
@@ -65,6 +70,13 @@ public class ObjectChooserDialog<T extends ObjectType> extends ModalWindow{
     private void initLayout(WebMarkupContainer content){
         CheckBox sharedInFederation = new CheckBox(ID_SHARED_IN_FEDERATION,
                 new PropertyModel<Boolean>(this, "sharedInFederation"));
+        sharedInFederation.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return isSharedInFederationEnabled();
+            }
+        });
         sharedInFederation.add(new AjaxFormComponentUpdatingBehavior("onchange") {
 
             @Override
@@ -178,5 +190,9 @@ public class ObjectChooserDialog<T extends ObjectType> extends ModalWindow{
      * */
     public int getInitialHeight(){
         return 500;
+    }
+
+    public boolean isSharedInFederationEnabled(){
+        return true;
     }
 }

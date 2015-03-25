@@ -91,7 +91,7 @@ public class OrgType extends ObjectType{
      *  determines, what can be changed by the copies of this
      *  org. unit.
      * */
-    private FederationSharingPolicyType sharingPolicy;
+    private ObjectReferenceType<FederationSharingPolicyType> sharingPolicy;
 
     /**
      *  A federation identifier used to uniquely identify the org. unit
@@ -254,11 +254,11 @@ public class OrgType extends ObjectType{
         this.overrideParentSharing = overrideParentSharing;
     }
 
-    public FederationSharingPolicyType getSharingPolicy() {
+    public ObjectReferenceType<FederationSharingPolicyType> getSharingPolicy() {
         return sharingPolicy;
     }
 
-    public void setSharingPolicy(FederationSharingPolicyType sharingPolicy) {
+    public void setSharingPolicy(ObjectReferenceType<FederationSharingPolicyType> sharingPolicy) {
         this.sharingPolicy = sharingPolicy;
     }
 

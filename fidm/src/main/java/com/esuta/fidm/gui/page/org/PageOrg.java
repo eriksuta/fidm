@@ -219,7 +219,7 @@ public class PageOrg extends PageBase {
         });
         mainForm.add(federationContainer);
 
-        TextField sharingPolicyLabel = new TextField<>(ID_SHARING_POLICY_LABEL, createSharingPolicyModel());
+        TextField sharingPolicyLabel = new TextField<>(ID_SHARING_POLICY_LABEL, createSharingPolicyLabel());
         sharingPolicyLabel.setOutputMarkupId(true);
         sharingPolicyLabel.add(AttributeAppender.replace("placeholder", "Sed policy"));
         sharingPolicyLabel.setEnabled(false);
@@ -275,7 +275,7 @@ public class PageOrg extends PageBase {
         initContainers(mainForm);
     }
 
-    private IModel<String> createSharingPolicyModel(){
+    private IModel<String> createSharingPolicyLabel(){
         return new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -284,7 +284,19 @@ public class PageOrg extends PageBase {
                     return "Set Policy";
                 }
 
-                return model.getObject().getSharingPolicy().getName();             }
+                ObjectReferenceType sharingPolicyRef = model.getObject().getSharingPolicy();
+                String sharingPolicyUid = sharingPolicyRef.getUid();
+
+                try {
+                    FederationSharingPolicyType policy = getModelService().readObject(FederationSharingPolicyType.class, sharingPolicyUid);
+                    return policy.getName();
+                } catch (DatabaseCommunicationException e) {
+                    error("Could not load sharing policy with uid: '" + sharingPolicyUid + "' from the repository.");
+                    LOGGER.error("Could not load sharing policy with uid: '" + sharingPolicyUid + "' from the repository.");
+                }
+
+                return "Set Policy";
+            }
         };
     }
 
@@ -425,7 +437,12 @@ public class PageOrg extends PageBase {
                 return "Choose parent org. unit";
             }
 
+            @Override
+            public boolean isSharedInFederationEnabled() {
+                return false;
+            }
         };
+        ((ObjectChooserDialog)sharingPolicyChooser).setSharedInFederation(true);
         add(sharingPolicyChooser);
     }
 
@@ -841,7 +858,12 @@ public class PageOrg extends PageBase {
         }
 
         OrgType org = model.getObject();
-        org.setSharingPolicy(rowModel.getObject());
+        FederationSharingPolicyType policy = rowModel.getObject();
+        ObjectReferenceType<FederationSharingPolicyType> policyRef = new ObjectReferenceType<>();
+        policyRef.setUid(policy.getUid());
+        policyRef.setSharedInFederation(true);
+        policyRef.setType(FederationSharingPolicyType.class);
+        org.setSharingPolicy(policyRef);
 
         ModalWindow window = (ModalWindow) get(ID_SHARING_POLICY_CHOOSER);
         window.close(target);
