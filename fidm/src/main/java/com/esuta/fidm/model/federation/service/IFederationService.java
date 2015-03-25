@@ -348,5 +348,44 @@ public interface IFederationService {
      * */
     public Response getObjectInformation(String memberIdentifier, String uniqueAttributeValue, String objectType);
 
-
+    /**
+     *  <p>
+     *      An operation that retrieves a sharing policy object for org. unit
+     *      identified by uniqueAttributeValue.
+     *  </p>
+     *
+     *  @param memberIdentifier (String)
+     *      A unique identifier of federation member in identity federation performing the
+     *      request.
+     *
+     *  @param uniqueAttributeValue (String)
+     *      A unique value of attribute specified by targeted federation member. By this value,
+     *      requested federation member is able to uniquely identify the requested org. unit.
+     *      and since there can be only one sharing policy for each org. unit, it will
+     *      retrieve it in response object.
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing either a sharing policy of org. unit, if the request was processed
+     *      properly, or a message informing requester about the error that happened
+     *      during request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when request to
+     *                   retrieve a sharing policy for org. unit is handled correctly and in this case,
+     *                   HTTP response contains requested sharing policy of org. unit in response
+     *                   body.
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
+     *                   malformed, e.g. the memberIdentifier or uniqueAttributeValue is not
+     *                   set or there is no existing membership relation between
+     *                   requesting and requested federation members. Another situation
+     *                   handled as bad request is when there is no org. unit for provided
+     *                   unique attribute value, so the sharing policy cannot be retrieved
+     *                   either.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     *
+     * */
+    public Response getOrgSharingPolicy(String memberIdentifier, String uniqueAttributeValue);
 }

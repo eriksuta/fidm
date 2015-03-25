@@ -8,6 +8,7 @@ import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
 import com.esuta.fidm.model.federation.service.ObjectInformation;
 import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.FederationSharingPolicyType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
@@ -300,6 +301,34 @@ public class RestFederationServiceClient {
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
             responseObject.setInformationObject((ObjectInformation)jsonToObject(responseMessage, ObjectInformation.class));
+        } else {
+            responseObject.setMessage(responseMessage);
+        }
+
+        return responseObject;
+    }
+
+    public ObjectTypeRestResponse<FederationSharingPolicyType> createGetOrgSharingPolicyRequest(FederationMemberType federationMember, FederationIdentifierType federationIdentifier)
+            throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetOrgSharingPolicyUrl(address, port,
+                getLocalFederationMemberIdentifier(), federationIdentifier.getUniqueAttributeValue());
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        ObjectTypeRestResponse<FederationSharingPolicyType> responseObject = new ObjectTypeRestResponse<>();
+        responseObject.setStatus(responseStatus);
+        if(responseStatus == HttpStatus.OK_200){
+            responseObject.setValue((FederationSharingPolicyType)jsonToObject(responseMessage, FederationSharingPolicyType.class));
         } else {
             responseObject.setMessage(responseMessage);
         }

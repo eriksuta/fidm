@@ -284,6 +284,10 @@ public class PageOrg extends PageBase {
                     return "Set Policy";
                 }
 
+                if(!isLocalOrgUnit()){
+                    return "View origin sharing policy";
+                }
+
                 ObjectReferenceType sharingPolicyRef = model.getObject().getSharingPolicy();
                 String sharingPolicyUid = sharingPolicyRef.getUid();
 

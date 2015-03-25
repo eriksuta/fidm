@@ -88,7 +88,7 @@ public class RestFederationService implements IFederationService{
 
         String uniqueAttributeName;
         Class<?> clazz = Class.forName(className);
-        List<? extends ObjectType> allObjectList = new ArrayList<>();
+        List<? extends ObjectType> allObjectList;
 
         if(OrgType.class.equals(clazz)){
             uniqueAttributeName = member.getUniqueOrgIdentifier();
@@ -259,6 +259,10 @@ public class RestFederationService implements IFederationService{
             inducement.setFederationIdentifier(identifier);
             inducement.setUid(null);
         }
+
+        //Take care of sharing policy reference
+        org.getSharingPolicy().setUid(null);
+        org.getSharingPolicy().setType(null);
     }
 
     @GET
@@ -742,6 +746,68 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Incorrect unique attribute for object is set. Can't find the requested object identifier. Reason: ", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Incorrect unique attribute for object is set. Can't find the requested object identifier.. Reason: " + e).build();
+        }
+    }
+
+    @GET
+    @Path(RestFederationServiceUtil.GET_ORG_SHARING_POLICY_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOrgSharingPolicy(@PathParam("memberIdentifier")String memberIdentifier,
+                                        @PathParam("uniqueAttributeValue")String uniqueAttributeValue) {
+
+        if(memberIdentifier == null || memberIdentifier.isEmpty() ||
+                uniqueAttributeValue == null || uniqueAttributeValue.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
+            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
+            FederationMemberType currentMember = null;
+
+            for(FederationMemberType member: federationMembers){
+                if(memberIdentifier.equals(member.getFederationMemberName())){
+                    currentMember = member;
+                }
+            }
+
+            if(currentMember == null){
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            OrgType org = getOrgUnitByUniqueAttributeValue(currentMember, uniqueAttributeValue);
+
+            if(org == null){
+                LOGGER.error("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue);
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue).build();
+            }
+
+
+            ObjectReferenceType sharingPolicyRef = org.getSharingPolicy();
+            String sharingPolicyUid = sharingPolicyRef.getUid();
+
+            FederationSharingPolicyType policy = modelService.readObject(FederationSharingPolicyType.class, sharingPolicyUid);
+
+            if(policy == null){
+                LOGGER.error("No sharing policy defined for requested org. unit: " + uniqueAttributeValue);
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No sharing policy defined for requested org. unit: " + uniqueAttributeValue).build();
+            }
+
+            return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(policy)).build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load org. unit or sharing policy from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal problem: " + e).build();
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: ", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: " + e).build();
         }
     }
 }

@@ -40,7 +40,7 @@ public class FederationSharingPolicyType extends ObjectType{
      *  this object.
      * */
     @OneToMany(fetch= FetchType.EAGER)
-     List<FederationSharingRuleType> rules;
+    List<FederationSharingRuleType> rules;
 
     public FederationSharingPolicyType() {}
 
