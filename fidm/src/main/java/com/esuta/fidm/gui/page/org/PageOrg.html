@@ -7,6 +7,7 @@
             <div wicket:id="resourceInducementChooser" />
             <div wicket:id="roleInducementChooser" />
             <div wicket:id="sharingPolicyChooser" />
+            <div wicket:id="sharingPolicyViewer" />
 
             <form wicket:id="mainForm" class="form-horizontal inputForm">
 
@@ -72,10 +73,8 @@
 
                         <hr>
 
-                        <!-- Federation attributes -->
-                        <div wicket:id="federationContainer">
-                            <h4>Federation options</h4>
-
+                        <div>
+                            <h4>Provisioning Options</h4>
                             <!-- Sharing Policy Config -->
                             <dl class="dl-horizontal">
                                 <dt>
@@ -93,6 +92,13 @@
                                     </div>
                                 </dd>
                             </dl>
+                        </div>
+
+                        <hr>
+
+                        <!-- Federation attributes -->
+                        <div wicket:id="federationContainer">
+                            <h4>Federation options</h4>
 
                             <dl class="dl-horizontal">
                                 <dt>

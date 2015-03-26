@@ -7,6 +7,7 @@ import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextEditPanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextPanel;
 import com.esuta.fidm.gui.component.modal.ObjectChooserDialog;
+import com.esuta.fidm.gui.component.modal.SharingPolicyViewerDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.gui.page.resource.PageResource;
@@ -16,7 +17,9 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
 import com.esuta.fidm.repository.schema.core.*;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -38,6 +41,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,8 +89,10 @@ public class PageOrg extends PageBase {
     private static final String ID_RESOURCE_INDUCEMENT_CHOOSER = "resourceInducementChooser";
     private static final String ID_ROLE_INDUCEMENT_CHOOSER = "roleInducementChooser";
     private static final String ID_SHARING_POLICY_CHOOSER = "sharingPolicyChooser";
+    private static final String ID_SHARING_POLICY_VIEWER = "sharingPolicyViewer";
 
     private IModel<OrgType> model;
+    private IModel<FederationSharingPolicyType> sharingPolicyModel;
 
     public PageOrg(){
         this(null);
@@ -99,6 +105,14 @@ public class PageOrg extends PageBase {
             @Override
             protected OrgType load() {
                 return loadOrgUnit();
+            }
+        };
+
+        sharingPolicyModel = new LoadableModel<FederationSharingPolicyType>(false) {
+
+            @Override
+            protected FederationSharingPolicyType load() {
+                return loadSharingPolicy();
             }
         };
 
@@ -138,6 +152,35 @@ public class PageOrg extends PageBase {
         }
 
         return org;
+    }
+
+    private FederationSharingPolicyType loadSharingPolicy(){
+        if(isLocalOrgUnit()){
+            return null;
+        }
+
+        FederationIdentifierType identifier = model.getObject().getFederationIdentifier();
+        String federationMemberName = identifier.getFederationMemberId();
+
+        try {
+            ObjectTypeRestResponse<FederationSharingPolicyType> response = getFederationServiceClient()
+                    .createGetOrgSharingPolicyRequest(getFederationMemberByName(federationMemberName), identifier);
+
+            int responseStatus = response.getStatus();
+            if(responseStatus == HttpStatus.OK_200){
+                return response.getValue();
+            } else {
+                LOGGER.error("Could not retrieve sharing policy for this org. unit. Reason: " + response.getMessage());
+                error("Could not retrieve sharing policy for this org. unit. Reason: " + response.getMessage());
+                return null;
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not retrieve sharing policy for this org. unit.", e);
+            error("Could not retrieve sharing policy for this org. unit. Reason: " + e);
+        }
+
+        return null;
     }
 
     private boolean isEditingOrgUnit(){
@@ -206,6 +249,21 @@ public class PageOrg extends PageBase {
         };
         mainForm.add(parentOrgUnit);
 
+        TextField sharingPolicyLabel = new TextField<>(ID_SHARING_POLICY_LABEL, createSharingPolicyLabel());
+        sharingPolicyLabel.setOutputMarkupId(true);
+        sharingPolicyLabel.add(AttributeAppender.replace("placeholder", "Sed policy"));
+        sharingPolicyLabel.setEnabled(false);
+        mainForm.add(sharingPolicyLabel);
+
+        AjaxLink sharingPolicyEdit = new AjaxLink(ID_SHARING_POLICY_EDIT) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                sharingPolicyEditPerformed(target);
+            }
+        };
+        mainForm.add(sharingPolicyEdit);
+
         WebMarkupContainer federationContainer = new WebMarkupContainer(ID_FEDERATION_CONTAINER);
         federationContainer.setOutputMarkupId(true);
         federationContainer.add(new VisibleEnableBehavior(){
@@ -218,21 +276,6 @@ public class PageOrg extends PageBase {
             }
         });
         mainForm.add(federationContainer);
-
-        TextField sharingPolicyLabel = new TextField<>(ID_SHARING_POLICY_LABEL, createSharingPolicyLabel());
-        sharingPolicyLabel.setOutputMarkupId(true);
-        sharingPolicyLabel.add(AttributeAppender.replace("placeholder", "Sed policy"));
-        sharingPolicyLabel.setEnabled(false);
-        federationContainer.add(sharingPolicyLabel);
-
-        AjaxLink sharingPolicyEdit = new AjaxLink(ID_SHARING_POLICY_EDIT) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                sharingPolicyEditPerformed(target);
-            }
-        };
-        federationContainer.add(sharingPolicyEdit);
 
         CheckBox sharedInFederation = new CheckBox(ID_SHARE_IN_FEDERATION, new PropertyModel<Boolean>(model, "sharedInFederation"));
         sharedInFederation.add(new OnChangeAjaxBehavior() {
@@ -448,6 +491,9 @@ public class PageOrg extends PageBase {
         };
         ((ObjectChooserDialog)sharingPolicyChooser).setSharedInFederation(true);
         add(sharingPolicyChooser);
+
+        ModalWindow sharingPolicyViewer = new SharingPolicyViewerDialog(ID_SHARING_POLICY_VIEWER, null);
+        add(sharingPolicyViewer);
     }
 
     private void initInducements(Form mainForm){
@@ -791,8 +837,16 @@ public class PageOrg extends PageBase {
     }
 
     private void sharingPolicyEditPerformed(AjaxRequestTarget target){
-        ModalWindow window = (ModalWindow) get(ID_SHARING_POLICY_CHOOSER);
-        window.show(target);
+        //If we are editing local org. unit, we can edit sharing policy,
+        //else, the user is only able to view the policy rules
+        if(isLocalOrgUnit()){
+            ModalWindow window = (ModalWindow) get(ID_SHARING_POLICY_CHOOSER);
+            window.show(target);
+        } else {
+            SharingPolicyViewerDialog window = (SharingPolicyViewerDialog) get(ID_SHARING_POLICY_VIEWER);
+            window.updateModel(sharingPolicyModel.getObject().getRules());
+            window.show(target);
+        }
     }
 
     private void resourceInducementChoosePerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel, boolean isSharedInFederation){

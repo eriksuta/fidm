@@ -253,7 +253,8 @@ public class PageSharingPolicy extends PageBase{
                     public boolean isEnabled() {
                         String attributeName = item.getModelObject().getAttributeName();
 
-                        return !(attributeName == null || attributeName.isEmpty()) && isAttributeSingleValue(item.getModelObject().getAttributeName());
+                        return !(attributeName == null || attributeName.isEmpty()) &&
+                                WebMiscUtil.isOrgAttributeSingleValue(item.getModelObject().getAttributeName());
 
                     }
                 });
@@ -270,7 +271,8 @@ public class PageSharingPolicy extends PageBase{
                     public boolean isEnabled() {
                         String attributeName = item.getModelObject().getAttributeName();
 
-                        return !(attributeName == null || attributeName.isEmpty()) && !isAttributeSingleValue(item.getModelObject().getAttributeName());
+                        return !(attributeName == null || attributeName.isEmpty()) &&
+                                !WebMiscUtil.isOrgAttributeSingleValue(item.getModelObject().getAttributeName());
 
                     }
                 });
@@ -337,10 +339,6 @@ public class PageSharingPolicy extends PageBase{
         };
         cancel.setDefaultFormProcessing(false);
         container.add(cancel);
-    }
-
-    private boolean isAttributeSingleValue(String attributeName){
-        return attributeName.equals("name") || attributeName.equals("displayName") || attributeName.equals("locality");
     }
 
     private IModel<String> createCollapseItemId(final ListItem<FederationSharingRuleType> item, final boolean includeSelector){

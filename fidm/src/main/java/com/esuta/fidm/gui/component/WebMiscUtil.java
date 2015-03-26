@@ -101,6 +101,8 @@ public final class WebMiscUtil {
         xStream.alias("inducement", InducementType.class);
         xStream.alias("objectRef", ObjectReferenceType.class);
         xStream.alias("federationID", FederationIdentifierType.class);
+        xStream.alias("sharingPolicy", FederationSharingPolicyType.class);
+        xStream.alias("sharingRule", FederationSharingRuleType.class);
         return xStream;
     }
 
@@ -146,5 +148,37 @@ public final class WebMiscUtil {
         }
 
         return gson.fromJson(jsonObject, ObjectType.class);
+    }
+
+    public static boolean isOrgAttributeSingleValue(String attributeName){
+        return attributeName.equals("name") || attributeName.equals("displayName") || attributeName.equals("locality");
+    }
+
+    public static String getSingleValueSharingRuleDescription(FederationSharingRuleType.SingleValueTolerance tolerance){
+        if(FederationSharingRuleType.SingleValueTolerance.ENFORCE.equals(tolerance)){
+            return "The value of this attribute is enforced by origin org. unit and can't be modified in any way";
+        } else if(FederationSharingRuleType.SingleValueTolerance.ALLOW_OWN.equals(tolerance)){
+            return "You are able to specify own value, but this will not be distributed in federation.";
+        } else if(FederationSharingRuleType.SingleValueTolerance.ALLOW_CHANGE.equals(tolerance)){
+            return "You can modify the value and it will be distributed in federation";
+        }
+
+        return null;
+    }
+
+    public static String getMultiValueSharingRuleDescription(FederationSharingRuleType.MultiValueTolerance tolerance){
+        if(FederationSharingRuleType.MultiValueTolerance.ENFORCE.equals(tolerance)){
+            return "Values enforced by origin org. unit. Can't modify in any way";
+        } else if(FederationSharingRuleType.MultiValueTolerance.ALLOW_ADD_OWN.equals(tolerance)){
+            return "You are able to add own values, but they are not distributed";
+        } else if(FederationSharingRuleType.MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+            return "You are able to add own values and modify existing, but only locally";
+        } else if(FederationSharingRuleType.MultiValueTolerance.ALLOW_ADD.equals(tolerance)){
+            return "You are able to add and change own values, added values will be distributed.";
+        } else if(FederationSharingRuleType.MultiValueTolerance.ALLOW_CHANGE.equals(tolerance)){
+            return "You are able to perform any modifications and they will be distributed";
+        }
+
+        return null;
     }
 }

@@ -629,6 +629,13 @@ public class RestFederationService implements IFederationService{
 
             resolveOrgReferenceSharing(org);
             prepareOrgReferences(org, currentMember);
+
+            FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+            federationIdentifier.setFederationMemberId(getLocalFederationMemberIdentifier());
+            federationIdentifier.setUniqueAttributeValue(getUniqueAttributeValue(org, currentMember.getUniqueOrgIdentifier()));
+            federationIdentifier.setObjectType(OrgType.class.getCanonicalName());
+            org.setFederationIdentifier(federationIdentifier);
+
             return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(org)).build();
 
         } catch (DatabaseCommunicationException e) {
