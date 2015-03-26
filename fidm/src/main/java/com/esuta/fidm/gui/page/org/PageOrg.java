@@ -251,7 +251,7 @@ public class PageOrg extends PageBase {
 
         TextField sharingPolicyLabel = new TextField<>(ID_SHARING_POLICY_LABEL, createSharingPolicyLabel());
         sharingPolicyLabel.setOutputMarkupId(true);
-        sharingPolicyLabel.add(AttributeAppender.replace("placeholder", "Sed policy"));
+        sharingPolicyLabel.add(AttributeAppender.replace("placeholder", "Set policy"));
         sharingPolicyLabel.setEnabled(false);
         mainForm.add(sharingPolicyLabel);
 
@@ -926,7 +926,7 @@ public class PageOrg extends PageBase {
         ModalWindow window = (ModalWindow) get(ID_SHARING_POLICY_CHOOSER);
         window.close(target);
 
-        target.add(get(ID_MAIN_FORM + ":" + ID_FEDERATION_CONTAINER + ":" + ID_SHARING_POLICY_LABEL));
+        target.add(get(ID_MAIN_FORM + ":" + ID_SHARING_POLICY_LABEL));
     }
 
     /**
@@ -1246,6 +1246,16 @@ public class PageOrg extends PageBase {
         }
 
         orgUnit = model.getObject();
+
+        //If org. unit is shared in federation, sharing policy must be specified
+        if(orgUnit.isSharedInFederation()){
+            if(orgUnit.getSharingPolicy() == null){
+                error("Sharing policy must be specified for org. unit shared in federation. Specify a sharing" +
+                        "policy for this org. unit or do not share it in federation.");
+                target.add(getFeedbackPanel());
+                return;
+            }
+        }
 
         //Filtering empty org. unit types
         List<String> newOrgTypes = new ArrayList<>();
