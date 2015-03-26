@@ -20,9 +20,7 @@ public class RestFederationServiceUtil implements Serializable{
     public static final String GET_SHARED_ORG_UNIT_COUNT_PARAM = "/getSharedOrgUnitCount/{memberIdentifier}";
     public static final String GET_SHARED_ORG_UNIT_PARAM = "/getSharedOrgUnits/{memberIdentifier}";
     public static final String GET_ORG_UNIT = "/getOrgUnit/";
-    public static final String GET_ORG_UNIT_HIERARCHY = "/getOrgUnitHierarchy/";
     public static final String GET_ORG_UNIT_PARAM = "/getOrgUnit/{memberIdentifier}/{uniqueAttributeValue}";
-    public static final String GET_ORG_UNIT_HIERARCHY_PARAM = "/getOrgUnitHierarchy/{memberIdentifier}/{uniqueAttributeValue}";
     public static final String GET_ORG_SHARING_POLICY = "/getSharingPolicy/";
     public static final String GET_ORG_SHARING_POLICY_PARAM = "/getSharingPolicy/{memberIdentifier}/{uniqueAttributeValue}";
     public static final String GET_OBJECT_INFORMATION = "/getObjectInformation/";
@@ -129,20 +127,6 @@ public class RestFederationServiceUtil implements Serializable{
         sb.append(port);
         sb.append(REST_SERVICE_PATH);
         sb.append(GET_ORG_SHARING_POLICY);
-        sb.append(memberIdentifier);
-        sb.append("/");
-        sb.append(uniqueAttributeValue);
-        return sb.toString();
-    }
-
-    public static String createGetOrgUnitHierarchyUrl(String address, int port, String memberIdentifier, String uniqueAttributeValue){
-        StringBuilder sb = new StringBuilder();
-        sb.append("http://");
-        sb.append(address);
-        sb.append(":");
-        sb.append(port);
-        sb.append(REST_SERVICE_PATH);
-        sb.append(GET_ORG_UNIT_HIERARCHY);
         sb.append(memberIdentifier);
         sb.append("/");
         sb.append(uniqueAttributeValue);

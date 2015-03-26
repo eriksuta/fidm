@@ -119,42 +119,6 @@ public class RestFederationService implements IFederationService{
         return null;
     }
 
-    private List<OrgType> getOrgUnitHierarchyByUniqueAttributeValue(FederationMemberType member, String uniqueAttributeValue)
-            throws IllegalAccessException, DatabaseCommunicationException, NoSuchFieldException {
-
-        OrgType root = getOrgUnitByUniqueAttributeValue(member, uniqueAttributeValue);
-
-        if(root == null){
-            return null;
-        }
-
-        List<OrgType> orgHierarchy = new ArrayList<>();
-        return getOrgHierarchy(root, orgHierarchy);
-    }
-
-    private List<OrgType> getOrgHierarchy(OrgType root, List<OrgType> orgHierarchy) throws DatabaseCommunicationException {
-        String uid = root.getUid();
-
-        List<OrgType> allOrgUnits = modelService.getAllObjectsOfType(OrgType.class);
-
-        //First, retrieve all children of target org. unit
-        for(OrgType orgUnit: allOrgUnits){
-            for(ObjectReferenceType orgReference: orgUnit.getParentOrgUnits()){
-                if(uid.equals(orgReference.getUid()) && orgUnit.isSharedInFederation()){
-                    orgHierarchy.add(orgUnit);
-                    break;
-                }
-            }
-        }
-
-        //Repeat the process for each sub-tree
-        for(OrgType orgUnit: orgHierarchy){
-            getOrgHierarchy(orgUnit, orgHierarchy);
-        }
-
-        return orgHierarchy;
-    }
-
     private void resolveOrgReferenceSharing(OrgType org){
         //Resolve parent org. ref sharing
         List<ObjectReferenceType<OrgType>> newParentOrgRefs = new ArrayList<>();
@@ -637,58 +601,6 @@ public class RestFederationService implements IFederationService{
             org.setFederationIdentifier(federationIdentifier);
 
             return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(org)).build();
-
-        } catch (DatabaseCommunicationException e) {
-            LOGGER.error("Could not load org. unit from the repository.", e);
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                    .entity("Can't read from the repository. Internal problem: " + e).build();
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            LOGGER.error("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: ", e);
-            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                    .entity("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: " + e).build();
-        }
-    }
-
-    @GET
-    @Path(RestFederationServiceUtil.GET_ORG_UNIT_HIERARCHY_PARAM)
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getOrgUnitHierarchy(@PathParam("memberIdentifier") String memberIdentifier, @PathParam("uniqueAttributeValue") String uniqueAttributeValue) {
-        if(memberIdentifier == null || memberIdentifier.isEmpty() ||
-                uniqueAttributeValue == null || uniqueAttributeValue.isEmpty()){
-            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
-        }
-
-        try {
-            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
-            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
-            FederationMemberType currentMember = null;
-
-            for(FederationMemberType member: federationMembers){
-                if(memberIdentifier.equals(member.getFederationMemberName())){
-                    currentMember = member;
-                }
-            }
-
-            if(currentMember == null){
-                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
-                return Response.status(HttpStatus.BAD_REQUEST_400)
-                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
-            }
-
-            List<OrgType> orgHierarchy = getOrgUnitHierarchyByUniqueAttributeValue(currentMember, uniqueAttributeValue);
-
-            if(orgHierarchy == null || orgHierarchy.isEmpty()){
-                LOGGER.error("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue);
-                return Response.status(HttpStatus.BAD_REQUEST_400)
-                        .entity("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue).build();
-            }
-
-            for(OrgType org: orgHierarchy){
-                resolveOrgReferenceSharing(org);
-                prepareOrgReferences(org, currentMember);
-            }
-            return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(orgHierarchy)).build();
 
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not load org. unit from the repository.", e);

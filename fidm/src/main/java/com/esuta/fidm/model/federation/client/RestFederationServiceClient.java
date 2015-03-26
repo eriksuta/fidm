@@ -252,34 +252,6 @@ public class RestFederationServiceClient {
         return responseObject;
     }
 
-    public GenericListRestResponse<OrgType> createGetOrgUnitHierarchyRequest(FederationMemberType federationMember, FederationIdentifierType federationIdentifier)
-            throws DatabaseCommunicationException {
-
-        String address = federationMember.getWebAddress();
-        int port = federationMember.getPort();
-
-        String url = RestFederationServiceUtil.createGetOrgUnitHierarchyUrl(address, port,
-                getLocalFederationMemberIdentifier(), federationIdentifier.getUniqueAttributeValue());
-        Client client = Client.create();
-        WebResource webResource = client.resource(url);
-
-        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
-
-        int responseStatus = response.getStatus();
-        String responseMessage = response.getEntity(String.class);
-        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
-
-        GenericListRestResponse<OrgType> responseObject = new GenericListRestResponse<>();
-        responseObject.setStatus(responseStatus);
-        if(responseStatus == HttpStatus.OK_200){
-            responseObject.setValues(jsonListToObject(responseMessage, OrgType[].class));
-        } else {
-            responseObject.setMessage(responseMessage);
-        }
-
-        return responseObject;
-    }
-
     public ObjectInformationResponse createGetObjectInformationRequest(FederationMemberType federationMember, FederationIdentifierType federationIdentifier)
             throws DatabaseCommunicationException {
 
