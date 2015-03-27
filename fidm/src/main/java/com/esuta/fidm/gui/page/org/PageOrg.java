@@ -8,6 +8,7 @@ import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextEditPanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextPanel;
 import com.esuta.fidm.gui.component.modal.ObjectChooserDialog;
+import com.esuta.fidm.gui.component.modal.ObjectInformationDialog;
 import com.esuta.fidm.gui.component.modal.SharingPolicyViewerDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
@@ -92,6 +93,7 @@ public class PageOrg extends PageBase {
     private static final String ID_ROLE_INDUCEMENT_CHOOSER = "roleInducementChooser";
     private static final String ID_SHARING_POLICY_CHOOSER = "sharingPolicyChooser";
     private static final String ID_SHARING_POLICY_VIEWER = "sharingPolicyViewer";
+    private static final String ID_OBJECT_INFORMATION_VIEWER = "objectInformationViewer";
 
     private IModel<OrgType> model;
     private IModel<FederationSharingPolicyType> sharingPolicyModel;
@@ -525,6 +527,9 @@ public class PageOrg extends PageBase {
 
         ModalWindow sharingPolicyViewer = new SharingPolicyViewerDialog(ID_SHARING_POLICY_VIEWER, null);
         add(sharingPolicyViewer);
+
+        ModalWindow objectInformationViewer = new ObjectInformationDialog(ID_OBJECT_INFORMATION_VIEWER, null);
+        add(objectInformationViewer);
     }
 
     private void initInducements(Form mainForm){
@@ -1120,8 +1125,13 @@ public class PageOrg extends PageBase {
     }
 
     private void editParentOrgUnitPerformed(AjaxRequestTarget target){
-        ModalWindow modal = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
-        modal.show(target);
+        if(isLocalOrgUnit()){
+            ModalWindow modal = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
+            modal.show(target);
+        } else {
+            info("Can't edit parent org. unit of remote org. unit.");
+            target.add(getFeedbackPanel());
+        }
     }
 
     private void parentOrgUnitChoosePerformed(AjaxRequestTarget target, IModel<OrgType> rowModel, boolean isSharedInFederation){
@@ -1148,6 +1158,12 @@ public class PageOrg extends PageBase {
     }
 
     private void editResourceInducementPerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel){
+        if(!isLocalOrgUnit()){
+            info("Can't edit resource inducement of remote org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
         if(resourceModel == null || resourceModel.getObject() == null){
             error("Couldn't edit selected resource inducement. It is no longer available.");
             target.add(getFeedbackPanel());
@@ -1160,6 +1176,12 @@ public class PageOrg extends PageBase {
     }
 
     private void editRoleInducementPerformed(AjaxRequestTarget target, IModel<RoleType> roleModel){
+        if(!isLocalOrgUnit()){
+            info("Can't edit role inducement of remote org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
         if(roleModel == null || roleModel.getObject() == null){
             error("Couldn't edit selected role inducement. It is no longer available.");
             target.add(getFeedbackPanel());
@@ -1172,6 +1194,12 @@ public class PageOrg extends PageBase {
     }
 
     private void editMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
+        if(!isLocalOrgUnit()){
+            info("Can't edit member/governor of remote org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
         if(rowModel == null || rowModel.getObject() == null){
             error("Couldn't edit selected user. It is no longer available.");
             target.add(getFeedbackPanel());

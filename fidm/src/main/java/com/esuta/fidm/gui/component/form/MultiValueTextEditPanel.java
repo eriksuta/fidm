@@ -64,6 +64,13 @@ public class MultiValueTextEditPanel<T extends Serializable> extends Panel {
                 return getModel() == null || getModel().getObject() == null || getModel().getObject().isEmpty();
             }
         });
+        addIfEmpty.add(new AttributeAppender("class", new AbstractReadOnlyModel<String>(){
+
+            @Override
+            public String getObject() {
+                return isAddDisabled() ? CSS_DISABLED : null;
+            }
+        }));
         add(addIfEmpty);
 
         ListView repeater = new ListView<T>(ID_REPEATER, getModel()){
