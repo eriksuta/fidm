@@ -140,6 +140,10 @@ public class MultiValueTextEditPanel<T extends Serializable> extends Panel {
     }
 
     protected String getPlusClassModifier(ListItem<T> item){
+        if(isAddDisabled()){
+            return CSS_DISABLED;
+        }
+
         if(buttonsDisabled()){
             return CSS_DISABLED;
         }
@@ -156,6 +160,10 @@ public class MultiValueTextEditPanel<T extends Serializable> extends Panel {
     }
 
     protected String getMinusClassModifier(){
+        if(isMinusDisabled()){
+            return CSS_DISABLED;
+        }
+
         int size = getModel().getObject().size();
         if (size > 0) {
             return "";
@@ -249,4 +257,20 @@ public class MultiValueTextEditPanel<T extends Serializable> extends Panel {
      *  Override to provide custom hook when removing value from list
      * */
     protected void performRemoveValueHook(AjaxRequestTarget target, ListItem<T> item){}
+
+    /**
+     *  Override to provide additional enabled/disabled behavior for
+     *  plus (add) button
+     * */
+    protected boolean isAddDisabled(){
+        return false;
+    }
+
+    /**
+     *  Override to provide additional enabled/disabled behavior for
+     *  minus (remove) button
+     * */
+    protected boolean isMinusDisabled(){
+        return false;
+    }
 }

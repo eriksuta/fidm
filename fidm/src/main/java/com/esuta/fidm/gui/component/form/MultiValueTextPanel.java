@@ -1,5 +1,6 @@
 package com.esuta.fidm.gui.component.form;
 
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -52,17 +53,22 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
             getModel().getObject().add(createNewEmptyItem());
         }
 
-
         ListView repeater = new ListView<T>(ID_REPEATER, getModel()) {
 
             @Override
             protected void populateItem(final ListItem<T> item) {
                 TextField input = new TextField<>(ID_INPUT, createTextModel(item.getModel()));
+                input.add(new VisibleEnableBehavior(){
+
+                    @Override
+                    public boolean isEnabled() {
+                        return isInputEnabled();
+                    }
+                });
                 input.add(new AjaxFormComponentUpdatingBehavior("onblur") {
 
                     @Override
-                    protected void onUpdate(AjaxRequestTarget target) {
-                    }
+                    protected void onUpdate(AjaxRequestTarget target) {}
                 });
                 input.add(AttributeAppender.replace("placeholder", createEmptyItemPlaceholder()));
                 input.setRequired(required);
@@ -99,6 +105,10 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
     }
 
     protected String getPlusClassModifier(ListItem<T> item){
+        if(isAddDisabled()){
+            return CSS_DISABLED;
+        }
+
         int size = getModel().getObject().size();
         if (size <= 1) {
             return "";
@@ -111,6 +121,10 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
     }
 
     protected String getMinusClassModifier(){
+        if(isMinusDisabled()){
+            return CSS_DISABLED;
+        }
+
         int size = getModel().getObject().size();
         if (size > 1) {
             return "";
@@ -171,5 +185,29 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
 
     protected IModel<String> createEmptyItemPlaceholder(){
         return new Model<>("Set value");
+    }
+
+    /**
+     *  Override to provide additional enabled/disabled behavior for
+     *  plus (add) button
+     * */
+    protected boolean isAddDisabled(){
+        return false;
+    }
+
+    /**
+     *  Override to provide additional enabled/disabled behavior for
+     *  minus (remove) button
+     * */
+    protected boolean isMinusDisabled(){
+        return false;
+    }
+
+    /**
+     *  Override to provide additional enabled/disabled behavior for
+     *  input field
+     * */
+    protected boolean isInputEnabled(){
+        return true;
     }
 }

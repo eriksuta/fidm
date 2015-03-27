@@ -35,6 +35,7 @@ public class OrgType extends ObjectType{
      *  can be a project, department, class, etc.
      * */
     @Index
+    @OneToMany(fetch= FetchType.EAGER)
     private List<String> orgType;
 
     /**
@@ -55,7 +56,7 @@ public class OrgType extends ObjectType{
      *      - org. unit can't have a children that is somewhere
      *        in the chain of it's parents (to prevent cycles)
      * */
-    @OneToMany(fetch= FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
      private List<ObjectReferenceType<OrgType>> parentOrgUnits;
 
     /**
@@ -63,7 +64,7 @@ public class OrgType extends ObjectType{
      *  possess some level of control over org. units and
      *  decisions made with org. units
      * */
-    @OneToMany(fetch= FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
      private List<ObjectReferenceType<UserType>> governors;
 
     /**
@@ -75,14 +76,14 @@ public class OrgType extends ObjectType{
      *  at ALL times. If they do not, such state is considered
      *  as inconsistent.
      * */
-    @OneToMany(fetch= FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
     private List<InducementType<ResourceType>> resourceInducements;
 
     /**
      *  The same concept as with the attribute 'resourceInducements', but
      *  with roles.
      * */
-    @OneToMany(fetch= FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
     private List<InducementType<RoleType>> roleInducements;
 
     /**

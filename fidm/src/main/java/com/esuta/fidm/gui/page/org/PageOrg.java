@@ -1,5 +1,6 @@
 package com.esuta.fidm.gui.page.org;
 
+import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
@@ -22,6 +23,7 @@ import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.wicket.Component;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
@@ -213,20 +215,39 @@ public class PageOrg extends PageBase {
 
         TextField name = new TextField<>(ID_NAME, new PropertyModel<String>(model, "name"));
         name.setRequired(true);
+        prepareSharingPolicyBasedSingleValueBehavior(name, "name");
         mainForm.add(name);
 
         TextField displayName = new TextField<>(ID_DISPLAY_NAME, new PropertyModel<String>(model, "displayName"));
         displayName.setRequired(true);
+        prepareSharingPolicyBasedSingleValueBehavior(displayName, "displayName");
         mainForm.add(displayName);
 
         TextArea description = new TextArea<>(ID_DESCRIPTION, new PropertyModel<String>(model, "description"));
         mainForm.add(description);
 
         TextField locality = new TextField<>(ID_LOCALITY, new PropertyModel<String>(model, "locality"));
+        prepareSharingPolicyBasedSingleValueBehavior(locality, "locality");
         mainForm.add(locality);
 
-        MultiValueTextPanel orgType = new MultiValueTextPanel<>(ID_ORG_TYPE,
-                new PropertyModel<List<String>>(model, "orgType"), false);
+        MultiValueTextPanel orgType = new MultiValueTextPanel<String>(ID_ORG_TYPE,
+                new PropertyModel<List<String>>(model, "orgType"), false){
+
+            @Override
+            protected boolean isAddDisabled() {
+                return !canManipulateWithMultiValueAttribute("orgType");
+            }
+
+            @Override
+            protected boolean isMinusDisabled() {
+                return !canManipulateWithMultiValueAttribute("orgType");
+            }
+
+            @Override
+            protected boolean isInputEnabled() {
+                return canManipulateWithMultiValueAttribute("orgType");
+            }
+        };
         mainForm.add(orgType);
 
         MultiValueTextEditPanel parentOrgUnit = new MultiValueTextEditPanel<ObjectReferenceType<OrgType>>(ID_PARENT_ORG_UNIT,
@@ -245,6 +266,16 @@ public class PageOrg extends PageBase {
             @Override
             protected void editPerformed(AjaxRequestTarget target, ObjectReferenceType<OrgType> object) {
                 PageOrg.this.editParentOrgUnitPerformed(target);
+            }
+
+            @Override
+            protected boolean isAddDisabled() {
+                return !canManipulateWithMultiValueAttribute("parentOrgUnits");
+            }
+
+            @Override
+            protected boolean isMinusDisabled() {
+                return !canManipulateWithMultiValueAttribute("parentOrgUnits");
             }
         };
         mainForm.add(parentOrgUnit);
@@ -510,6 +541,13 @@ public class PageOrg extends PageBase {
                 addResourceInducementPerformed(target);
             }
         };
+        addResourceInducement.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return canManipulateWithMultiValueAttribute("resourceInducements");
+            }
+        });
         resourceInducementsContainer.add(addResourceInducement);
 
         List<IColumn> resourceInducementColumns = createResourceInducementColumns();
@@ -561,6 +599,13 @@ public class PageOrg extends PageBase {
                 addRoleInducementPerformed(target);
             }
         };
+        roleInducementsContainer.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return canManipulateWithMultiValueAttribute("roleInducements");
+            }
+        });
         roleInducementsContainer.add(addRoleInducement);
 
         List<IColumn> roleInducementColumns = createRoleInducementColumns();
@@ -616,6 +661,11 @@ public class PageOrg extends PageBase {
             public void removePerformed(AjaxRequestTarget target, IModel<ResourceType> rowModel) {
                 PageOrg.this.removeResourceInducementPerformed(target, rowModel);
             }
+
+            @Override
+            public boolean isRemoveEnabled() {
+                return canManipulateWithMultiValueAttribute("resourceInducements");
+            }
         });
 
         return columns;
@@ -637,6 +687,11 @@ public class PageOrg extends PageBase {
             @Override
             public void removePerformed(AjaxRequestTarget target, IModel<RoleType> rowModel) {
                 PageOrg.this.removeRoleInducementPerformed(target, rowModel);
+            }
+
+            @Override
+            public boolean isRemoveEnabled() {
+                return canManipulateWithMultiValueAttribute("roleInducements");
             }
         });
 
@@ -697,6 +752,13 @@ public class PageOrg extends PageBase {
                 addGovernorPerformed(target);
             }
         };
+        addOrgUnit.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return canManipulateWithMultiValueAttribute("governors");
+            }
+        });
         governorsContainer.add(addOrgUnit);
 
         List<IColumn> governorsColumn = createGovernorColumns();
@@ -778,6 +840,11 @@ public class PageOrg extends PageBase {
             @Override
             public void removePerformed(AjaxRequestTarget target, IModel<UserType> rowModel) {
                 PageOrg.this.removeGovernorPerformed(target, rowModel);
+            }
+
+            @Override
+            public boolean isRemoveEnabled() {
+                return canManipulateWithMultiValueAttribute("governors");
             }
         });
 
@@ -1012,6 +1079,44 @@ public class PageOrg extends PageBase {
         }
 
         return newUserList;
+    }
+
+    private void prepareSharingPolicyBasedSingleValueBehavior(Component component, final String attributeName){
+        if(isLocalOrgUnit()){
+            return;
+        }
+
+        if(!WebMiscUtil.isOrgAttributeSingleValue(attributeName)){
+            return;
+        }
+
+        component.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                FederationSharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
+
+                if(rule == null){
+                    return true;
+                }
+
+                return !FederationSharingRuleType.SingleValueTolerance.ENFORCE.equals(rule.getSingleValueTolerance());
+            }
+        });
+    }
+
+    private boolean canManipulateWithMultiValueAttribute(String attributeName){
+        if(isLocalOrgUnit()){
+            return false;
+        }
+
+        FederationSharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
+
+        if(rule == null){
+            return false;
+        }
+
+        return !FederationSharingRuleType.MultiValueTolerance.ENFORCE.equals(rule.getMultiValueTolerance());
     }
 
     private void editParentOrgUnitPerformed(AjaxRequestTarget target){

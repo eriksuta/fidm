@@ -181,4 +181,18 @@ public final class WebMiscUtil {
 
         return null;
     }
+
+    public static FederationSharingRuleType getRuleByAttributeName(FederationSharingPolicyType policy, String attributeName){
+        if(policy == null || attributeName == null){
+            return null;
+        }
+
+        for(FederationSharingRuleType rule: policy.getRules()){
+            if(attributeName.equals(rule.getAttributeName())){
+                return rule;
+            }
+        }
+
+        return null;
+    }
 }

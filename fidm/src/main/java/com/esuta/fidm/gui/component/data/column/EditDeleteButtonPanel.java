@@ -17,6 +17,8 @@ public class EditDeleteButtonPanel extends Panel{
 
     private IModel<Boolean> editVisible = new Model<>(Boolean.TRUE);
     private IModel<Boolean> removeVisible = new Model<>(Boolean.TRUE);
+    private IModel<Boolean> editEnabled = new Model<>(Boolean.TRUE);
+    private IModel<Boolean> removeEnabled = new Model<>(Boolean.TRUE);
 
     public EditDeleteButtonPanel(String id) {
         this(id, null);
@@ -40,7 +42,12 @@ public class EditDeleteButtonPanel extends Panel{
 
             @Override
             public boolean isVisible() {
-                return getEditVisible();
+                return isEditVisible();
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return isEditEnabled();
             }
         });
         add(edit);
@@ -56,25 +63,34 @@ public class EditDeleteButtonPanel extends Panel{
 
             @Override
             public boolean isVisible() {
-                return getRemoveVisible();
+                return isRemoveVisible();
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return isRemoveEnabled();
             }
         });
         add(remove);
     }
 
-    public boolean getEditVisible(){
+    public boolean isEditVisible(){
         return editVisible.getObject();
     }
 
-    public boolean getRemoveVisible(){
+    public boolean isRemoveVisible(){
         return removeVisible.getObject();
     }
 
-    protected void editPerformed(AjaxRequestTarget target){
-
+    public boolean isEditEnabled(){
+        return editEnabled.getObject();
     }
 
-    protected void removePerformed(AjaxRequestTarget target){
-
+    public boolean isRemoveEnabled(){
+        return removeEnabled.getObject();
     }
+
+    protected void editPerformed(AjaxRequestTarget target){}
+
+    protected void removePerformed(AjaxRequestTarget target){}
 }
