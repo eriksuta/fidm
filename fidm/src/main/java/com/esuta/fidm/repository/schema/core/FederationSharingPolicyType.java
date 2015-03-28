@@ -39,7 +39,7 @@ public class FederationSharingPolicyType extends ObjectType{
      *  A list of sharing rules that together compose a policy of
      *  this object.
      * */
-    @OneToMany(fetch= FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
     private List<FederationSharingRuleType> rules;
 
     public FederationSharingPolicyType() {}

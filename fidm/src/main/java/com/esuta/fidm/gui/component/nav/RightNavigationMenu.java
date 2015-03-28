@@ -9,6 +9,7 @@ import com.esuta.fidm.gui.page.federation.PageFederation;
 import com.esuta.fidm.gui.page.federation.PageFederationList;
 import com.esuta.fidm.gui.page.org.PageOrg;
 import com.esuta.fidm.gui.page.org.PageOrgList;
+import com.esuta.fidm.gui.page.org.PageProvisioningPolicy;
 import com.esuta.fidm.gui.page.org.PageSharingPolicy;
 import com.esuta.fidm.gui.page.resource.PageResource;
 import com.esuta.fidm.gui.page.resource.PageResourceList;
@@ -84,7 +85,8 @@ public class RightNavigationMenu extends Panel {
         NavigationMenuTopLevelItem orgSection = new NavigationMenuTopLevelItem(createStringResource("page.link.org"), "fa fa-sitemap fa-fw", null);
         orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.new"), PageOrg.class));
         orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.list"), PageOrgList.class));
-        orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.policy"), PageSharingPolicy.class));
+        orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.sharing.policy"), PageSharingPolicy.class));
+        orgSection.addSecondLevelItem(new NavigationMenuSecondLevelItem(createStringResource("page.link.org.provisioning.policy"), PageProvisioningPolicy.class));
         menuItemList.add(orgSection);
 
         //init Federation section

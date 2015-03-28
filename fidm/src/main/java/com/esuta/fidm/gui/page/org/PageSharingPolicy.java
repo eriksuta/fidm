@@ -74,6 +74,7 @@ public class PageSharingPolicy extends PageBase{
 
             @Override
             protected FederationSharingPolicyType load() {
+                //By default, no policy is selected on page load
                 return null;
             }
         };

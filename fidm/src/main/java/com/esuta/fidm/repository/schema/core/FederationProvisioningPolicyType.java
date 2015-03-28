@@ -1,9 +1,7 @@
 package com.esuta.fidm.repository.schema.core;
 
 import javax.jdo.annotations.Index;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,11 +34,12 @@ public class FederationProvisioningPolicyType extends ObjectType{
     private String displayName;
 
     /**
-     *  A default provisioning rule for this provisioning policy. A default rule
+     *  A default provisioning behavior for this provisioning policy. A default behavior
      *  is applied for all attributes and change types, but it is overridden by
      *  rules defined for specific attributes.
      * */
-    private FederationProvisioningRuleType defaultRule;
+    @Enumerated(EnumType.STRING)
+     private ProvisioningBehaviorType defaultRule;
 
     /**
      *  A list of provisioning rules that together compose a policy of
@@ -67,11 +66,11 @@ public class FederationProvisioningPolicyType extends ObjectType{
         this.displayName = displayName;
     }
 
-    public FederationProvisioningRuleType getDefaultRule() {
+    public ProvisioningBehaviorType getDefaultRule() {
         return defaultRule;
     }
 
-    public void setDefaultRule(FederationProvisioningRuleType defaultRule) {
+    public void setDefaultRule(ProvisioningBehaviorType defaultRule) {
         this.defaultRule = defaultRule;
     }
 
