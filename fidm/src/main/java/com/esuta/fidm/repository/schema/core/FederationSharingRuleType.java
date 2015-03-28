@@ -1,6 +1,8 @@
 package com.esuta.fidm.repository.schema.core;
 
 import javax.persistence.Embeddable;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.io.Serializable;
 
 /**
@@ -102,6 +104,7 @@ public class FederationSharingRuleType implements Serializable{
      *  should be filled and it will represent the change tolerance
      *  level for target attribute org org. unit
      * */
+    @Enumerated(EnumType.STRING)
     private SingleValueTolerance singleValueTolerance;
 
     /**
@@ -109,6 +112,7 @@ public class FederationSharingRuleType implements Serializable{
      *  should be filled and it will represent the change tolerance
      *  level for target attribute org org. unit
      * */
+    @Enumerated(EnumType.STRING)
     private MultiValueTolerance multiValueTolerance;
 
     public FederationSharingRuleType() {}

@@ -22,7 +22,7 @@ import java.util.List;
 public class FederationSharingPolicyType extends ObjectType{
 
     /**
-     *  A system unique name of the role.
+     *  A system unique name of the sharing policy.
      * */
     @Index(unique = "true")
     private String name;
@@ -40,7 +40,7 @@ public class FederationSharingPolicyType extends ObjectType{
      *  this object.
      * */
     @OneToMany(fetch= FetchType.EAGER)
-    List<FederationSharingRuleType> rules;
+    private List<FederationSharingRuleType> rules;
 
     public FederationSharingPolicyType() {}
 
