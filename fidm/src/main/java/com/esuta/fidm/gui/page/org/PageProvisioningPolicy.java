@@ -7,10 +7,10 @@ import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
-import com.esuta.fidm.repository.schema.core.FederationProvisioningPolicyType;
-import com.esuta.fidm.repository.schema.core.FederationProvisioningRuleType;
-import com.esuta.fidm.repository.schema.core.ModificationType;
-import com.esuta.fidm.repository.schema.core.ProvisioningBehaviorType;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
+import com.esuta.fidm.repository.schema.core.*;
 import org.apache.log4j.Logger;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -101,6 +101,10 @@ public class PageProvisioningPolicy extends PageBase{
 
     private Form getPolicyForm(){
         return (Form) get(ID_POLICY_FORM);
+    }
+
+    private WebMarkupContainer getRuleContainer(){
+        return (WebMarkupContainer) get(ID_POLICY_FORM + ":" + ID_POLICY_CONTAINER + ":" + ID_RULES_CONTAINER);
     }
 
     private void initPolicyList(Form form){
@@ -215,7 +219,7 @@ public class PageProvisioningPolicy extends PageBase{
         rulesContainer.add(addRule);
 
         ListView ruleRepeater = new ListView<FederationProvisioningRuleType>(ID_REPEATER,
-                new PropertyModel<List<FederationProvisioningPolicyType>>(selected, "rules")) {
+                new PropertyModel<List<FederationProvisioningRuleType>>(selected, "rules")) {
 
             @Override
             protected void populateItem(final ListItem<FederationProvisioningRuleType> item) {
@@ -253,7 +257,7 @@ public class PageProvisioningPolicy extends PageBase{
 
                             @Override
                             public List<String> getObject() {
-                                return createOrgAttributeList();
+                                return WebMiscUtil.createOrgAttributeList();
                             }
                         }, new IChoiceRenderer<String>() {
 
@@ -274,12 +278,14 @@ public class PageProvisioningPolicy extends PageBase{
                         new PropertyModel<ModificationType>(item.getModelObject(), "modificationType"),
                         WebMiscUtil.createReadonlyModelFromEnum(ModificationType.class),
                         new EnumChoiceRenderer<ModificationType>(this));
+                changeType.setRequired(true);
                 ruleBody.add(changeType);
 
                 final DropDownChoice provisioningType = new DropDownChoice<>(ID_RULE_BEHAVIOR,
                         new PropertyModel<ProvisioningBehaviorType>(item.getModelObject(), "provisioningType"),
                         WebMiscUtil.createReadonlyModelFromEnum(ProvisioningBehaviorType.class),
                         new EnumChoiceRenderer<ProvisioningBehaviorType>(this));
+                provisioningType.setRequired(true);
                 ruleBody.add(provisioningType);
             }
         };
@@ -287,6 +293,49 @@ public class PageProvisioningPolicy extends PageBase{
         rulesContainer.add(ruleRepeater);
 
         initPolicyButtons(policyContainer);
+    }
+
+    private void initPolicyButtons(WebMarkupContainer container){
+        AjaxSubmitLink savePolicy = new AjaxSubmitLink(ID_BUTTON_SAVE) {
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                savePolicyPerformed(target);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.add(getFeedbackPanel());
+            }
+        };
+        container.add(savePolicy);
+
+        AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                cancelPerformed(target);
+            }
+        };
+        cancel.setDefaultFormProcessing(false);
+        container.add(cancel);
+    }
+
+    private String createRuleLabel(FederationProvisioningRuleType rule){
+        StringBuilder sb = new StringBuilder();
+
+        if(rule.getAttributeName() == null){
+            return "Create new rule";
+        }
+
+        sb.append(rule.getAttributeName());
+        sb.append(" - (");
+        sb.append(rule.getModificationType());
+        sb.append(", ");
+        sb.append(rule.getProvisioningType());
+        sb.append(")");
+
+        return sb.toString();
     }
 
     private IModel<String> createCollapseItemId(final ListItem<FederationProvisioningRuleType> item, final boolean includeSelector){
@@ -308,26 +357,112 @@ public class PageProvisioningPolicy extends PageBase{
     }
 
     private void addPolicyPerformed(AjaxRequestTarget target){
-//      TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        selected.setObject(new FederationProvisioningPolicyType());
+        target.add(getPolicyForm());
     }
 
     private void editPolicyPerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
-//      TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        if(rowModel == null || rowModel.getObject() == null){
+            warn("Could not edit sharing policy. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        selected.setObject(rowModel.getObject());
+        target.add(getPolicyForm());
     }
 
     private void removePolicyPerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
-//      TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        if(rowModel == null || rowModel.getObject() == null){
+            warn("Could not remove sharing policy. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        FederationProvisioningPolicyType policy = rowModel.getObject();
+
+        try {
+            getModelService().deleteObject(policy);
+            success("Provisioning policy: '" + policy.getName() + "'(" + policy.getUid() + ") removed.");
+            LOGGER.info("Provisioning policy: '" + policy.getName() + "'(" + policy.getUid() + ") removed.");
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Could not remove provisioning policy with name: '" + policy.getName() + "'. Policy not found in repository.", e);
+            error("Could not remove provisioning policy with name: '" + policy.getName() + "'. Policy not found in repository. Reason: " + e);
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not remove provisioning policy with name: '" + policy.getName() + "'. Repository error.", e);
+            error("Could not remove provisioning policy with name: '" + policy.getName() + "'. Repository error. Reason: " + e);
+        }
+
+        selected.setObject(null);
+        target.add(getFeedbackPanel(), getPolicyForm(), getListForm());
     }
 
     private void addRulePerformed(AjaxRequestTarget target){
-        //      TODO
-        warn("Not implemented yet.");
-        target.add(getFeedbackPanel());
+        if(selected.getObject() == null){
+            warn("Could not add sharing rule. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        selected.getObject().getRules().add(new FederationProvisioningRuleType());
+        target.add(getRuleContainer());
+    }
+
+    private void deleteRulePerformed(AjaxRequestTarget target, FederationProvisioningRuleType rule){
+        if(rule == null || selected.getObject() == null){
+            warn("Could not remove sharing rule. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        selected.getObject().getRules().remove(rule);
+        target.add(getRuleContainer());
+    }
+
+    private void cancelPerformed(AjaxRequestTarget target){
+        selected.setObject(null);
+        target.add(getPolicyForm());
+    }
+
+    private void savePolicyPerformed(AjaxRequestTarget target){
+        if(selected == null || selected.getObject() == null){
+            warn("Could not save policy. Malformed data.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        FederationProvisioningPolicyType policy = selected.getObject();
+
+        try {
+            if(policy.getUid() == null){
+                //We are creating new sharing policy
+
+                FederationProvisioningPolicyType created = getModelService().createObject(policy);
+                success("New Federation provisioning policy created: '" + created.getName() + "'(" + created.getUid() + ").");
+                LOGGER.info("New Federation provisioning policy created: '" + created.getName() + "'(" + created.getUid() + ").");
+                selected.setObject(null);
+                target.add(getFeedbackPanel(), getListForm(), getPolicyForm());
+
+            } else {
+                getModelService().updateObject(policy);
+                success("Federation provisioning policy updated: '" + policy.getName() + "'(" + policy.getUid() + ").");
+                LOGGER.info("Federation provisioning policy updated: '" + policy.getName() + "'(" + policy.getUid() + ").");
+                selected.setObject(null);
+                target.add(getFeedbackPanel(), getListForm(), getPolicyForm());
+            }
+
+        } catch (ObjectAlreadyExistsException e) {
+            LOGGER.error("Could not create a provisioning policy with name: '" + policy.getName() + "'. It already exists.", e);
+            error("Could not create a provisioning policy with name: '" + policy.getName() + "'. It already exists. Reason: " + e);
+            target.add(getFeedbackPanel());
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not create a provisioning policy with name: '" + policy.getName() + "'. Repository error.", e);
+            error("Could not create a provisioning policy with name: '" + policy.getName() + "'. Repository error. Reason: " + e);
+            target.add(getFeedbackPanel());
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Could not update a provisioning policy with name: '" + policy.getName() + "'. Policy does not exist.", e);
+            error("Could not update a provisioning policy with name: '" + policy.getName() + "'. Policy does not exist. Reason: " + e);
+            target.add(getFeedbackPanel());
+        }
     }
 }

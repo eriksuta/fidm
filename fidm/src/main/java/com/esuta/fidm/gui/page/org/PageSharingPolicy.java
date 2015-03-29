@@ -285,7 +285,7 @@ public class PageSharingPolicy extends PageBase{
 
                             @Override
                             public List<String> getObject() {
-                                return createOrgAttributeList();
+                                return WebMiscUtil.createOrgAttributeList();
                             }
                         }, new IChoiceRenderer<String>() {
 
@@ -380,19 +380,6 @@ public class PageSharingPolicy extends PageBase{
         }
 
         return sb.toString();
-    }
-
-    private List<String> createOrgAttributeList(){
-        List<String> attributeList = new ArrayList<>();
-        attributeList.add("name");
-        attributeList.add("displayName");
-        attributeList.add("orgType");
-        attributeList.add("locality");
-        attributeList.add("parentOrgUnits");
-        attributeList.add("governors");
-        attributeList.add("resourceInducements");
-        attributeList.add("roleInducements");
-        return attributeList;
     }
 
     private void addPolicyPerformed(AjaxRequestTarget target){

@@ -195,4 +195,17 @@ public final class WebMiscUtil {
 
         return null;
     }
+
+    public static List<String> createOrgAttributeList(){
+        List<String> attributeList = new ArrayList<>();
+        attributeList.add("name");
+        attributeList.add("displayName");
+        attributeList.add("orgType");
+        attributeList.add("locality");
+        attributeList.add("parentOrgUnits");
+        attributeList.add("governors");
+        attributeList.add("resourceInducements");
+        attributeList.add("roleInducements");
+        return attributeList;
+    }
 }
