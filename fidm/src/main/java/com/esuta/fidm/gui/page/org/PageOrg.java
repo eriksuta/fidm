@@ -591,7 +591,7 @@ public class PageOrg extends PageBase {
         };
         add(provisioningPolicyChooser);
 
-        ModalWindow sharingPolicyViewer = new SharingPolicyViewerDialog(ID_SHARING_POLICY_VIEWER, null);
+        ModalWindow sharingPolicyViewer = new SharingPolicyViewerDialog(ID_SHARING_POLICY_VIEWER, null, null);
         add(sharingPolicyViewer);
 
         ModalWindow objectInformationViewer = new ObjectInformationDialog(ID_OBJECT_INFORMATION_VIEWER, null);
@@ -982,7 +982,7 @@ public class PageOrg extends PageBase {
             window.show(target);
         } else {
             SharingPolicyViewerDialog window = (SharingPolicyViewerDialog) get(ID_SHARING_POLICY_VIEWER);
-            window.updateModel(sharingPolicyModel.getObject().getRules());
+            window.updateModel(sharingPolicyModel.getObject().getRules(), sharingPolicyModel.getObject());
             window.show(target);
         }
     }
@@ -1180,6 +1180,10 @@ public class PageOrg extends PageBase {
         return newUserList;
     }
 
+    /*
+    *   The rule is only applied when editing/viewing shared org. unit. When there is no specific
+    *   rule defined for single-value attribute, default single value tolerance level is applied.
+    * */
     private void prepareSharingPolicyBasedSingleValueBehavior(Component component, final String attributeName){
         if(isLocalOrgUnit()){
             return;
@@ -1196,14 +1200,19 @@ public class PageOrg extends PageBase {
                 FederationSharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
 
                 if(rule == null){
-                    return true;
+                    SingleValueTolerance defaultSingleValueTolerance = sharingPolicyModel.getObject().getDefaultSingleValueTolerance();
+                    return !SingleValueTolerance.ENFORCE.equals(defaultSingleValueTolerance);
                 }
 
-                return !FederationSharingRuleType.SingleValueTolerance.ENFORCE.equals(rule.getSingleValueTolerance());
+                return !SingleValueTolerance.ENFORCE.equals(rule.getSingleValueTolerance());
             }
         });
     }
 
+    /*
+    *   The rule is only applied when editing/viewing shared org. unit. When there is no specific
+    *   rule defined for multi-value attribute, default multi value tolerance level is applied.
+    * */
     private boolean canManipulateWithMultiValueAttribute(String attributeName){
         if(isLocalOrgUnit()){
             return true;
@@ -1212,10 +1221,11 @@ public class PageOrg extends PageBase {
         FederationSharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
 
         if(rule == null){
-            return true;
+            MultiValueTolerance defaultMultiValueTolerance = sharingPolicyModel.getObject().getDefaultMultiValueTolerance();
+            return !MultiValueTolerance.ENFORCE.equals(defaultMultiValueTolerance);
         }
 
-        return !FederationSharingRuleType.MultiValueTolerance.ENFORCE.equals(rule.getMultiValueTolerance());
+        return !MultiValueTolerance.ENFORCE.equals(rule.getMultiValueTolerance());
     }
 
     private void editParentOrgUnitPerformed(AjaxRequestTarget target){

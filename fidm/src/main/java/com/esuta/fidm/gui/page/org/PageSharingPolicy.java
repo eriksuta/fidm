@@ -12,6 +12,8 @@ import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.schema.core.FederationSharingPolicyType;
 import com.esuta.fidm.repository.schema.core.FederationSharingRuleType;
+import com.esuta.fidm.repository.schema.core.MultiValueTolerance;
+import com.esuta.fidm.repository.schema.core.SingleValueTolerance;
 import org.apache.log4j.Logger;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -53,6 +55,8 @@ public class PageSharingPolicy extends PageBase{
     private static final String ID_NAME = "name";
     private static final String ID_DISPLAY_NAME = "displayName";
     private static final String ID_DESCRIPTION = "description";
+    private static final String ID_DEFAULT_SV_TOLERANCE = "defaultSingleValueTolerance";
+    private static final String ID_DEFAULT_MV_TOLERANCE = "defaultMultiValueTolerance";
     private static final String ID_RULES_CONTAINER = "rulesContainer";
     private static final String ID_BUTTON_ADD_RULE = "addRuleButton";
     private static final String ID_RULE_REPEATER = "repeater";
@@ -192,6 +196,20 @@ public class PageSharingPolicy extends PageBase{
         TextArea policyDescription = new TextArea<>(ID_DESCRIPTION, new PropertyModel<String>(selected, "description"));
         policyContainer.add(policyDescription);
 
+        final DropDownChoice defaultSingleValueTolerance = new DropDownChoice<>(ID_DEFAULT_SV_TOLERANCE,
+                new PropertyModel<SingleValueTolerance>(selected, "defaultSingleValueTolerance"),
+                WebMiscUtil.createReadonlyModelFromEnum(SingleValueTolerance.class),
+                new EnumChoiceRenderer<SingleValueTolerance>(this));
+        defaultSingleValueTolerance.setRequired(true);
+        policyContainer.add(defaultSingleValueTolerance);
+
+        final DropDownChoice defaultMultiValueTolerance = new DropDownChoice<>(ID_DEFAULT_MV_TOLERANCE,
+                new PropertyModel<MultiValueTolerance>(selected, "defaultMultiValueTolerance"),
+                WebMiscUtil.createReadonlyModelFromEnum(MultiValueTolerance.class),
+                new EnumChoiceRenderer<MultiValueTolerance>(this));
+        defaultMultiValueTolerance.setRequired(true);
+        policyContainer.add(defaultMultiValueTolerance);
+
         WebMarkupContainer rulesContainer = new WebMarkupContainer(ID_RULES_CONTAINER);
         rulesContainer.setOutputMarkupId(true);
         policyContainer.add(rulesContainer);
@@ -245,9 +263,9 @@ public class PageSharingPolicy extends PageBase{
                 item.add(ruleBody);
 
                 final DropDownChoice singleValueTolerance = new DropDownChoice<>(ID_RULE_SV_TOLERANCE,
-                        new PropertyModel<FederationSharingRuleType.SingleValueTolerance>(item.getModelObject(), "singleValueTolerance"),
-                        WebMiscUtil.createReadonlyModelFromEnum(FederationSharingRuleType.SingleValueTolerance.class),
-                        new EnumChoiceRenderer<FederationSharingRuleType.SingleValueTolerance>(this));
+                        new PropertyModel<SingleValueTolerance>(item.getModelObject(), "singleValueTolerance"),
+                        WebMiscUtil.createReadonlyModelFromEnum(SingleValueTolerance.class),
+                        new EnumChoiceRenderer<SingleValueTolerance>(this));
                 singleValueTolerance.add(new VisibleEnableBehavior(){
 
                     @Override
@@ -263,9 +281,9 @@ public class PageSharingPolicy extends PageBase{
                 ruleBody.add(singleValueTolerance);
 
                 final DropDownChoice multiValueTolerance = new DropDownChoice<>(ID_RULE_MV_TOLERANCE,
-                        new PropertyModel<FederationSharingRuleType.MultiValueTolerance>(item.getModelObject(), "multiValueTolerance"),
-                        WebMiscUtil.createReadonlyModelFromEnum(FederationSharingRuleType.MultiValueTolerance.class),
-                        new EnumChoiceRenderer<FederationSharingRuleType.MultiValueTolerance>(this));
+                        new PropertyModel<MultiValueTolerance>(item.getModelObject(), "multiValueTolerance"),
+                        WebMiscUtil.createReadonlyModelFromEnum(MultiValueTolerance.class),
+                        new EnumChoiceRenderer<MultiValueTolerance>(this));
                 multiValueTolerance.add(new VisibleEnableBehavior(){
 
                     @Override

@@ -2,6 +2,7 @@ package com.esuta.fidm.gui.component.modal;
 
 import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.component.model.LoadableModel;
+import com.esuta.fidm.repository.schema.core.FederationSharingPolicyType;
 import com.esuta.fidm.repository.schema.core.FederationSharingRuleType;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -21,17 +22,22 @@ import java.util.List;
  * */
 public class SharingPolicyViewerDialog extends ModalWindow {
 
+    private static final String ID_DEFAULT_SV_TOLERANCE = "defaultSVTolerance";
+    private static final String ID_DEFAULT_MV_TOLERANCE = "defaultMVTolerance";
     private static final String ID_RULE_REPEATER = "ruleRepeater";
     private static final String ID_ATTRIBUTE_LABEL = "attributeLabel";
     private static final String ID_RULE_DESCRIPTION = "ruleDescription";
     private static final String ID_BUTTON_CONTINUE = "continueButton";
 
     private boolean initialized;
+    private FederationSharingPolicyType policy;
     private IModel<List<FederationSharingRuleType>> model;
 
-    public SharingPolicyViewerDialog(String id, final IModel<List<FederationSharingRuleType>> model) {
+    public SharingPolicyViewerDialog(String id, final IModel<List<FederationSharingRuleType>> model,
+                                     FederationSharingPolicyType policy) {
         super(id);
 
+        this.policy = policy;
         this.model = new LoadableModel<List<FederationSharingRuleType>>(false) {
 
             @Override
@@ -54,7 +60,8 @@ public class SharingPolicyViewerDialog extends ModalWindow {
         setContent(content);
     }
 
-    public void updateModel(List<FederationSharingRuleType> rules){
+    public void updateModel(List<FederationSharingRuleType> rules, FederationSharingPolicyType policy){
+        this.policy = policy;
         model.setObject(rules);
     }
 
@@ -71,6 +78,24 @@ public class SharingPolicyViewerDialog extends ModalWindow {
     }
 
     private void initLayout(WebMarkupContainer content){
+        Label defaultSingleValueTolerance = new Label(ID_DEFAULT_SV_TOLERANCE, new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return policy.getDefaultSingleValueTolerance().toString();
+            }
+        });
+        content.add(defaultSingleValueTolerance);
+
+        Label defaultMultiValueTolerance = new Label(ID_DEFAULT_MV_TOLERANCE, new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return policy.getDefaultMultiValueTolerance().toString();
+            }
+        });
+        content.add(defaultMultiValueTolerance);
+
         ListView ruleRepeater = new ListView<FederationSharingRuleType>(ID_RULE_REPEATER, model) {
 
             @Override

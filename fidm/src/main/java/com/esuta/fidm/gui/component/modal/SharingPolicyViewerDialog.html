@@ -1,6 +1,24 @@
 <wicket:panel xmlns:wicket="http://wicket.apache.org">
     <div class="modalContent" wicket:id="content">
 
+        <dl class="dl-horizontal">
+            <dt>
+                <label>Default SV Tolerance</label>
+            </dt>
+            <dd>
+                <span wicket:id="defaultSVTolerance"/>
+            </dd>
+        </dl>
+
+        <dl class="dl-horizontal">
+            <dt>
+                <label>Default MV Tolerance</label>
+            </dt>
+            <dd>
+                <span wicket:id="defaultMVTolerance"/>
+            </dd>
+        </dl>
+
         <wicket:container wicket:id="ruleRepeater">
             <dl class="dl-horizontal">
                 <dt>

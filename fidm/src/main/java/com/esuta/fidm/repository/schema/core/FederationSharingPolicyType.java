@@ -1,10 +1,7 @@
 package com.esuta.fidm.repository.schema.core;
 
 import javax.jdo.annotations.Index;
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +31,24 @@ public class FederationSharingPolicyType extends ObjectType{
      * */
     @Index
     private String displayName;
+
+    /**
+     *  A default tolerance level for single value attributes. This attribute
+     *  must always be set. If there is no specific rule for some single
+     *  value attribute, the value in this variable will be used to decide
+     *  sharing policy.
+     * */
+    @Enumerated(EnumType.STRING)
+    private SingleValueTolerance defaultSingleValueTolerance;
+
+    /**
+     *  A default tolerance level for multi value attributes. This attribute
+     *  must always be set. If there is no specific rule for some multi
+     *  value attribute, the value in this variable will be used to decide
+     *  sharing policy.
+     * */
+    @Enumerated(EnumType.STRING)
+    private MultiValueTolerance defaultMultiValueTolerance;
 
     /**
      *  A list of sharing rules that together compose a policy of
@@ -72,6 +87,22 @@ public class FederationSharingPolicyType extends ObjectType{
         this.rules = rules;
     }
 
+    public SingleValueTolerance getDefaultSingleValueTolerance() {
+        return defaultSingleValueTolerance;
+    }
+
+    public void setDefaultSingleValueTolerance(SingleValueTolerance defaultSingleValueTolerance) {
+        this.defaultSingleValueTolerance = defaultSingleValueTolerance;
+    }
+
+    public MultiValueTolerance getDefaultMultiValueTolerance() {
+        return defaultMultiValueTolerance;
+    }
+
+    public void setDefaultMultiValueTolerance(MultiValueTolerance defaultMultiValueTolerance) {
+        this.defaultMultiValueTolerance = defaultMultiValueTolerance;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -80,6 +111,8 @@ public class FederationSharingPolicyType extends ObjectType{
 
         FederationSharingPolicyType that = (FederationSharingPolicyType) o;
 
+        if (defaultMultiValueTolerance != that.defaultMultiValueTolerance) return false;
+        if (defaultSingleValueTolerance != that.defaultSingleValueTolerance) return false;
         if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (rules != null ? !rules.equals(that.rules) : that.rules != null) return false;
@@ -92,6 +125,8 @@ public class FederationSharingPolicyType extends ObjectType{
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+        result = 31 * result + (defaultSingleValueTolerance != null ? defaultSingleValueTolerance.hashCode() : 0);
+        result = 31 * result + (defaultMultiValueTolerance != null ? defaultMultiValueTolerance.hashCode() : 0);
         result = 31 * result + (rules != null ? rules.hashCode() : 0);
         return result;
     }
