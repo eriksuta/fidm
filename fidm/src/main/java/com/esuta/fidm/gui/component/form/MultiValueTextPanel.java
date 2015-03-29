@@ -105,7 +105,7 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
     }
 
     protected String getPlusClassModifier(ListItem<T> item){
-        if(isAddDisabled()){
+        if(!isAddEnabled()){
             return CSS_DISABLED;
         }
 
@@ -121,7 +121,7 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
     }
 
     protected String getMinusClassModifier(){
-        if(isMinusDisabled()){
+        if(!isRemoveEnabled()){
             return CSS_DISABLED;
         }
 
@@ -191,16 +191,16 @@ public class MultiValueTextPanel<T extends Serializable> extends Panel{
      *  Override to provide additional enabled/disabled behavior for
      *  plus (add) button
      * */
-    protected boolean isAddDisabled(){
-        return false;
+    protected boolean isAddEnabled(){
+        return true;
     }
 
     /**
      *  Override to provide additional enabled/disabled behavior for
      *  minus (remove) button
      * */
-    protected boolean isMinusDisabled(){
-        return false;
+    protected boolean isRemoveEnabled(){
+        return true;
     }
 
     /**

@@ -227,6 +227,10 @@ public class RestFederationService implements IFederationService{
         //Take care of sharing policy reference
         org.getSharingPolicy().setUid(null);
         org.getSharingPolicy().setType(null);
+
+        //Take care of provisioning policy - this is never shared in federation,
+        //so we always set the reference to null
+        org.setProvisioningPolicy(null);
     }
 
     @GET

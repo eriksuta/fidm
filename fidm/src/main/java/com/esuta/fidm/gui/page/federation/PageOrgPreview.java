@@ -3,6 +3,7 @@ package com.esuta.fidm.gui.page.federation;
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.data.FederationObjectInformationProvider;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
+import com.esuta.fidm.gui.component.modal.ObjectChooserDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.gui.page.federation.component.FederationOrgTreeDataProvider;
@@ -21,6 +22,8 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.tree.ISortableTreeProvider;
@@ -29,6 +32,7 @@ import org.apache.wicket.extensions.markup.html.repeater.tree.TableTree;
 import org.apache.wicket.extensions.markup.html.repeater.tree.table.TreeColumn;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -54,6 +58,9 @@ public class PageOrgPreview extends PageBase{
     private static final String ID_LOCALITY = "locality";
     private static final String ID_TYPE = "type";
     private static final String ID_PARENT_ORG = "parentOrgUnits";
+    private static final String ID_PROVISIONING_POLICY_LABEL = "provisioningPolicyLabel";
+    private static final String ID_PROVISIONING_POLICY_EDIT = "provisioningPolicyEdit";
+    private static final String ID_PROVISIONING_POLICY_CHOOSER = "provisioningPolicyChooser";
 
     private static final String ID_TREE_CONTAINER = "treeContainer";
     private static final String ID_TREE_BODY_CONTAINER = "treeBodyContainer";
@@ -169,10 +176,74 @@ public class PageOrgPreview extends PageBase{
         });
         add(parentOrgLabel);
 
+        //Provisioning policy components
+        TextField provisioningPolicyLabel = new TextField<>(ID_PROVISIONING_POLICY_LABEL, createProvisioningPolicyLabel());
+        provisioningPolicyLabel.setOutputMarkupId(true);
+        provisioningPolicyLabel.add(AttributeAppender.replace("placeholder", "Set policy"));
+        provisioningPolicyLabel.setEnabled(false);
+        add(provisioningPolicyLabel);
+
+        AjaxLink provisioningPolicyEdit = new AjaxLink(ID_PROVISIONING_POLICY_EDIT) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                provisioningPolicyEditPerformed(target);
+            }
+        };
+        add(provisioningPolicyEdit);
+
+        initModalWindows();
         initOrgHierarchyPreview();
         initGovernorPreview();
         initInducementsPreview();
         initButtons();
+    }
+
+    private IModel<String> createProvisioningPolicyLabel(){
+        return new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                if(model == null || model.getObject() == null || model.getObject().getProvisioningPolicy() == null){
+                    return "Set Policy";
+                }
+
+                ObjectReferenceType provisioningPolicyRef = model.getObject().getProvisioningPolicy();
+                String provisioningPolicyUid = provisioningPolicyRef.getUid();
+
+                try {
+                    FederationProvisioningPolicyType policy = getModelService().readObject(FederationProvisioningPolicyType.class, provisioningPolicyUid);
+                    return policy.getName();
+                } catch (DatabaseCommunicationException e) {
+                    error("Could not load provisioning policy with uid: '" + provisioningPolicyUid + "' from the repository.");
+                    LOGGER.error("Could not load provisioning policy with uid: '" + provisioningPolicyUid + "' from the repository.");
+                }
+
+                return "Set Policy";
+            }
+        };
+    }
+
+    private void initModalWindows(){
+        ModalWindow provisioningPolicyChooser = new ObjectChooserDialog<FederationProvisioningPolicyType>(
+                ID_PROVISIONING_POLICY_CHOOSER, FederationProvisioningPolicyType.class){
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel) {
+                provisioningPolicyChoosePerformed(target, rowModel);
+            }
+
+            @Override
+            public String getChooserTitle() {
+                return "Choose Provisioning Policy";
+            }
+
+            @Override
+            public boolean isSharedInFederationEnabled() {
+                return false;
+            }
+        };
+        add(provisioningPolicyChooser);
     }
 
     private void initOrgHierarchyPreview(){
@@ -446,7 +517,14 @@ public class PageOrgPreview extends PageBase{
             return;
         }
 
+        if(model.getObject().getProvisioningPolicy() == null){
+            warn("Provisioning policy for org. unit not selected.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
         OrgType rootToShare = model.getObject();
+        ObjectReferenceType<FederationProvisioningPolicyType> provisioningPolicyRef = rootToShare.getProvisioningPolicy();
         clearOrgParentReferences(rootToShare);
         try {
             List<OrgType> hierarchyToShare = getOrgHierarchyToShare(rootToShare, new ArrayList<OrgType>(), providedOrgUnits);
@@ -462,6 +540,7 @@ public class PageOrgPreview extends PageBase{
                 if(HttpStatus.OK_200 == status){
                     OrgType o = response.getValue();
                     o = getModelService().createObject(o);
+                    o.setProvisioningPolicy(provisioningPolicyRef);
                     createdOrgUnits.add(o);
                     info("Org. unit shared correctly. New org.: '" + o.getName() + "'(" + o.getUid() + ").");
 
@@ -575,9 +654,45 @@ public class PageOrgPreview extends PageBase{
         return null;
     }
 
+    private void provisioningPolicyEditPerformed(AjaxRequestTarget target){
+        ModalWindow window = (ModalWindow) get(ID_PROVISIONING_POLICY_CHOOSER);
+        window.show(target);
+    }
+
+    private void provisioningPolicyChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            return;
+        }
+
+        if(model.getObject() == null){
+            return;
+        }
+
+        OrgType org = model.getObject();
+        FederationProvisioningPolicyType policy = rowModel.getObject();
+        ObjectReferenceType<FederationProvisioningPolicyType> policyRef = new ObjectReferenceType<>();
+        policyRef.setUid(policy.getUid());
+        policyRef.setSharedInFederation(false);
+        policyRef.setType(FederationProvisioningPolicyType.class);
+        org.setProvisioningPolicy(policyRef);
+
+        ModalWindow window = (ModalWindow) get(ID_PROVISIONING_POLICY_CHOOSER);
+        window.close(target);
+
+        info("Provisioning Policy was selected. If you will share entire org. unit hierarchy, the chosen provisioning policy" +
+                " will be applied to all org. units in hierarchy.");
+        target.add(get(ID_PROVISIONING_POLICY_LABEL), getFeedbackPanel());
+    }
+
     private void sharePerformed(AjaxRequestTarget target){
         if(model == null || model.getObject() == null){
             warn("Can't share the org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
+
+        if(model.getObject().getProvisioningPolicy() == null){
+            warn("Provisioning policy for org. unit not selected.");
             target.add(getFeedbackPanel());
             return;
         }
@@ -599,6 +714,7 @@ public class PageOrgPreview extends PageBase{
             if(HttpStatus.OK_200 == status){
                 OrgType org = response.getValue();
                 clearOrgParentReferences(org);
+                org.setProvisioningPolicy(model.getObject().getProvisioningPolicy());
                 org = getModelService().createObject(org);
                 info("Org. unit shared correctly. New org.: '" + org.getName() + "'(" + org.getUid() + ").");
 

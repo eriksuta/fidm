@@ -2,6 +2,7 @@
 <html xmlns:wicket="http://wicket.apache.org">
     <body>
         <wicket:extend>
+            <div wicket:id="provisioningPolicyChooser" />
 
             <div class="row">
                 <div class="col-lg-6">
@@ -56,6 +57,25 @@
                         </dt>
                         <dd>
                             <span wicket:id="parentOrgUnits"/>
+                        </dd>
+                    </dl>
+
+                    <!-- Provisioning Policy Chooser -->
+                    <dl class="dl-horizontal">
+                        <dt>
+                            <label>Provisioning Policy</label>
+
+                        </dt>
+                        <dd>
+                            <div class="input-group">
+                                <input wicket:id="provisioningPolicyLabel" type="text" class="form-control input-sm" />
+
+                                <div class="input-group-btn">
+                                    <a wicket:id="provisioningPolicyEdit" class="btn btn-sm btn-primary" title="Edit">
+                                        <i class="fa fa-pencil-square-o"/>
+                                    </a>
+                                </div>
+                            </div>
                         </dd>
                     </dl>
 

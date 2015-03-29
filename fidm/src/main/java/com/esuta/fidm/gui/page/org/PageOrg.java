@@ -240,18 +240,18 @@ public class PageOrg extends PageBase {
                 new PropertyModel<List<String>>(model, "orgType"), false){
 
             @Override
-            protected boolean isAddDisabled() {
-                return !canManipulateWithMultiValueAttribute("orgType");
+            protected boolean isAddEnabled() {
+                return canManipulateWithMultiValueAttribute("orgType");
             }
 
             @Override
-            protected boolean isMinusDisabled() {
-                return !canManipulateWithMultiValueAttribute("orgType");
+            protected boolean isRemoveEnabled() {
+                return canManipulateWithMultiValueAttribute("orgType");
             }
 
             @Override
             protected boolean isInputEnabled() {
-                return canManipulateWithMultiValueAttribute("orgType");
+                return !canManipulateWithMultiValueAttribute("orgType");
             }
         };
         mainForm.add(orgType);
@@ -275,13 +275,13 @@ public class PageOrg extends PageBase {
             }
 
             @Override
-            protected boolean isAddDisabled() {
-                return !canManipulateWithMultiValueAttribute("parentOrgUnits");
+            protected boolean isAddEnabled() {
+                return canManipulateWithMultiValueAttribute("parentOrgUnits");
             }
 
             @Override
-            protected boolean isMinusDisabled() {
-                return !canManipulateWithMultiValueAttribute("parentOrgUnits");
+            protected boolean isRemoveEnabled() {
+                return canManipulateWithMultiValueAttribute("parentOrgUnits");
             }
         };
         mainForm.add(parentOrgUnit);
@@ -1206,13 +1206,13 @@ public class PageOrg extends PageBase {
 
     private boolean canManipulateWithMultiValueAttribute(String attributeName){
         if(isLocalOrgUnit()){
-            return false;
+            return true;
         }
 
         FederationSharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
 
         if(rule == null){
-            return false;
+            return true;
         }
 
         return !FederationSharingRuleType.MultiValueTolerance.ENFORCE.equals(rule.getMultiValueTolerance());
