@@ -84,8 +84,11 @@ public class PageOrg extends PageBase {
     private static final String ID_GOVERNORS_CONTAINER = "governorsContainer";
     private static final String ID_BUTTON_ADD_GOVERNOR = "addGovernor";
     private static final String ID_GOVERNORS_TABLE = "governorsTable";
+
     private static final String ID_SHARING_POLICY_LABEL = "sharingPolicyLabel";
     private static final String ID_SHARING_POLICY_EDIT = "sharingPolicyEdit";
+    private static final String ID_PROVISIONING_POLICY_LABEL = "provisioningPolicyLabel";
+    private static final String ID_PROVISIONING_POLICY_EDIT = "provisioningPolicyEdit";
 
     private static final String ID_PARENT_ORG_UNIT_CHOOSER = "parentOrgUnitChooser";
     private static final String ID_GOVERNOR_CHOOSER = "governorChooser";
@@ -94,6 +97,7 @@ public class PageOrg extends PageBase {
     private static final String ID_SHARING_POLICY_CHOOSER = "sharingPolicyChooser";
     private static final String ID_SHARING_POLICY_VIEWER = "sharingPolicyViewer";
     private static final String ID_OBJECT_INFORMATION_VIEWER = "objectInformationViewer";
+    private static final String ID_PROVISIONING_POLICY_VIEWER = "provisioningPolicyViewer";
 
     private IModel<OrgType> model;
     private IModel<FederationSharingPolicyType> sharingPolicyModel;
@@ -282,6 +286,7 @@ public class PageOrg extends PageBase {
         };
         mainForm.add(parentOrgUnit);
 
+        //Sharing policy components
         TextField sharingPolicyLabel = new TextField<>(ID_SHARING_POLICY_LABEL, createSharingPolicyLabel());
         sharingPolicyLabel.setOutputMarkupId(true);
         sharingPolicyLabel.add(AttributeAppender.replace("placeholder", "Set policy"));
@@ -296,6 +301,22 @@ public class PageOrg extends PageBase {
             }
         };
         mainForm.add(sharingPolicyEdit);
+
+        //Provisioning policy components
+        TextField provisioningPolicyLabel = new TextField<>(ID_PROVISIONING_POLICY_LABEL, createProvisioningPolicyLabel());
+        provisioningPolicyLabel.setOutputMarkupId(true);
+        provisioningPolicyLabel.add(AttributeAppender.replace("placeholder", "Set policy"));
+        provisioningPolicyLabel.setEnabled(false);
+        mainForm.add(provisioningPolicyLabel);
+
+        AjaxLink provisioningPolicyEdit = new AjaxLink(ID_PROVISIONING_POLICY_EDIT) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                provisioningPolicyEditPerformed(target);
+            }
+        };
+        mainForm.add(provisioningPolicyEdit);
 
         WebMarkupContainer federationContainer = new WebMarkupContainer(ID_FEDERATION_CONTAINER);
         federationContainer.setOutputMarkupId(true);
@@ -373,6 +394,31 @@ public class PageOrg extends PageBase {
                 } catch (DatabaseCommunicationException e) {
                     error("Could not load sharing policy with uid: '" + sharingPolicyUid + "' from the repository.");
                     LOGGER.error("Could not load sharing policy with uid: '" + sharingPolicyUid + "' from the repository.");
+                }
+
+                return "Set Policy";
+            }
+        };
+    }
+
+    private IModel<String> createProvisioningPolicyLabel(){
+        return new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                if(model == null || model.getObject() == null || model.getObject().getProvisioningPolicy() == null){
+                    return "Set Policy";
+                }
+
+                ObjectReferenceType provisioningPolicyRef = model.getObject().getProvisioningPolicy();
+                String provisioningPolicyUid = provisioningPolicyRef.getUid();
+
+                try {
+                    FederationProvisioningPolicyType policy = getModelService().readObject(FederationProvisioningPolicyType.class, provisioningPolicyUid);
+                    return policy.getName();
+                } catch (DatabaseCommunicationException e) {
+                    error("Could not load provisioning policy with uid: '" + provisioningPolicyUid + "' from the repository.");
+                    LOGGER.error("Could not load provisioning policy with uid: '" + provisioningPolicyUid + "' from the repository.");
                 }
 
                 return "Set Policy";
@@ -514,7 +560,7 @@ public class PageOrg extends PageBase {
 
             @Override
             public String getChooserTitle() {
-                return "Choose parent org. unit";
+                return "Choose Sharing Policy";
             }
 
             @Override
@@ -524,6 +570,26 @@ public class PageOrg extends PageBase {
         };
         ((ObjectChooserDialog)sharingPolicyChooser).setSharedInFederation(true);
         add(sharingPolicyChooser);
+
+        ModalWindow provisioningPolicyChooser = new ObjectChooserDialog<FederationProvisioningPolicyType>(
+                ID_PROVISIONING_POLICY_VIEWER, FederationProvisioningPolicyType.class){
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel) {
+                provisioningPolicyChoosePerformed(target, rowModel);
+            }
+
+            @Override
+            public String getChooserTitle() {
+                return "Choose Provisioning Policy";
+            }
+
+            @Override
+            public boolean isSharedInFederationEnabled() {
+                return false;
+            }
+        };
+        add(provisioningPolicyChooser);
 
         ModalWindow sharingPolicyViewer = new SharingPolicyViewerDialog(ID_SHARING_POLICY_VIEWER, null);
         add(sharingPolicyViewer);
@@ -921,6 +987,11 @@ public class PageOrg extends PageBase {
         }
     }
 
+    private void provisioningPolicyEditPerformed(AjaxRequestTarget target){
+        ModalWindow window = (ModalWindow) get(ID_PROVISIONING_POLICY_VIEWER);
+        window.show(target);
+    }
+
     private void resourceInducementChoosePerformed(AjaxRequestTarget target, IModel<ResourceType> resourceModel, boolean isSharedInFederation){
         if(resourceModel == null || resourceModel.getObject() == null){
             return;
@@ -999,6 +1070,29 @@ public class PageOrg extends PageBase {
         window.close(target);
 
         target.add(get(ID_MAIN_FORM + ":" + ID_SHARING_POLICY_LABEL));
+    }
+
+    private void provisioningPolicyChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
+        if(rowModel == null || rowModel.getObject() == null){
+            return;
+        }
+
+        if(model.getObject() == null){
+            return;
+        }
+
+        OrgType org = model.getObject();
+        FederationProvisioningPolicyType policy = rowModel.getObject();
+        ObjectReferenceType<FederationProvisioningPolicyType> policyRef = new ObjectReferenceType<>();
+        policyRef.setUid(policy.getUid());
+        policyRef.setSharedInFederation(false);
+        policyRef.setType(FederationProvisioningPolicyType.class);
+        org.setProvisioningPolicy(policyRef);
+
+        ModalWindow window = (ModalWindow) get(ID_PROVISIONING_POLICY_VIEWER);
+        window.close(target);
+
+        target.add(get(ID_MAIN_FORM + ":" + ID_PROVISIONING_POLICY_LABEL));
     }
 
     /**
@@ -1379,6 +1473,13 @@ public class PageOrg extends PageBase {
         }
 
         orgUnit = model.getObject();
+
+        //Provisioning policy must always be specified
+        if(orgUnit.getProvisioningPolicy() == null){
+            error("Provisioning policy must be specified for each and every org. unit.");
+            target.add(getFeedbackPanel());
+            return;
+        }
 
         //If org. unit is shared in federation, sharing policy must be specified
         if(orgUnit.isSharedInFederation()){

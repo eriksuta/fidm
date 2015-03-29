@@ -95,6 +95,14 @@ public class OrgType extends ObjectType{
     private ObjectReferenceType<FederationSharingPolicyType> sharingPolicy;
 
     /**
+     *  A unique provisioning policy that contains a set of rules that
+     *  tells the system a behavior prescription - a set of reaction
+     *  routines to changes in identity federations. This reference is
+     *  unique to every copy of org. unit in the federation.
+     * */
+    private ObjectReferenceType<FederationProvisioningPolicyType> provisioningPolicy;
+
+    /**
      *  A federation identifier used to uniquely identify the org. unit
      *  across federation. More specifically, it is a link to the origin
      *  of this org. unit. If this attribute is empty, the org. unit is
@@ -263,6 +271,14 @@ public class OrgType extends ObjectType{
         this.sharingPolicy = sharingPolicy;
     }
 
+    public ObjectReferenceType<FederationProvisioningPolicyType> getProvisioningPolicy() {
+        return provisioningPolicy;
+    }
+
+    public void setProvisioningPolicy(ObjectReferenceType<FederationProvisioningPolicyType> provisioningPolicy) {
+        this.provisioningPolicy = provisioningPolicy;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -283,6 +299,8 @@ public class OrgType extends ObjectType{
         if (name != null ? !name.equals(orgType1.name) : orgType1.name != null) return false;
         if (orgType != null ? !orgType.equals(orgType1.orgType) : orgType1.orgType != null) return false;
         if (parentOrgUnits != null ? !parentOrgUnits.equals(orgType1.parentOrgUnits) : orgType1.parentOrgUnits != null)
+            return false;
+        if (provisioningPolicy != null ? !provisioningPolicy.equals(orgType1.provisioningPolicy) : orgType1.provisioningPolicy != null)
             return false;
         if (resourceInducements != null ? !resourceInducements.equals(orgType1.resourceInducements) : orgType1.resourceInducements != null)
             return false;
@@ -306,6 +324,7 @@ public class OrgType extends ObjectType{
         result = 31 * result + (resourceInducements != null ? resourceInducements.hashCode() : 0);
         result = 31 * result + (roleInducements != null ? roleInducements.hashCode() : 0);
         result = 31 * result + (sharingPolicy != null ? sharingPolicy.hashCode() : 0);
+        result = 31 * result + (provisioningPolicy != null ? provisioningPolicy.hashCode() : 0);
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         result = 31 * result + (sharedInFederation ? 1 : 0);
         result = 31 * result + (sharedSubtree ? 1 : 0);

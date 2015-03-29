@@ -9,6 +9,7 @@
             <div wicket:id="sharingPolicyChooser" />
             <div wicket:id="sharingPolicyViewer" />
             <div wicket:id="objectInformationViewer" />
+            <div wicket:id="provisioningPolicyViewer" />
 
             <form wicket:id="mainForm" class="form-horizontal inputForm">
 
@@ -87,6 +88,23 @@
 
                                         <div class="input-group-btn">
                                             <a wicket:id="sharingPolicyEdit" class="btn btn-sm btn-primary" title="Edit">
+                                                <i class="fa fa-pencil-square-o"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </dd>
+                            </dl>
+
+                            <dl class="dl-horizontal">
+                                <dt>
+                                    <label>Provisioning Policy</label>
+                                </dt>
+                                <dd>
+                                    <div class="input-group">
+                                        <input wicket:id="provisioningPolicyLabel" type="text" class="form-control input-sm" />
+
+                                        <div class="input-group-btn">
+                                            <a wicket:id="provisioningPolicyEdit" class="btn btn-sm btn-primary" title="Edit">
                                                 <i class="fa fa-pencil-square-o"/>
                                             </a>
                                         </div>
