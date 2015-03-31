@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  @author shood
- *
  *  This class is responsible for handling inducement-related behavior.
+ *
+ *  @author shood
  * */
 public class InducementProcessor {
 
-    private static final transient Logger LOGGER = Logger.getLogger(InducementProcessor.class);
+    private static final Logger LOGGER = Logger.getLogger(InducementProcessor.class);
 
     /**
      *  Single InducementProcessor instance

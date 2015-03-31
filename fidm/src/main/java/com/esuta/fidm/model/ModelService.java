@@ -8,14 +8,13 @@ import com.esuta.fidm.repository.schema.core.AssignmentType;
 import com.esuta.fidm.repository.schema.core.ObjectType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.UserType;
+import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *  @author shood
- *
- *  TODO - add logging to model service
  * */
 public class ModelService implements IModelService{
 
@@ -25,6 +24,7 @@ public class ModelService implements IModelService{
     private static ModelService instance = null;
     private RepositoryService repositoryService;
     private InducementProcessor inducementProcessor;
+    private ObjectChangeProcessor objectChangeProcessor;
 
     private ModelService(){
         initModelService();
@@ -45,6 +45,13 @@ public class ModelService implements IModelService{
         // init inducement processor
         inducementProcessor = InducementProcessor.getInstance();
         inducementProcessor.pushModelService(this);
+
+        // init object change processor
+        objectChangeProcessor = ObjectChangeProcessor.getInstance();
+    }
+
+    private boolean isLocalOrgUnit(OrgType org){
+        return org.getFederationIdentifier() == null;
     }
 
     @Override
@@ -75,6 +82,14 @@ public class ModelService implements IModelService{
     public <T extends ObjectType> T updateObject(T object) throws ObjectNotFoundException, DatabaseCommunicationException {
         if(object instanceof UserType){
             inducementProcessor.handleUserInducements((UserType) object);
+        }
+
+        if(object instanceof OrgType){
+            if(!isLocalOrgUnit((OrgType)object)){
+                OrgType oldOrg = this.readObject(OrgType.class, object.getUid());
+
+                ObjectModificationType modifications = objectChangeProcessor.getOrgModifications(oldOrg, (OrgType) object);
+            }
         }
 
         return repositoryService.updateObject(object);
