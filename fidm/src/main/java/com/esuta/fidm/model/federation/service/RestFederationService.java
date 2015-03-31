@@ -233,6 +233,18 @@ public class RestFederationService implements IFederationService{
         org.setProvisioningPolicy(null);
     }
 
+    private FederationMemberType checkFederationMembership(String memberIdentifier) throws DatabaseCommunicationException {
+        List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
+
+        for(FederationMemberType member: federationMembers){
+            if(memberIdentifier.equals(member.getFederationMemberName())){
+                return member;
+            }
+        }
+
+        return null;
+    }
+
     @GET
     @Path(RestFederationServiceUtil.GET_FEDERATION_MEMBER_IDENTIFIER)
     @Produces(MediaType.APPLICATION_JSON)
@@ -468,17 +480,7 @@ public class RestFederationService implements IFederationService{
         }
 
         try {
-            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
-            //First, we need to find out, if there is an existing federation bond between requesting
-            //and requested federation members
-            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
-            FederationMemberType currentMember = null;
-
-            for(FederationMemberType member: federationMembers){
-                if(memberIdentifier.equals(member.getFederationMemberName())){
-                    currentMember = member;
-                }
-            }
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
 
             if(currentMember == null){
                 LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
@@ -514,15 +516,7 @@ public class RestFederationService implements IFederationService{
         }
 
         try {
-            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
-            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
-            FederationMemberType currentMember = null;
-
-            for(FederationMemberType member: federationMembers){
-                if(memberIdentifier.equals(member.getFederationMemberName())){
-                    currentMember = member;
-                }
-            }
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
 
             if(currentMember == null){
                 LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
@@ -571,15 +565,7 @@ public class RestFederationService implements IFederationService{
         }
 
         try {
-            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
-            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
-            FederationMemberType currentMember = null;
-
-            for(FederationMemberType member: federationMembers){
-                if(memberIdentifier.equals(member.getFederationMemberName())){
-                    currentMember = member;
-                }
-            }
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
 
             if(currentMember == null){
                 LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
@@ -631,15 +617,7 @@ public class RestFederationService implements IFederationService{
         }
 
         try {
-            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
-            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
-            FederationMemberType currentMember = null;
-
-            for(FederationMemberType member: federationMembers){
-                if(memberIdentifier.equals(member.getFederationMemberName())){
-                    currentMember = member;
-                }
-            }
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
 
             if(currentMember == null){
                 LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
@@ -685,15 +663,7 @@ public class RestFederationService implements IFederationService{
         }
 
         try {
-            //TODO - as this is an often operation, consider moving it to separate method (not request, just method) + refactor
-            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
-            FederationMemberType currentMember = null;
-
-            for(FederationMemberType member: federationMembers){
-                if(memberIdentifier.equals(member.getFederationMemberName())){
-                    currentMember = member;
-                }
-            }
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
 
             if(currentMember == null){
                 LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
