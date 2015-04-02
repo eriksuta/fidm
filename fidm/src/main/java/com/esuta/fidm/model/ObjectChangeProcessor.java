@@ -76,13 +76,24 @@ public class ObjectChangeProcessor {
                 } else {
                     ArrayList oldList = (ArrayList)field.get(oldOrg);
                     ArrayList newList = (ArrayList)field.get(newOrg);
+                    int oldListSize = 0;
+                    int newListSize = 0;
 
-                    for(int i = 0; i < newList.size(); i++){
-                        AttributeModificationType modification = new AttributeModificationType();
+                    if(oldList != null){
+                        oldListSize = oldList.size();
+                    }
 
-                        if(oldList.size() < i-1){
-//                                TODO - continue here
-                        }
+                    if(newList != null){
+                        newListSize = newList.size();
+                    }
+
+                    if(oldListSize > newListSize){
+                        //There are more deletion modifications
+
+                    } else if(newListSize > oldListSize){
+                        //There are more addition modifications
+                    } else {
+                        //There are only modify modifications, or possibly non at all
                     }
                 }
 
