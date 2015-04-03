@@ -103,6 +103,8 @@ public final class WebMiscUtil {
         xStream.alias("federationID", FederationIdentifierType.class);
         xStream.alias("sharingPolicy", FederationSharingPolicyType.class);
         xStream.alias("sharingRule", FederationSharingRuleType.class);
+        xStream.alias("provisioningPolicy", FederationProvisioningPolicyType.class);
+        xStream.alias("provisioningRule", FederationProvisioningRuleType.class);
         return xStream;
     }
 
@@ -145,13 +147,27 @@ public final class WebMiscUtil {
             return gson.fromJson(jsonObject, SystemConfigurationType.class);
         } else if(clazz.equals(FederationMemberType.class)){
             return gson.fromJson(jsonObject, FederationMemberType.class);
+        } else if(clazz.equals(FederationSharingPolicyType.class)){
+            return gson.fromJson(jsonObject, FederationSharingPolicyType.class);
+        } else if(clazz.equals(FederationProvisioningPolicyType.class)){
+            return gson.fromJson(jsonObject, FederationProvisioningPolicyType.class);
         }
 
         return gson.fromJson(jsonObject, ObjectType.class);
     }
 
     public static boolean isOrgAttributeSingleValue(String attributeName){
-        return attributeName.equals("name") || attributeName.equals("displayName") || attributeName.equals("locality");
+        return attributeName.equals("name") ||
+                attributeName.equals("displayName") ||
+                attributeName.equals("locality");
+    }
+
+    public static boolean isOrgAttributeMultiValue(String attributeName){
+        return attributeName.equals("orgType") ||
+                attributeName.equals("parentOrgUnits") ||
+                attributeName.equals("governors") ||
+                attributeName.equals("resourceInducements") ||
+                attributeName.equals("roleInducements");
     }
 
     public static String getSingleValueSharingRuleDescription(SingleValueTolerance tolerance){

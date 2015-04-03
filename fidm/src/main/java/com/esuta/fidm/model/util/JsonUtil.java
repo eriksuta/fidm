@@ -1,8 +1,6 @@
 package com.esuta.fidm.model.util;
 
-import com.esuta.fidm.repository.schema.core.AssignmentType;
-import com.esuta.fidm.repository.schema.core.InducementType;
-import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
+import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.google.gson.*;
 
@@ -13,13 +11,53 @@ import java.lang.reflect.Type;
  * */
 public class JsonUtil {
 
-    public static String objectToJson(Object object){
-        Gson gson = new GsonBuilder()
+    private static Gson gson;
+
+    static {
+        gson = new GsonBuilder()
                 .registerTypeAdapter(ObjectReferenceType.class, new ObjectReferenceAdapter())
                 .registerTypeAdapter(AssignmentType.class, new AssignmentAdapter())
                 .registerTypeAdapter(InducementType.class, new InducementAdapter())
+                .setPrettyPrinting()
                 .create();
+    }
+
+    public static String objectToJson(Object object){
         return gson.toJson(object);
+    }
+
+    public static Object jsonToObject(String jsonObject, Class clazz){
+        if("\"null\"".equals(jsonObject) || "null".equals(jsonObject)){
+            return null;
+        }
+
+        if(clazz.equals(String.class)){
+            JsonElement element = new JsonParser().parse(jsonObject);
+            String string = element.getAsString();
+            return string.substring(1, string.length() - 1);
+        }
+
+        if(clazz.equals(AccountType.class)){
+            return gson.fromJson(jsonObject, AccountType.class);
+        } else if(clazz.equals(OrgType.class)){
+            return gson.fromJson(jsonObject, OrgType.class);
+        } else if(clazz.equals(ResourceType.class)){
+            return gson.fromJson(jsonObject, ResourceType.class);
+        } else if(clazz.equals(RoleType.class)){
+            return gson.fromJson(jsonObject, RoleType.class);
+        } else if(clazz.equals(UserType.class)){
+            return gson.fromJson(jsonObject, UserType.class);
+        } else if(clazz.equals(SystemConfigurationType.class)){
+            return gson.fromJson(jsonObject, SystemConfigurationType.class);
+        } else if(clazz.equals(FederationMemberType.class)){
+            return gson.fromJson(jsonObject, FederationMemberType.class);
+        } else if(clazz.equals(FederationSharingPolicyType.class)){
+            return gson.fromJson(jsonObject, FederationSharingPolicyType.class);
+        } else if(clazz.equals(FederationProvisioningPolicyType.class)){
+            return gson.fromJson(jsonObject, FederationProvisioningPolicyType.class);
+        }
+
+        return gson.fromJson(jsonObject, clazz);
     }
 
     /**

@@ -55,25 +55,15 @@ public class ObjectChangeProcessor {
                     Object oldValue = field.get(oldOrg);
                     Object newValue = field.get(newOrg);
 
-                    AttributeModificationType modification = new AttributeModificationType();
-                    modification.setAttribute(field.getName());
-                    modification.setOldValue(JsonUtil.objectToJson(oldValue));
-                    modification.setNewValue(JsonUtil.objectToJson(newValue));
+                    AttributeModificationType modification = prepareModification(field.getName(),
+                            JsonUtil.objectToJson(oldValue), JsonUtil.objectToJson(newValue));
 
-                    if(oldValue == null && newValue != null){
-                        modification.setModificationType(ModificationType.ADD);
-                    } else if (newValue == null && oldValue != null){
-                        modification.setModificationType(ModificationType.DELETE);
-                    } else if(oldValue != null && newValue != null && !oldValue.equals(newValue)){
-                        modification.setModificationType(ModificationType.MODIFY);
-                    } else {
-                        continue;
+                    if(modification != null){
+                        objectModification.getModificationList().add(modification);
                     }
 
-                    objectModification.getModificationList().add(modification);
-
                 // Handling for multi-value attributes
-                } else {
+                } else if(WebMiscUtil.isOrgAttributeMultiValue(field.getName())) {
                     ArrayList oldList = (ArrayList)field.get(oldOrg);
                     ArrayList newList = (ArrayList)field.get(newOrg);
                     int oldListSize = 0;
@@ -89,11 +79,52 @@ public class ObjectChangeProcessor {
 
                     if(oldListSize > newListSize){
                         //There are more deletion modifications
+                        for(int i = 0; i < oldListSize; i++){
+                            if(i < newListSize){
+                                String oldValue = JsonUtil.objectToJson(oldList.get(i));
+                                String newValue = JsonUtil.objectToJson(newList.get(i));
+
+                                AttributeModificationType modification = prepareModification(field.getName(), oldValue, newValue);
+                                if(modification != null){
+                                    objectModification.getModificationList().add(modification);
+                                }
+
+                            } else {
+                                String oldValue = JsonUtil.objectToJson(oldList.get(i));
+                                objectModification.getModificationList().add(prepareModification(field.getName(),
+                                        oldValue, null));
+                            }
+                        }
 
                     } else if(newListSize > oldListSize){
                         //There are more addition modifications
+                        for(int i = 0; i < newListSize; i++){
+                            if(i < oldListSize){
+                                String oldValue = JsonUtil.objectToJson(oldList.get(i));
+                                String newValue = JsonUtil.objectToJson(newList.get(i));
+
+                                AttributeModificationType modification = prepareModification(field.getName(), oldValue, newValue);
+                                if(modification != null){
+                                    objectModification.getModificationList().add(modification);
+                                }
+                            } else {
+                                String newValue = JsonUtil.objectToJson(newList.get(i));
+                                objectModification.getModificationList().add(prepareModification(field.getName(),
+                                        null, newValue));
+                            }
+                        }
+
                     } else {
                         //There are only modify modifications, or possibly non at all
+                        for(int i = 0; i < newListSize; i++){
+                            String oldValue = JsonUtil.objectToJson(oldList.get(i));
+                            String newValue = JsonUtil.objectToJson(newList.get(i));
+
+                            AttributeModificationType modification = prepareModification(field.getName(), oldValue, newValue);
+                            if(modification != null){
+                                objectModification.getModificationList().add(modification);
+                            }
+                        }
                     }
                 }
 
@@ -104,5 +135,28 @@ public class ObjectChangeProcessor {
         }
 
         return objectModification;
+    }
+
+    private AttributeModificationType prepareModification(String fieldName, String oldValue, String newValue){
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setAttribute(fieldName);
+        modification.setOldValue(JsonUtil.objectToJson(oldValue));
+        modification.setNewValue(JsonUtil.objectToJson(newValue));
+
+        if(isNull(oldValue) && !isNull(newValue)){
+            modification.setModificationType(ModificationType.ADD);
+        } else if (isNull(newValue) && !isNull(oldValue)){
+            modification.setModificationType(ModificationType.DELETE);
+        } else if(!isNull(oldValue) && !isNull(newValue) && !oldValue.equals(newValue)){
+            modification.setModificationType(ModificationType.MODIFY);
+        } else {
+            return null;
+        }
+
+        return modification;
+    }
+
+    private boolean isNull(String value){
+        return value == null || "null".equals(value);
     }
 }
