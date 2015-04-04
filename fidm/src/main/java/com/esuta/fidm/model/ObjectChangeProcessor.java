@@ -210,9 +210,9 @@ public class ObjectChangeProcessor {
             }
         }
 
-        modificationObject.getModificationList().clear();
-        modificationObject.getModificationList().addAll(validModifications);
-        return modificationObject;
+        ObjectModificationType newModificationObject = new ObjectModificationType();
+        newModificationObject.getModificationList().addAll(validModifications);
+        return newModificationObject;
     }
 
     /**
@@ -245,7 +245,7 @@ public class ObjectChangeProcessor {
                 if(isOrgAttributeSingleValue(attributeName)){
                     SingleValueTolerance tolerance = policy.getDefaultSingleValueTolerance();
 
-                    if(SingleValueTolerance.ALLOW_OWN.equals(tolerance)){
+                    if(SingleValueTolerance.ALLOW_CHANGE.equals(tolerance)){
                         validModifications.add(modification);
                     }
                 } else if(isOrgAttributeMultiValue(attributeName)){
