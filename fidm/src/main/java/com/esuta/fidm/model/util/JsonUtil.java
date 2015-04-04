@@ -22,6 +22,18 @@ public class JsonUtil {
                 .create();
     }
 
+    public static String objectToPrettyJson(ObjectType object){
+        if(object == null){
+            return "Result is NOT valid";
+        }
+
+        String uglyJson = gson.toJson(object);
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(uglyJson);
+
+        return gson.toJson(je);
+    }
+
     public static String objectToJson(Object object){
         return gson.toJson(object);
     }

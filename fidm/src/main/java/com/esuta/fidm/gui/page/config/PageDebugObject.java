@@ -5,6 +5,7 @@ import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
+import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.ObjectType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -93,7 +94,7 @@ public class PageDebugObject extends PageBase{
             }
 
         } else if(objectFormat.equals(ObjectFormat.JSON)){
-            return WebMiscUtil.prepareObjectTypeInJson(model.getObject());
+            return JsonUtil.objectToPrettyJson(model.getObject());
         }
 
         return null;
@@ -172,7 +173,7 @@ public class PageDebugObject extends PageBase{
         if(ObjectFormat.XML.equals(objectFormat)){
             objectToSave = WebMiscUtil.xmlToObject(objectRepresentation.getObject());
         } else if(ObjectFormat.JSON.equals(objectFormat)){
-            objectToSave = WebMiscUtil.jsonToObject(objectRepresentation.getObject(), type);
+            objectToSave = (ObjectType)JsonUtil.jsonToObject(objectRepresentation.getObject(), type);
         }
 
         try {

@@ -114,48 +114,6 @@ public final class WebMiscUtil {
         return (ObjectType) xStream.fromXML(xmlObject);
     }
 
-    public static String prepareObjectTypeInJson(ObjectType object){
-        if(object == null){
-            return "Result is NOT valid";
-        }
-
-        Gson gson = new Gson();
-
-        String uglyJson = gson.toJson(object);
-
-        gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonParser jp = new JsonParser();
-        JsonElement je = jp.parse(uglyJson);
-
-        return gson.toJson(je);
-    }
-
-    public static ObjectType jsonToObject(String jsonObject, Class<? extends ObjectType> clazz){
-        Gson gson = new Gson();
-
-        if(clazz.equals(AccountType.class)){
-            return gson.fromJson(jsonObject, AccountType.class);
-        } else if(clazz.equals(OrgType.class)){
-            return gson.fromJson(jsonObject, OrgType.class);
-        } else if(clazz.equals(ResourceType.class)){
-            return gson.fromJson(jsonObject, ResourceType.class);
-        } else if(clazz.equals(RoleType.class)){
-            return gson.fromJson(jsonObject, RoleType.class);
-        } else if(clazz.equals(UserType.class)){
-            return gson.fromJson(jsonObject, UserType.class);
-        } else if(clazz.equals(SystemConfigurationType.class)){
-            return gson.fromJson(jsonObject, SystemConfigurationType.class);
-        } else if(clazz.equals(FederationMemberType.class)){
-            return gson.fromJson(jsonObject, FederationMemberType.class);
-        } else if(clazz.equals(FederationSharingPolicyType.class)){
-            return gson.fromJson(jsonObject, FederationSharingPolicyType.class);
-        } else if(clazz.equals(FederationProvisioningPolicyType.class)){
-            return gson.fromJson(jsonObject, FederationProvisioningPolicyType.class);
-        }
-
-        return gson.fromJson(jsonObject, ObjectType.class);
-    }
-
     public static boolean isOrgAttributeSingleValue(String attributeName){
         return attributeName.equals("name") ||
                 attributeName.equals("displayName") ||
