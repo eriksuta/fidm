@@ -15,6 +15,9 @@ import java.util.Arrays;
 
 /**
  *  TODO - add tests to test objectChangeProcessor work with ObjectReferences and Inducements
+ *  TODO - test sharing policy - local changes generation
+ *  TODO - test sharing policy - federation changes generation
+ *  TODO - test objectChangeProcessor - modification application - all types
  *
  *  @author shood
  * */

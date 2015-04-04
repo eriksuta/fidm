@@ -2,19 +2,25 @@ package com.esuta.fidm.model;
 
 import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.model.util.JsonUtil;
-import com.esuta.fidm.repository.schema.core.ModificationType;
-import com.esuta.fidm.repository.schema.core.OrgType;
+import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.AttributeModificationType;
 import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  This is a simple object that takes two objects of some type,
  *  compares them and prepares a set of changes in JSON format
- *  that are further processed.
+ *  that are further processed. Here, we also apply sharing
+ *  policies and rules on detected changes and decide, which changes
+ *  are going to be applied only locally and which are going to be
+ *  distributed in identity federation. Another function of this component
+ *  is the application of detected changes on some object -> the result
+ *  is the new object with attribute changes according to modification
+ *  objects.
  *  Currently, this works only for org. units. (OrgType)
  *
  *  @author shood
@@ -135,6 +141,251 @@ public class ObjectChangeProcessor {
         }
 
         return objectModification;
+    }
+
+    /**
+     *  This method applies federation sharing policy for the org. unit on
+     *  previously generated list of changes. Based on sharing policy, it
+     *  will filter and return only choices, that are valid for local identity
+     *  provider - these changes are saved and stored only locally and not
+     *  distributed to other members of identity federation. However, this method
+     *  will return changes that are valid ONLY for local identity provider - this means
+     *  that changes that can be applied in federation (and thus in local identity provider)
+     *  will not be returned by this method.
+     * */
+    public ObjectModificationType prepareLocalChanges(ObjectModificationType modificationObject, FederationSharingPolicyType policy){
+        List<AttributeModificationType> validModifications = new ArrayList<>();
+
+        if(modificationObject == null || policy == null){
+            return null;
+        }
+
+        if(modificationObject.getModificationList().isEmpty()){
+            return modificationObject;
+        }
+
+        for(AttributeModificationType modification: modificationObject.getModificationList()){
+            String attributeName = modification.getAttribute();
+            FederationSharingRuleType rule = getRuleByAttributeName(policy, attributeName);
+
+            if(rule == null){
+                //We need to apply default sharing policies, since there is no specific rule for current attribute
+                if(isOrgAttributeSingleValue(attributeName)){
+                    SingleValueTolerance tolerance = policy.getDefaultSingleValueTolerance();
+
+                    if(SingleValueTolerance.ALLOW_OWN.equals(tolerance)){
+                        validModifications.add(modification);
+                    }
+                } else if(isOrgAttributeMultiValue(attributeName)){
+                    MultiValueTolerance tolerance = policy.getDefaultMultiValueTolerance();
+
+                    if(MultiValueTolerance.ALLOW_ADD_OWN.equals(tolerance) &&
+                            ModificationType.ADD.equals(modification.getModificationType())){
+                        validModifications.add(modification);
+
+                    } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+                        validModifications.add(modification);
+                    }
+                }
+
+            } else{
+                if(isOrgAttributeSingleValue(attributeName)){
+                    SingleValueTolerance tolerance = rule.getSingleValueTolerance();
+
+                    if(SingleValueTolerance.ALLOW_OWN.equals(tolerance)){
+                        validModifications.add(modification);
+                    }
+
+                } else if(isOrgAttributeMultiValue(attributeName)){
+                    MultiValueTolerance tolerance = rule.getMultiValueTolerance();
+
+                    if(MultiValueTolerance.ALLOW_ADD_OWN.equals(tolerance) &&
+                            ModificationType.ADD.equals(modification.getModificationType())){
+                        validModifications.add(modification);
+
+                    } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+                        validModifications.add(modification);
+                    }
+                }
+            }
+        }
+
+        modificationObject.getModificationList().clear();
+        modificationObject.getModificationList().addAll(validModifications);
+        return modificationObject;
+    }
+
+    /**
+     *  This method applies federation sharing policy for the org. unit on a
+     *  previously generated list of changes. Based on sharing policy, it
+     *  will filter and return those changes that are valid for both local copy
+     *  of org. unit as well as for the origin of org. unit. All these changes
+     *  are then distributed to all other members of identity federation with
+     *  a copy of org. unit. However, this method returns changes that are valid
+     *  for both local and origin distribution, so it is obvious, that only
+     *  locally valid changes are not returned by this method - use prepareLocalChanges() instead.
+     * */
+    public ObjectModificationType prepareDistributedChanges(ObjectModificationType modificationObject, FederationSharingPolicyType policy){
+        List<AttributeModificationType> validModifications = new ArrayList<>();
+
+        if(modificationObject == null || policy == null){
+            return null;
+        }
+
+        if(modificationObject.getModificationList().isEmpty()){
+            return modificationObject;
+        }
+
+        for(AttributeModificationType modification: modificationObject.getModificationList()){
+            String attributeName = modification.getAttribute();
+            FederationSharingRuleType rule = getRuleByAttributeName(policy, attributeName);
+
+            if(rule == null){
+                //We need to apply default sharing policies, since there is no specific rule for current attribute
+                if(isOrgAttributeSingleValue(attributeName)){
+                    SingleValueTolerance tolerance = policy.getDefaultSingleValueTolerance();
+
+                    if(SingleValueTolerance.ALLOW_OWN.equals(tolerance)){
+                        validModifications.add(modification);
+                    }
+                } else if(isOrgAttributeMultiValue(attributeName)){
+                    MultiValueTolerance tolerance = policy.getDefaultMultiValueTolerance();
+
+                    if(MultiValueTolerance.ALLOW_ADD_OWN.equals(tolerance) &&
+                            ModificationType.ADD.equals(modification.getModificationType())){
+                        validModifications.add(modification);
+
+                    } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+                        validModifications.add(modification);
+                    }
+                }
+
+            } else{
+                if(isOrgAttributeSingleValue(attributeName)){
+                    SingleValueTolerance tolerance = rule.getSingleValueTolerance();
+
+                    if(SingleValueTolerance.ALLOW_OWN.equals(tolerance)){
+                        validModifications.add(modification);
+                    }
+
+                } else if(isOrgAttributeMultiValue(attributeName)){
+                    MultiValueTolerance tolerance = rule.getMultiValueTolerance();
+
+                    if(MultiValueTolerance.ALLOW_ADD_OWN.equals(tolerance) &&
+                            ModificationType.ADD.equals(modification.getModificationType())){
+                        validModifications.add(modification);
+
+                    } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+                        validModifications.add(modification);
+                    }
+                }
+            }
+        }
+
+        modificationObject.getModificationList().clear();
+        modificationObject.getModificationList().addAll(validModifications);
+        return modificationObject;
+    }
+
+    /**
+     *  This method applies all the changes to provided org. unit
+     */
+    public OrgType applyModificationsOnOrg(OrgType org, ObjectModificationType modificationObject)
+            throws NoSuchFieldException, IllegalAccessException {
+
+        if(org == null){
+            return null;
+        }
+
+        if(modificationObject == null){
+            return org;
+        }
+
+        for(AttributeModificationType modification: modificationObject.getModificationList()){
+            String attributeName = modification.getAttribute();
+            Field attribute = org.getClass().getDeclaredField(attributeName);
+            attribute.setAccessible(true);
+
+            if(isOrgAttributeSingleValue(attributeName)){
+                attribute.set(org, JsonUtil.jsonToObject(modification.getNewValue(), getAttributeType(attributeName)));
+            } else {
+                List values = (List)attribute.get(org);
+
+                if(ModificationType.ADD.equals(modification.getModificationType())){
+                    values.add(JsonUtil.jsonToObject(modification.getNewValue(), getAttributeType(attributeName)));
+                } else if(ModificationType.MODIFY.equals(modification.getModificationType())){
+                    int index = 0;
+                    Object o = JsonUtil.jsonToObject(modification.getOldValue(), getAttributeType(attributeName));
+
+                    for(int i = 0; i < values.size(); i++){
+                        if(o.equals(values.get(i))){
+                            index = i;
+                        }
+                    }
+
+                    values.remove(index);
+                    values.add(index, JsonUtil.jsonToObject(modification.getNewValue(), getAttributeType(attributeName)));
+
+                } else if(ModificationType.DELETE.equals(modification.getModificationType())){
+                    values.remove(JsonUtil.jsonToObject(modification.getOldValue(), getAttributeType(attributeName)));
+                }
+
+                attribute.set(org, values);
+            }
+        }
+
+        return org;
+    }
+
+    private Class getAttributeType(String attributeName){
+        switch (attributeName){
+            case "name":
+                return String.class;
+            case "displayName":
+                return String.class;
+            case "locality":
+                return String.class;
+            case "orgType":
+                return String.class;
+            case "parentOrgUnits":
+                return ObjectReferenceType.class;
+            case "governors":
+                return ObjectReferenceType.class;
+            case "resourceInducements":
+                return InducementType.class;
+            case "roleInducements":
+                return InducementType.class;
+            default:
+                return null;
+        }
+    }
+
+    private FederationSharingRuleType getRuleByAttributeName(FederationSharingPolicyType policy, String attributeName){
+        if(policy == null || attributeName == null){
+            return null;
+        }
+
+        for(FederationSharingRuleType rule: policy.getRules()){
+            if(attributeName.equals(rule.getAttributeName())){
+                return rule;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isOrgAttributeSingleValue(String attributeName){
+        return attributeName.equals("name") ||
+                attributeName.equals("displayName") ||
+                attributeName.equals("locality");
+    }
+
+    private boolean isOrgAttributeMultiValue(String attributeName){
+        return attributeName.equals("orgType") ||
+                attributeName.equals("parentOrgUnits") ||
+                attributeName.equals("governors") ||
+                attributeName.equals("resourceInducements") ||
+                attributeName.equals("roleInducements");
     }
 
     private AttributeModificationType prepareModification(String fieldName, String oldValue, String newValue){

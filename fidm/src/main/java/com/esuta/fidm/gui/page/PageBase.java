@@ -5,6 +5,7 @@ import com.esuta.fidm.gui.component.nav.RightNavigationMenu;
 import com.esuta.fidm.gui.page.config.PageDebugList;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.ObjectChangeProcessor;
 import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
@@ -37,6 +38,11 @@ public abstract class PageBase extends WebPage{
      *  Every page is able to communicate with other federation members using this federation service rest client instance
      * */
     private transient RestFederationServiceClient federationServiceClient;
+
+    /**
+     *  A component that processes changes in objects and provides a unified format for object modifications
+     * */
+    private transient ObjectChangeProcessor objectChangeProcessor;
 
     //Constant used to identify page parameter name (uid) - used when editing objects
     public static final String UID_PAGE_PARAMETER_NAME = "uid";
@@ -107,6 +113,14 @@ public abstract class PageBase extends WebPage{
         }
 
         return federationServiceClient;
+    }
+
+    public ObjectChangeProcessor getObjectChangeProcessor() {
+        if(objectChangeProcessor == null){
+            objectChangeProcessor = ObjectChangeProcessor.getInstance();
+        }
+
+        return objectChangeProcessor;
     }
 
     public WebMarkupContainer getFeedbackPanel(){

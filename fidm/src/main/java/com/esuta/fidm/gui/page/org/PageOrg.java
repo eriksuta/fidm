@@ -24,6 +24,7 @@ import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
 import com.esuta.fidm.model.federation.service.ObjectInformation;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
+import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.wicket.Component;
@@ -1671,6 +1672,12 @@ public class PageOrg extends PageBase {
             if(!isEditingOrgUnit()){
                 modelService.createObject(orgUnit);
             } else {
+
+                if(!isLocalOrgUnit()){
+                    OrgType oldOrg = modelService.readObject(OrgType.class, orgUnit.getUid());
+                    ObjectModificationType modifications = getObjectChangeProcessor().getOrgModifications(oldOrg, orgUnit);
+                }
+
                 modelService.updateObject(orgUnit);
                 if(orgUnit.isSharedSubtree()){
                     shareOrgSubtree(orgUnit);
