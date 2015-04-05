@@ -14,7 +14,6 @@ import java.util.Arrays;
 
 /**
  *  TODO - add tests to test objectChangeProcessor work with ObjectReferences and Inducements
- *  TODO - test sharing policy - federation changes generation
  *  TODO - test objectChangeProcessor - modification application - all types
  *
  *  @author shood
@@ -596,5 +595,237 @@ public class ObjectChangeProcessorTest {
                 0, allowAddModification.getModificationList().size());
         Assert.assertEquals("Since 'ALLOW_CHANGE' default SV policy is set, the modification should be filtered.",
                 0, allowAllModification.getModificationList().size());
+    }
+
+    @Test
+    public void test_15_distributedChangesSingleValueDefaultTest(){
+        printTestName("test_15_distributedChangesSingleValueDefaultTest");
+
+        //Prepare policies and change objects
+        FederationSharingPolicyType enforcePolicy = new FederationSharingPolicyType();
+        enforcePolicy.setDefaultSingleValueTolerance(SingleValueTolerance.ENFORCE);
+
+        FederationSharingPolicyType allowOwnPolicy = new FederationSharingPolicyType();
+        allowOwnPolicy.setDefaultSingleValueTolerance(SingleValueTolerance.ALLOW_OWN);
+
+        FederationSharingPolicyType allowAllPolicy = new FederationSharingPolicyType();
+        allowAllPolicy.setDefaultSingleValueTolerance(SingleValueTolerance.ALLOW_CHANGE);
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setAttribute("displayName");
+        modification.setModificationType(ModificationType.MODIFY);
+        modification.setOldValue(JsonUtil.objectToJson("old"));
+        modification.setNewValue(JsonUtil.objectToJson("new"));
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Perform filtering
+        ObjectModificationType enforceModification = changeProcessor.prepareDistributedChanges(modificationObject, enforcePolicy);
+        ObjectModificationType allowOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowOwnPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAllPolicy);
+
+        //Check the results
+        Assert.assertNotNull(enforceModification);
+        Assert.assertNotNull(allowOwnModification);
+        Assert.assertNotNull(allowAllModification);
+
+        Assert.assertEquals("Since 'ENFORCE' default SV policy is set, the modification should be filtered.",
+                0, enforceModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_OWN' default SV policy is set, the modification should be filtered.",
+                0, allowOwnModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_CHANGE' default SV policy is set, the modification should NOT be filtered.",
+                1, allowAllModification.getModificationList().size());
+    }
+
+    @Test
+    public void test_16_distributedChangesSingleValueSpecificRuleTest(){
+        printTestName("test_16_distributedChangesSingleValueSpecificRuleTest");
+
+        //Prepare policies and change objects
+        FederationSharingRuleType enforceRule = new FederationSharingRuleType();
+        enforceRule.setAttributeName("displayName");
+        enforceRule.setSingleValueTolerance(SingleValueTolerance.ENFORCE);
+
+        FederationSharingPolicyType enforcePolicy = new FederationSharingPolicyType();
+        enforcePolicy.setDefaultSingleValueTolerance(SingleValueTolerance.ENFORCE);
+        enforcePolicy.getRules().add(enforceRule);
+
+        FederationSharingRuleType allowOwnRule = new FederationSharingRuleType();
+        allowOwnRule.setAttributeName("displayName");
+        allowOwnRule.setSingleValueTolerance(SingleValueTolerance.ALLOW_OWN);
+
+        FederationSharingPolicyType allowOwnPolicy = new FederationSharingPolicyType();
+        allowOwnPolicy.setDefaultSingleValueTolerance(SingleValueTolerance.ALLOW_OWN);
+        allowOwnPolicy.getRules().add(allowOwnRule);
+
+        FederationSharingRuleType allowAllRule = new FederationSharingRuleType();
+        allowAllRule.setAttributeName("displayName");
+        allowAllRule.setSingleValueTolerance(SingleValueTolerance.ALLOW_CHANGE);
+
+        FederationSharingPolicyType allowAllPolicy = new FederationSharingPolicyType();
+        allowAllPolicy.setDefaultSingleValueTolerance(SingleValueTolerance.ALLOW_CHANGE);
+        allowAllPolicy.getRules().add(allowAllRule);
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setAttribute("displayName");
+        modification.setModificationType(ModificationType.MODIFY);
+        modification.setOldValue(JsonUtil.objectToJson("old"));
+        modification.setNewValue(JsonUtil.objectToJson("new"));
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Perform filtering
+        ObjectModificationType enforceModification = changeProcessor.prepareDistributedChanges(modificationObject, enforcePolicy);
+        ObjectModificationType allowOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowOwnPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAllPolicy);
+
+        //Check the results
+        Assert.assertNotNull(enforceModification);
+        Assert.assertNotNull(allowOwnModification);
+        Assert.assertNotNull(allowAllModification);
+
+        Assert.assertEquals("Since 'ENFORCE' default SV policy is set, the modification should be filtered.",
+                0, enforceModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_OWN' default SV policy is set, the modification should be filtered.",
+                0, allowOwnModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_CHANGE' default SV policy is set, the modification should NOT be filtered.",
+                1, allowAllModification.getModificationList().size());
+    }
+
+    @Test
+    public void test_17_distributedChangesMultiValueDefaultTest(){
+        printTestName("test_17_distributedChangesMultiValueDefaultTest");
+
+        //Prepare policies and change objects
+        FederationSharingPolicyType enforcePolicy = new FederationSharingPolicyType();
+        enforcePolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ENFORCE);
+
+        FederationSharingPolicyType allowAddOwnPolicy = new FederationSharingPolicyType();
+        allowAddOwnPolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ALLOW_ADD_OWN);
+
+        FederationSharingPolicyType allowChangeOwnPolicy = new FederationSharingPolicyType();
+        allowChangeOwnPolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ALLOW_CHANGE_OWN);
+
+        FederationSharingPolicyType allowAddPolicy = new FederationSharingPolicyType();
+        allowAddPolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ALLOW_ADD);
+
+        FederationSharingPolicyType allowAllPolicy = new FederationSharingPolicyType();
+        allowAllPolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ALLOW_CHANGE);
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setAttribute("orgType");
+        modification.setModificationType(ModificationType.MODIFY);
+        modification.setOldValue(JsonUtil.objectToJson("old"));
+        modification.setNewValue(JsonUtil.objectToJson("new"));
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Perform filtering
+        ObjectModificationType enforceModification = changeProcessor.prepareDistributedChanges(modificationObject, enforcePolicy);
+        ObjectModificationType allowAddOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAddOwnPolicy);
+        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowChangeOwnPolicy);
+        ObjectModificationType allowAddModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAddPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAllPolicy);
+
+        //Check the results
+        Assert.assertNotNull(enforceModification);
+        Assert.assertNotNull(allowAddOwnModification);
+        Assert.assertNotNull(allowChangeOwnModification);
+        Assert.assertNotNull(allowAddModification);
+        Assert.assertNotNull(allowAllModification);
+
+        Assert.assertEquals("Since 'ENFORCE' default SV policy is set, the modification should be filtered.",
+                0, enforceModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_ADD_OWN' default SV policy is set and change type is addition, the modification should be filtered.",
+                0, allowAddOwnModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_CHANGE_OWN' default SV policy is set, the modification should be filtered.",
+                0, allowChangeOwnModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_ADD' default SV policy is set, the modification should be filtered.",
+                0, allowAddModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_CHANGE' default SV policy is set, the modification should NOT be filtered.",
+                1, allowAllModification.getModificationList().size());
+    }
+
+    @Test
+    public void test_18_distributedChangesMultiValueSpecificRuleTest(){
+        printTestName("test_14_localChangesMultiValueSpecificRuleTest");
+
+        //Prepare policies and change objects
+        FederationSharingRuleType enforceRule = new FederationSharingRuleType();
+        enforceRule.setAttributeName("orgType");
+        enforceRule.setMultiValueTolerance(MultiValueTolerance.ENFORCE);
+
+        FederationSharingPolicyType enforcePolicy = new FederationSharingPolicyType();
+        enforcePolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ENFORCE);
+        enforcePolicy.getRules().add(enforceRule);
+
+        FederationSharingRuleType allowAddOwnRule = new FederationSharingRuleType();
+        allowAddOwnRule.setAttributeName("orgType");
+        allowAddOwnRule.setMultiValueTolerance(MultiValueTolerance.ALLOW_ADD_OWN);
+
+        FederationSharingPolicyType allowAddOwnPolicy = new FederationSharingPolicyType();
+        allowAddOwnPolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ALLOW_ADD_OWN);
+        allowAddOwnPolicy.getRules().add(allowAddOwnRule);
+
+        FederationSharingRuleType allowChangeOwnRule = new FederationSharingRuleType();
+        allowChangeOwnRule.setAttributeName("orgType");
+        allowChangeOwnRule.setMultiValueTolerance(MultiValueTolerance.ALLOW_CHANGE_OWN);
+
+        FederationSharingPolicyType allowChangeOwnPolicy = new FederationSharingPolicyType();
+        allowChangeOwnPolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ALLOW_CHANGE_OWN);
+        allowChangeOwnPolicy.getRules().add(allowChangeOwnRule);
+
+        FederationSharingRuleType allowAddRule = new FederationSharingRuleType();
+        allowAddRule.setAttributeName("orgType");
+        allowAddRule.setMultiValueTolerance(MultiValueTolerance.ALLOW_ADD);
+
+        FederationSharingPolicyType allowAddPolicy = new FederationSharingPolicyType();
+        allowAddPolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ALLOW_ADD);
+        allowAddPolicy.getRules().add(allowAddRule);
+
+        FederationSharingRuleType allowAllRule = new FederationSharingRuleType();
+        allowAllRule.setAttributeName("orgType");
+        allowAllRule.setMultiValueTolerance(MultiValueTolerance.ALLOW_CHANGE);
+
+        FederationSharingPolicyType allowAllPolicy = new FederationSharingPolicyType();
+        allowAllPolicy.setDefaultMultiValueTolerance(MultiValueTolerance.ALLOW_CHANGE);
+        allowAllPolicy.getRules().add(allowAllRule);
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setAttribute("orgType");
+        modification.setModificationType(ModificationType.MODIFY);
+        modification.setOldValue(JsonUtil.objectToJson("old"));
+        modification.setNewValue(JsonUtil.objectToJson("new"));
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Perform filtering
+        ObjectModificationType enforceModification = changeProcessor.prepareDistributedChanges(modificationObject, enforcePolicy);
+        ObjectModificationType allowAddOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAddOwnPolicy);
+        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowChangeOwnPolicy);
+        ObjectModificationType allowAddModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAddPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAllPolicy);
+
+        //Check the results
+        Assert.assertNotNull(enforceModification);
+        Assert.assertNotNull(allowAddOwnModification);
+        Assert.assertNotNull(allowChangeOwnModification);
+        Assert.assertNotNull(allowAddModification);
+        Assert.assertNotNull(allowAllModification);
+
+        Assert.assertEquals("Since 'ENFORCE' default SV policy is set, the modification should be filtered.",
+                0, enforceModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_ADD_OWN' default SV policy is set and change type is addition, the modification should be filtered.",
+                0, allowAddOwnModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_CHANGE_OWN' default SV policy is set, the modification should be filtered.",
+                0, allowChangeOwnModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_ADD' default SV policy is set, the modification should be filtered.",
+                0, allowAddModification.getModificationList().size());
+        Assert.assertEquals("Since 'ALLOW_CHANGE' default SV policy is set, the modification should NOT be filtered.",
+                1, allowAllModification.getModificationList().size());
     }
 }

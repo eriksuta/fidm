@@ -251,11 +251,11 @@ public class ObjectChangeProcessor {
                 } else if(isOrgAttributeMultiValue(attributeName)){
                     MultiValueTolerance tolerance = policy.getDefaultMultiValueTolerance();
 
-                    if(MultiValueTolerance.ALLOW_ADD_OWN.equals(tolerance) &&
+                    if(MultiValueTolerance.ALLOW_ADD.equals(tolerance) &&
                             ModificationType.ADD.equals(modification.getModificationType())){
                         validModifications.add(modification);
 
-                    } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+                    } else if(MultiValueTolerance.ALLOW_CHANGE.equals(tolerance)){
                         validModifications.add(modification);
                     }
                 }
@@ -264,27 +264,27 @@ public class ObjectChangeProcessor {
                 if(isOrgAttributeSingleValue(attributeName)){
                     SingleValueTolerance tolerance = rule.getSingleValueTolerance();
 
-                    if(SingleValueTolerance.ALLOW_OWN.equals(tolerance)){
+                    if(SingleValueTolerance.ALLOW_CHANGE.equals(tolerance)){
                         validModifications.add(modification);
                     }
 
                 } else if(isOrgAttributeMultiValue(attributeName)){
                     MultiValueTolerance tolerance = rule.getMultiValueTolerance();
 
-                    if(MultiValueTolerance.ALLOW_ADD_OWN.equals(tolerance) &&
+                    if(MultiValueTolerance.ALLOW_ADD.equals(tolerance) &&
                             ModificationType.ADD.equals(modification.getModificationType())){
                         validModifications.add(modification);
 
-                    } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+                    } else if(MultiValueTolerance.ALLOW_CHANGE.equals(tolerance)){
                         validModifications.add(modification);
                     }
                 }
             }
         }
 
-        modificationObject.getModificationList().clear();
-        modificationObject.getModificationList().addAll(validModifications);
-        return modificationObject;
+        ObjectModificationType newModificationObject = new ObjectModificationType();
+        newModificationObject.getModificationList().addAll(validModifications);
+        return newModificationObject;
     }
 
     /**
