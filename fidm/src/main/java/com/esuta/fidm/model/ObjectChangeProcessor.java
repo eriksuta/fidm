@@ -308,7 +308,7 @@ public class ObjectChangeProcessor {
 
             if(isOrgAttributeSingleValue(attributeName)){
                 attribute.set(org, JsonUtil.jsonToObject(modification.getNewValue(), getAttributeType(attributeName)));
-            } else {
+            } else if(isOrgAttributeMultiValue(attributeName)) {
                 List values = (List)attribute.get(org);
 
                 if(ModificationType.ADD.equals(modification.getModificationType())){
@@ -391,8 +391,8 @@ public class ObjectChangeProcessor {
     private AttributeModificationType prepareModification(String fieldName, String oldValue, String newValue){
         AttributeModificationType modification = new AttributeModificationType();
         modification.setAttribute(fieldName);
-        modification.setOldValue(JsonUtil.objectToJson(oldValue));
-        modification.setNewValue(JsonUtil.objectToJson(newValue));
+        modification.setOldValue(oldValue);
+        modification.setNewValue(newValue);
 
         if(isNull(oldValue) && !isNull(newValue)){
             modification.setModificationType(ModificationType.ADD);

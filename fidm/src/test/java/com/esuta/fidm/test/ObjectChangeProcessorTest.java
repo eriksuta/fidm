@@ -828,4 +828,166 @@ public class ObjectChangeProcessorTest {
         Assert.assertEquals("Since 'ALLOW_CHANGE' default SV policy is set, the modification should NOT be filtered.",
                 1, allowAllModification.getModificationList().size());
     }
+
+    @Test
+    public void test_19_applySingleValueAdditionTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_19_applySingleValueAdditionTest");
+
+        //Prepare org. and modification objects
+        OrgType org = new OrgType();
+        org.setName("org");
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setOldValue(null);
+        modification.setNewValue(JsonUtil.objectToJson("Org Display Name"));
+        modification.setAttribute("displayName");
+        modification.setModificationType(ModificationType.ADD);
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Apply prepared modifications
+        OrgType newOrg = changeProcessor.applyModificationsOnOrg(org, modificationObject);
+
+        //Check the results
+        Assert.assertNotNull(newOrg);
+        Assert.assertEquals("Display name should be set to 'Org Display Name'", "Org Display Name", newOrg.getDisplayName());
+    }
+
+    @Test
+    public void test_20_applySingleValueModificationTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_20_applySingleValueModificationTest");
+
+        //Prepare org. and modification objects
+        OrgType org = new OrgType();
+        org.setDisplayName("Old Display Name");
+        org.setName("org");
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setOldValue(JsonUtil.objectToJson("Old Display Name"));
+        modification.setNewValue(JsonUtil.objectToJson("New Display Name"));
+        modification.setAttribute("displayName");
+        modification.setModificationType(ModificationType.MODIFY);
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Apply prepared modifications
+        OrgType newOrg = changeProcessor.applyModificationsOnOrg(org, modificationObject);
+
+        //Check the results
+        Assert.assertNotNull(newOrg);
+        Assert.assertEquals("Display name should be set to 'New Display Name'", "New Display Name", newOrg.getDisplayName());
+    }
+
+    @Test
+    public void test_21_applySingleValueDeletionTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_21_applySingleValueDeletionTest");
+
+        //Prepare org. and modification objects
+        OrgType org = new OrgType();
+        org.setDisplayName("Old Display Name");
+        org.setName("org");
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setOldValue(JsonUtil.objectToJson("Old Display Name"));
+        modification.setNewValue(JsonUtil.objectToJson(null));
+        modification.setAttribute("displayName");
+        modification.setModificationType(ModificationType.DELETE);
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Apply prepared modifications
+        OrgType newOrg = changeProcessor.applyModificationsOnOrg(org, modificationObject);
+
+        //Check the results
+        Assert.assertNotNull(newOrg);
+        Assert.assertEquals("Display name should be set to 'null'", null, newOrg.getDisplayName());
+    }
+
+    @Test
+    public void test_22_applyMultiValueAdditionTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_22_applyMultiValueAdditionTest");
+
+        //Prepare org. and modification objects
+        OrgType org = new OrgType();
+        org.setOrgType(new ArrayList<>(Arrays.asList("Type One","Type Two")));
+        org.setName("org");
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setOldValue(null);
+        modification.setNewValue(JsonUtil.objectToJson("Type Three"));
+        modification.setAttribute("orgType");
+        modification.setModificationType(ModificationType.ADD);
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Apply prepared modifications
+        OrgType newOrg = changeProcessor.applyModificationsOnOrg(org, modificationObject);
+
+        //Check the results
+        Assert.assertNotNull(newOrg);
+        Assert.assertEquals("Org. unit should have 3 org types.", 3, newOrg.getOrgType().size());
+        Assert.assertEquals("Org should have new value 'Type Three' as 3rd value of orgType", "Type Three", newOrg.getOrgType().get(2));
+    }
+
+    @Test
+    public void test_23_applyMultiValueModificationTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_23_applyMultiValueModificationTest");
+
+        //Prepare org. and modification objects
+        OrgType org = new OrgType();
+        org.setOrgType(new ArrayList<>(Arrays.asList("Type One","Type Two", "Type Three")));
+        org.setName("org");
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setOldValue(JsonUtil.objectToJson("Type Three"));
+        modification.setNewValue(JsonUtil.objectToJson("New Type Three"));
+        modification.setAttribute("orgType");
+        modification.setModificationType(ModificationType.MODIFY);
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Apply prepared modifications
+        OrgType newOrg = changeProcessor.applyModificationsOnOrg(org, modificationObject);
+
+        //Check the results
+        Assert.assertNotNull(newOrg);
+        Assert.assertEquals("Org. unit should have 3 org types.", 3, newOrg.getOrgType().size());
+        Assert.assertEquals("Org should have new value 'New Type Three' as 3rd value of orgType",
+                "New Type Three", newOrg.getOrgType().get(2));
+    }
+
+    @Test
+    public void test_24_applyMultiValueDeletionTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_24_applyMultiValueDeletionTest");
+
+        //Prepare org. and modification objects
+        OrgType org = new OrgType();
+        org.setOrgType(new ArrayList<>(Arrays.asList("Type One","Type Two", "Type Three")));
+        org.setName("org");
+
+        AttributeModificationType modification = new AttributeModificationType();
+        modification.setOldValue(JsonUtil.objectToJson("Type Three"));
+        modification.setNewValue(null);
+        modification.setAttribute("orgType");
+        modification.setModificationType(ModificationType.DELETE);
+
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+
+        //Apply prepared modifications
+        OrgType newOrg = changeProcessor.applyModificationsOnOrg(org, modificationObject);
+
+        //Check the results
+        Assert.assertNotNull(newOrg);
+        Assert.assertEquals("Org. unit should have 2 org types.", 2, newOrg.getOrgType().size());
+        Assert.assertEquals("Org should have new value 'Type One' as 1st value of orgType",
+                "Type One", newOrg.getOrgType().get(0));
+        Assert.assertEquals("Org should have new value 'Type Two' as 2nd value of orgType",
+                "Type Two", newOrg.getOrgType().get(1));
+    }
 }

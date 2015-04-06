@@ -39,14 +39,13 @@ public class JsonUtil {
     }
 
     public static Object jsonToObject(String jsonObject, Class clazz){
-        if("\"null\"".equals(jsonObject) || "null".equals(jsonObject)){
+        if(jsonObject == null || "null".equals(jsonObject)){
             return null;
         }
 
         if(clazz.equals(String.class)){
             JsonElement element = new JsonParser().parse(jsonObject);
-            String string = element.getAsString();
-            return string.substring(1, string.length() - 1);
+            return element.getAsString();
         }
 
         if(clazz.equals(AccountType.class)){
