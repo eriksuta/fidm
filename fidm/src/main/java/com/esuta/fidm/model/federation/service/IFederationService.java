@@ -351,4 +351,32 @@ public interface IFederationService {
      *
      * */
     public Response getOrgSharingPolicy(String memberIdentifier, String uniqueAttributeValue);
+
+    /**
+     *  <p>
+     *      An operation that server as a way to distribute changes in org. units
+     *      to other members of identity federation. The requesting member prepares the changes
+     *      and sends them for processing to other identity federation members. Federation
+     *      member receiving org. object changes are bound to inform the requesting
+     *      member about the state of change processing.
+     *  </p>
+     *
+     *  @param orgChange (OrgChangeWrapper)
+     *      An object that has several meanings. It contains the identification of federation
+     *      member requesting the processing, it contains an identification of org. unit that
+     *      is the source of changes and a set of changes.
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing either a sharing policy of org. unit, if the request was processed
+     *      properly, or a message informing requester about the error that happened
+     *      during request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> -
+     *
+     *      <b>400</b> -
+     *
+     *      <b>500</b> -
+     *
+     * */
+    public Response processOrgChanges(OrgChangeWrapper orgChange);
 }

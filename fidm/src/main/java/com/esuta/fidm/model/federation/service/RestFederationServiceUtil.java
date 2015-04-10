@@ -26,6 +26,8 @@ public class RestFederationServiceUtil implements Serializable{
     public static final String GET_OBJECT_INFORMATION = "/getObjectInformation/";
     public static final String GET_OBJECT_INFORMATION_PARAM = "/getObjectInformation/{memberIdentifier}/{uniqueAttributeValue}/{objectType}";
 
+    public static final String POST_PROCESS_ORG_CHANGES = "/processOrgChanges";
+
     public static String createGetFederationMemberIdentifier(String address, int port){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
@@ -146,6 +148,17 @@ public class RestFederationServiceUtil implements Serializable{
         sb.append(uniqueAttributeValue);
         sb.append("/");
         sb.append(objectType);
+        return sb.toString();
+    }
+
+    public static String createPostProcessOrgChangesRequest(String address, int port){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(POST_PROCESS_ORG_CHANGES);
         return sb.toString();
     }
 }

@@ -9,6 +9,7 @@ import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
+import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -697,6 +698,51 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Could not load org. unit or sharing policy from the repository.", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Can't read from the repository. Internal problem: " + e).build();
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: ", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: " + e).build();
+        }
+    }
+
+    @POST
+    @Path(RestFederationServiceUtil.POST_PROCESS_ORG_CHANGES)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response processOrgChanges(OrgChangeWrapper orgChange) {
+        if(orgChange == null){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad request body format.").build();
+        }
+
+        if(orgChange.getFederationMember() == null || orgChange.getUniqueAttributeValue() == null){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        if(orgChange.getModificationObject() == null || orgChange.getModificationObject().getModificationList().isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("No changes to process for target org. unit").build();
+        }
+
+        try {
+            String memberIdentifier = orgChange.getFederationMember();
+            String uniqueAttributeValue = orgChange.getUniqueAttributeValue();
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
+
+            if(currentMember == null){
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            OrgType org = getOrgUnitByUniqueAttributeValue(currentMember, uniqueAttributeValue);
+            ObjectModificationType modificationObject = orgChange.getModificationObject();
+
+            //TODO - process changes with some provisioning service here
+            return Response.status(HttpStatus.OK_200).entity("Org. changes processed correctly.").build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not process org. unit modifications. Can't retrieve org. unit or federation member from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not process org. unit modifications. Can't retrieve org. unit or federation member from the repository." + e).build();
         } catch (IllegalAccessException | NoSuchFieldException e) {
             LOGGER.error("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: ", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
