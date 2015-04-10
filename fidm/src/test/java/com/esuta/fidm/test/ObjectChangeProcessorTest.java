@@ -4,6 +4,7 @@ import com.esuta.fidm.model.ObjectChangeProcessor;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.AttributeModificationType;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import org.apache.log4j.Logger;
 import org.junit.*;
@@ -13,8 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- *  TODO - add tests to test objectChangeProcessor work with ObjectReferences and Inducements
- *  TODO - test objectChangeProcessor - modification application - all types
  *
  *  @author shood
  * */
@@ -354,19 +353,281 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_09_governorModificationTest(){
-        printTestName("test_09_governorModificationTest");
-//        TODO
+     public void test_09_governorAdditionTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_09_governorAdditionTest");
+
+        //Initialize org. units
+        OrgType oldOrg = new OrgType();
+        oldOrg.setName("Org");
+
+        OrgType newOrg = new OrgType();
+        newOrg.setName("Org");
+        ObjectReferenceType<UserType> governor = new ObjectReferenceType<>();
+        governor.setSharedInFederation(false);
+        governor.setUid("uid");
+
+        FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+        federationIdentifier.setFederationMemberId("member");
+        federationIdentifier.setUniqueAttributeValue("value");
+        governor.setFederationIdentifier(federationIdentifier);
+        newOrg.getGovernors().add(governor);
+
+        //Try to get change object
+        ObjectModificationType modificationObject = changeProcessor.getOrgModifications(oldOrg, newOrg);
+
+        //Check created modification objects
+        Assert.assertNotNull(modificationObject);
+        Assert.assertEquals("There should be exactly 1 modification.", 1, modificationObject.getModificationList().size());
+
+        AttributeModificationType modification = modificationObject.getModificationList().get(0);
+        Assert.assertEquals("Modification should be 'ADD'.", ModificationType.ADD, modification.getModificationType());
+        Assert.assertEquals("'governors' attribute should be modified.", "governors", modification.getAttribute());
+
+        ObjectReferenceType governorRef = (ObjectReferenceType) JsonUtil.jsonToObject(modification.getNewValue(), ObjectReferenceType.class);
+        Assert.assertNotNull(governorRef.getFederationIdentifier());
+        Assert.assertEquals("Governor reference should have uid with value 'uid'.", "uid", governorRef.getUid());
+        Assert.assertEquals("Governor federation identifier should have member 'member'.",
+                "member", governorRef.getFederationIdentifier().getFederationMemberId());
+        Assert.assertEquals("Governor federation identifier should have unique value 'value'.",
+                "value", governorRef.getFederationIdentifier().getUniqueAttributeValue());
+
+        //Try to apply the changes on the old org.
+        changeProcessor.applyModificationsOnOrg(oldOrg, modificationObject);
+
+        //Old org should be equal to new org after modification application.
+        Assert.assertEquals("Old org object (oldOrg) and org object after modification application should equal.", oldOrg, newOrg);
     }
 
     @Test
-    public void test_10_inducementModificationTest(){
-        printTestName("test_10_inducementModificationTest");
-//        TODO
+    public void test_10_governorModificationTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_10_governorModificationTest");
+
+        FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+        federationIdentifier.setFederationMemberId("member");
+        federationIdentifier.setUniqueAttributeValue("value");
+
+        //Initialize org. units
+        OrgType oldOrg = new OrgType();
+        oldOrg.setName("Org");
+        ObjectReferenceType<UserType> oldGovernor = new ObjectReferenceType<>();
+        oldGovernor.setSharedInFederation(false);
+        oldGovernor.setUid("uid");
+        oldGovernor.setFederationIdentifier(federationIdentifier);
+        oldOrg.getGovernors().add(oldGovernor);
+
+        OrgType newOrg = new OrgType();
+        newOrg.setName("Org");
+        ObjectReferenceType<UserType> newGovernor = new ObjectReferenceType<>();
+        newGovernor.setSharedInFederation(false);
+        newGovernor.setUid("new uid");
+        newGovernor.setFederationIdentifier(federationIdentifier);
+        newOrg.getGovernors().add(newGovernor);
+
+        //Try to get change object
+        ObjectModificationType modificationObject = changeProcessor.getOrgModifications(oldOrg, newOrg);
+
+        //Check created modification objects
+        Assert.assertNotNull(modificationObject);
+        Assert.assertEquals("There should be exactly 1 modification.", 1, modificationObject.getModificationList().size());
+
+        AttributeModificationType modification = modificationObject.getModificationList().get(0);
+        Assert.assertEquals("Modification should be 'MODIFY'.", ModificationType.MODIFY, modification.getModificationType());
+        Assert.assertEquals("'governors' attribute should be modified.", "governors", modification.getAttribute());
+
+        ObjectReferenceType governorRef = (ObjectReferenceType) JsonUtil.jsonToObject(modification.getNewValue(), ObjectReferenceType.class);
+        Assert.assertNotNull(governorRef.getFederationIdentifier());
+        Assert.assertEquals("Governor reference should have uid with value 'new uid'.", "new uid", governorRef.getUid());
+        Assert.assertEquals("Governor federation identifier should have member 'member'.",
+                "member", governorRef.getFederationIdentifier().getFederationMemberId());
+        Assert.assertEquals("Governor federation identifier should have unique value 'value'.",
+                "value", governorRef.getFederationIdentifier().getUniqueAttributeValue());
+
+        //Try to apply the changes on the old org.
+        changeProcessor.applyModificationsOnOrg(oldOrg, modificationObject);
+
+        //Old org should be equal to new org after modification application.
+        Assert.assertEquals("Old org object (oldOrg) and org object after modification application should equal.", oldOrg, newOrg);
     }
 
     @Test
-    public void test_11_localChangesSingleValueDefaultTest(){
+    public void test_11_governorDeletionTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_11_governorDeletionTest");
+
+        FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+        federationIdentifier.setFederationMemberId("member");
+        federationIdentifier.setUniqueAttributeValue("value");
+
+        //Initialize org. units
+        OrgType oldOrg = new OrgType();
+        oldOrg.setName("Org");
+        ObjectReferenceType<UserType> oldGovernor = new ObjectReferenceType<>();
+        oldGovernor.setSharedInFederation(false);
+        oldGovernor.setUid("uid");
+        oldGovernor.setFederationIdentifier(federationIdentifier);
+        oldOrg.getGovernors().add(oldGovernor);
+
+        OrgType newOrg = new OrgType();
+        newOrg.setName("Org");
+
+        //Try to get change object
+        ObjectModificationType modificationObject = changeProcessor.getOrgModifications(oldOrg, newOrg);
+
+        //Check created modification objects
+        Assert.assertNotNull(modificationObject);
+        Assert.assertEquals("There should be exactly 1 modification.", 1, modificationObject.getModificationList().size());
+
+        AttributeModificationType modification = modificationObject.getModificationList().get(0);
+        Assert.assertEquals("Modification should be 'MODIFY'.", ModificationType.DELETE, modification.getModificationType());
+        Assert.assertEquals("'governors' attribute should be modified.", "governors", modification.getAttribute());
+
+        ObjectReferenceType governorRef = (ObjectReferenceType) JsonUtil.jsonToObject(modification.getNewValue(), ObjectReferenceType.class);
+        Assert.assertEquals("governorRef should be null", null, governorRef);
+        //Try to apply the changes on the old org.
+        changeProcessor.applyModificationsOnOrg(oldOrg, modificationObject);
+
+        //Old org should be equal to new org after modification application.
+        Assert.assertEquals("New org object (newOrg) should have 0 governors.", 0, newOrg.getGovernors().size());
+    }
+
+    @Test
+    public void test_12_inducementAdditionTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_12_inducementAdditionTest");
+
+        //Initialize org. units
+        OrgType oldOrg = new OrgType();
+        oldOrg.setName("Org");
+
+        OrgType newOrg = new OrgType();
+        newOrg.setName("Org");
+        InducementType<RoleType> roleInducement = new InducementType<>();
+        roleInducement.setSharedInFederation(false);
+        roleInducement.setUid("uid");
+
+        FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+        federationIdentifier.setFederationMemberId("member");
+        federationIdentifier.setUniqueAttributeValue("value");
+        roleInducement.setFederationIdentifier(federationIdentifier);
+        newOrg.getRoleInducements().add(roleInducement);
+
+        //Try to get change object
+        ObjectModificationType modificationObject = changeProcessor.getOrgModifications(oldOrg, newOrg);
+
+        //Check created modification objects
+        Assert.assertNotNull(modificationObject);
+        Assert.assertEquals("There should be exactly 1 modification.", 1, modificationObject.getModificationList().size());
+
+        AttributeModificationType modification = modificationObject.getModificationList().get(0);
+        Assert.assertEquals("Modification should be 'ADD'.", ModificationType.ADD, modification.getModificationType());
+        Assert.assertEquals("'governors' attribute should be modified.", "roleInducements", modification.getAttribute());
+
+        ObjectReferenceType governorRef = (ObjectReferenceType) JsonUtil.jsonToObject(modification.getNewValue(), ObjectReferenceType.class);
+        Assert.assertNotNull(governorRef.getFederationIdentifier());
+        Assert.assertEquals("Governor reference should have uid with value 'uid'.", "uid", governorRef.getUid());
+        Assert.assertEquals("Governor federation identifier should have member 'member'.",
+                "member", governorRef.getFederationIdentifier().getFederationMemberId());
+        Assert.assertEquals("Governor federation identifier should have unique value 'value'.",
+                "value", governorRef.getFederationIdentifier().getUniqueAttributeValue());
+
+        //Try to apply the changes on the old org.
+        changeProcessor.applyModificationsOnOrg(oldOrg, modificationObject);
+
+        //Old org should be equal to new org after modification application.
+        Assert.assertEquals("Old org object (oldOrg) and org object after modification application should equal.", oldOrg, newOrg);
+    }
+
+    @Test
+    public void test_13_inducementModificationTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_13_inducementModificationTest");
+
+        FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+        federationIdentifier.setFederationMemberId("member");
+        federationIdentifier.setUniqueAttributeValue("value");
+
+        //Initialize org. units
+        OrgType oldOrg = new OrgType();
+        oldOrg.setName("Org");
+        InducementType<RoleType> oldRroleInducement = new InducementType<>();
+        oldRroleInducement.setSharedInFederation(false);
+        oldRroleInducement.setUid("uid");
+        oldRroleInducement.setFederationIdentifier(federationIdentifier);
+        oldOrg.getRoleInducements().add(oldRroleInducement);
+
+        OrgType newOrg = new OrgType();
+        newOrg.setName("Org");
+        InducementType<RoleType> newRoleInducement = new InducementType<>();
+        newRoleInducement.setSharedInFederation(false);
+        newRoleInducement.setUid("new uid");
+        newRoleInducement.setFederationIdentifier(federationIdentifier);
+        newOrg.getRoleInducements().add(newRoleInducement);
+
+        //Try to get change object
+        ObjectModificationType modificationObject = changeProcessor.getOrgModifications(oldOrg, newOrg);
+
+        //Check created modification objects
+        Assert.assertNotNull(modificationObject);
+        Assert.assertEquals("There should be exactly 1 modification.", 1, modificationObject.getModificationList().size());
+
+        AttributeModificationType modification = modificationObject.getModificationList().get(0);
+        Assert.assertEquals("Modification should be 'MODIFY'.", ModificationType.MODIFY, modification.getModificationType());
+        Assert.assertEquals("'governors' attribute should be modified.", "roleInducements", modification.getAttribute());
+
+        ObjectReferenceType governorRef = (ObjectReferenceType) JsonUtil.jsonToObject(modification.getNewValue(), ObjectReferenceType.class);
+        Assert.assertNotNull(governorRef.getFederationIdentifier());
+        Assert.assertEquals("Governor reference should have uid with value 'new uid'.", "new uid", governorRef.getUid());
+        Assert.assertEquals("Governor federation identifier should have member 'member'.",
+                "member", governorRef.getFederationIdentifier().getFederationMemberId());
+        Assert.assertEquals("Governor federation identifier should have unique value 'value'.",
+                "value", governorRef.getFederationIdentifier().getUniqueAttributeValue());
+
+        //Try to apply the changes on the old org.
+        changeProcessor.applyModificationsOnOrg(oldOrg, modificationObject);
+
+        //Old org should be equal to new org after modification application.
+        Assert.assertEquals("Old org object (oldOrg) and org object after modification application should equal.", oldOrg, newOrg);
+    }
+
+    @Test
+    public void test_14_inducementDeletionTest() throws NoSuchFieldException, IllegalAccessException {
+        printTestName("test_14_inducementDeletionTest");
+
+        FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+        federationIdentifier.setFederationMemberId("member");
+        federationIdentifier.setUniqueAttributeValue("value");
+
+        //Initialize org. units
+        OrgType oldOrg = new OrgType();
+        oldOrg.setName("Org");
+        InducementType<RoleType> roleInducement = new InducementType<>();
+        roleInducement.setSharedInFederation(false);
+        roleInducement.setUid("uid");
+        roleInducement.setFederationIdentifier(federationIdentifier);
+        oldOrg.getRoleInducements().add(roleInducement);
+
+        OrgType newOrg = new OrgType();
+        newOrg.setName("Org");
+
+        //Try to get change object
+        ObjectModificationType modificationObject = changeProcessor.getOrgModifications(oldOrg, newOrg);
+
+        //Check created modification objects
+        Assert.assertNotNull(modificationObject);
+        Assert.assertEquals("There should be exactly 1 modification.", 1, modificationObject.getModificationList().size());
+
+        AttributeModificationType modification = modificationObject.getModificationList().get(0);
+        Assert.assertEquals("Modification should be 'MODIFY'.", ModificationType.DELETE, modification.getModificationType());
+        Assert.assertEquals("'governors' attribute should be modified.", "roleInducements", modification.getAttribute());
+
+        ObjectReferenceType governorRef = (ObjectReferenceType) JsonUtil.jsonToObject(modification.getNewValue(), ObjectReferenceType.class);
+        Assert.assertEquals("governorRef should be null", null, governorRef);
+        //Try to apply the changes on the old org.
+        changeProcessor.applyModificationsOnOrg(oldOrg, modificationObject);
+
+        //Old org should be equal to new org after modification application.
+        Assert.assertEquals("New org object (newOrg) should have 0 governors.", 0, newOrg.getRoleInducements().size());
+    }
+
+    @Test
+    public void test_15_localChangesSingleValueDefaultTest(){
         printTestName("test_11_localChangesSingleValueDefaultTest");
 
         //Prepare policies and change objects
@@ -407,7 +668,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_12_localChangesSingleValueSpecificRuleTest(){
+    public void test_16_localChangesSingleValueSpecificRuleTest(){
         printTestName("test_12_localChangesSingleValueSpecificRuleTest");
 
         //Prepare policies and change objects
@@ -463,7 +724,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_13_localChangesMultiValueDefaultTest(){
+    public void test_17_localChangesMultiValueDefaultTest(){
         printTestName("test_13_localChangesMultiValueDefaultTest");
 
         //Prepare policies and change objects
@@ -518,7 +779,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_14_localChangesMultiValueSpecificRuleTest(){
+    public void test_18_localChangesMultiValueSpecificRuleTest(){
         printTestName("test_14_localChangesMultiValueSpecificRuleTest");
 
         //Prepare policies and change objects
@@ -598,7 +859,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_15_distributedChangesSingleValueDefaultTest(){
+    public void test_19_distributedChangesSingleValueDefaultTest(){
         printTestName("test_15_distributedChangesSingleValueDefaultTest");
 
         //Prepare policies and change objects
@@ -639,7 +900,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_16_distributedChangesSingleValueSpecificRuleTest(){
+    public void test_20_distributedChangesSingleValueSpecificRuleTest(){
         printTestName("test_16_distributedChangesSingleValueSpecificRuleTest");
 
         //Prepare policies and change objects
@@ -695,7 +956,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_17_distributedChangesMultiValueDefaultTest(){
+    public void test_21_distributedChangesMultiValueDefaultTest(){
         printTestName("test_17_distributedChangesMultiValueDefaultTest");
 
         //Prepare policies and change objects
@@ -750,7 +1011,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_18_distributedChangesMultiValueSpecificRuleTest(){
+    public void test_22_distributedChangesMultiValueSpecificRuleTest(){
         printTestName("test_14_localChangesMultiValueSpecificRuleTest");
 
         //Prepare policies and change objects
@@ -830,7 +1091,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_19_applySingleValueAdditionTest() throws NoSuchFieldException, IllegalAccessException {
+    public void test_23_applySingleValueAdditionTest() throws NoSuchFieldException, IllegalAccessException {
         printTestName("test_19_applySingleValueAdditionTest");
 
         //Prepare org. and modification objects
@@ -855,7 +1116,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_20_applySingleValueModificationTest() throws NoSuchFieldException, IllegalAccessException {
+    public void test_24_applySingleValueModificationTest() throws NoSuchFieldException, IllegalAccessException {
         printTestName("test_20_applySingleValueModificationTest");
 
         //Prepare org. and modification objects
@@ -881,7 +1142,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_21_applySingleValueDeletionTest() throws NoSuchFieldException, IllegalAccessException {
+    public void test_25_applySingleValueDeletionTest() throws NoSuchFieldException, IllegalAccessException {
         printTestName("test_21_applySingleValueDeletionTest");
 
         //Prepare org. and modification objects
@@ -907,7 +1168,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_22_applyMultiValueAdditionTest() throws NoSuchFieldException, IllegalAccessException {
+    public void test_26_applyMultiValueAdditionTest() throws NoSuchFieldException, IllegalAccessException {
         printTestName("test_22_applyMultiValueAdditionTest");
 
         //Prepare org. and modification objects
@@ -934,7 +1195,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_23_applyMultiValueModificationTest() throws NoSuchFieldException, IllegalAccessException {
+    public void test_27_applyMultiValueModificationTest() throws NoSuchFieldException, IllegalAccessException {
         printTestName("test_23_applyMultiValueModificationTest");
 
         //Prepare org. and modification objects
@@ -962,7 +1223,7 @@ public class ObjectChangeProcessorTest {
     }
 
     @Test
-    public void test_24_applyMultiValueDeletionTest() throws NoSuchFieldException, IllegalAccessException {
+    public void test_28_applyMultiValueDeletionTest() throws NoSuchFieldException, IllegalAccessException {
         printTestName("test_24_applyMultiValueDeletionTest");
 
         //Prepare org. and modification objects
