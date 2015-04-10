@@ -312,6 +312,10 @@ public class ObjectChangeProcessor {
                 List values = (List)attribute.get(org);
 
                 if(ModificationType.ADD.equals(modification.getModificationType())){
+                    if(values == null){
+                        values = new ArrayList();
+                    }
+
                     values.add(JsonUtil.jsonToObject(modification.getNewValue(), getAttributeType(attributeName)));
                 } else if(ModificationType.MODIFY.equals(modification.getModificationType())){
                     int index = 0;
