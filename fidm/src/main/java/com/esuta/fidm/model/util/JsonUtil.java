@@ -4,7 +4,10 @@ import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.google.gson.*;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *  @author shood
@@ -69,6 +72,14 @@ public class JsonUtil {
         }
 
         return gson.fromJson(jsonObject, clazz);
+    }
+
+    /**
+     *  Use this when you need to deserialize parametrized List from json String
+     * */
+    public static <T extends Serializable> List<T> jsonListToObject(String jsonList, Class<T[]> type){
+        T[] arr = new Gson().fromJson(jsonList, type);
+        return Arrays.asList(arr);
     }
 
     /**

@@ -6,13 +6,15 @@ import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
 import com.esuta.fidm.model.federation.service.ObjectInformation;
+import com.esuta.fidm.model.federation.service.OrgChangeWrapper;
 import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
+import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.FederationSharingPolicyType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
-import com.google.gson.Gson;
+import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -21,15 +23,9 @@ import org.eclipse.jetty.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  *  @author shood
- *
- *  TODO - description
- *  TODO - add commentary to all methods
  * */
 public class RestFederationServiceClient {
 
@@ -93,7 +89,7 @@ public class RestFederationServiceClient {
         request.setPort(localPort);
         request.setAddress(localAddress);
 
-        String jsonRequest = objectToJson(request);
+        String jsonRequest = JsonUtil.objectToJson(request);
 
         ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
 
@@ -116,7 +112,7 @@ public class RestFederationServiceClient {
         FederationMembershipRequest responseObject = new FederationMembershipRequest();
         responseObject.setIdentityProviderIdentifier(federationMember.getRequesterIdentifier());
         responseObject.setResponse(responseType);
-        String responseObjectJson = objectToJson(responseObject);
+        String responseObjectJson = JsonUtil.objectToJson(responseObject);
 
         ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, responseObjectJson);
 
@@ -140,7 +136,7 @@ public class RestFederationServiceClient {
         FederationMembershipRequest request = new FederationMembershipRequest();
         request.setIdentityProviderIdentifier(getLocalFederationMemberIdentifier());
 
-        String jsonRequest = objectToJson(request);
+        String jsonRequest = JsonUtil.objectToJson(request);
 
         ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
 
@@ -163,7 +159,7 @@ public class RestFederationServiceClient {
         FederationMembershipRequest responseObject = new FederationMembershipRequest();
         responseObject.setIdentityProviderIdentifier(getLocalFederationMemberIdentifier());
         responseObject.setResponse(responseType);
-        String responseObjectJson = objectToJson(responseObject);
+        String responseObjectJson = JsonUtil.objectToJson(responseObject);
 
         ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, responseObjectJson);
 
@@ -191,7 +187,7 @@ public class RestFederationServiceClient {
         IntegerRestResponse responseObject = new IntegerRestResponse();
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
-            responseObject.setValue((Integer)jsonToObject(responseMessage, Integer.class));
+            responseObject.setValue((Integer)JsonUtil.jsonToObject(responseMessage, Integer.class));
         } else {
             responseObject.setMessage(responseMessage);
         }
@@ -216,7 +212,7 @@ public class RestFederationServiceClient {
         GenericListRestResponse<OrgType> responseObject = new GenericListRestResponse<>();
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
-              responseObject.setValues(jsonListToObject(responseMessage, OrgType[].class));
+              responseObject.setValues(JsonUtil.jsonListToObject(responseMessage, OrgType[].class));
         } else {
             responseObject.setMessage(responseMessage);
         }
@@ -244,7 +240,7 @@ public class RestFederationServiceClient {
         ObjectTypeRestResponse<OrgType> responseObject = new ObjectTypeRestResponse<>();
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
-            responseObject.setValue((OrgType)jsonToObject(responseMessage, OrgType.class));
+            responseObject.setValue((OrgType)JsonUtil.jsonToObject(responseMessage, OrgType.class));
         } else {
             responseObject.setMessage(responseMessage);
         }
@@ -272,7 +268,7 @@ public class RestFederationServiceClient {
         ObjectInformationResponse responseObject = new ObjectInformationResponse();
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
-            responseObject.setInformationObject((ObjectInformation)jsonToObject(responseMessage, ObjectInformation.class));
+            responseObject.setInformationObject((ObjectInformation)JsonUtil.jsonToObject(responseMessage, ObjectInformation.class));
         } else {
             responseObject.setMessage(responseMessage);
         }
@@ -300,7 +296,7 @@ public class RestFederationServiceClient {
         ObjectTypeRestResponse<FederationSharingPolicyType> responseObject = new ObjectTypeRestResponse<>();
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
-            responseObject.setValue((FederationSharingPolicyType)jsonToObject(responseMessage, FederationSharingPolicyType.class));
+            responseObject.setValue((FederationSharingPolicyType)JsonUtil.jsonToObject(responseMessage, FederationSharingPolicyType.class));
         } else {
             responseObject.setMessage(responseMessage);
         }
@@ -308,21 +304,32 @@ public class RestFederationServiceClient {
         return responseObject;
     }
 
-    private String objectToJson(Object object){
-        Gson gson = new Gson();
-        return gson.toJson(object);
+    public SimpleRestResponse createPostOrgChangesRequest(FederationMemberType federationMember,
+                                                          FederationIdentifierType federationIdentifier,
+                                                          ObjectModificationType modificationObject){
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createPostProcessOrgChangesRequest(address, port);
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        OrgChangeWrapper requestObject = new OrgChangeWrapper();
+        requestObject.setUniqueAttributeValue(federationIdentifier.getUniqueAttributeValue());
+        requestObject.setFederationMember(federationMember.getFederationMemberName());
+        requestObject.setModificationObject(modificationObject);
+
+        String jsonRequest = JsonUtil.objectToJson(requestObject);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        return new SimpleRestResponse(responseStatus, responseMessage);
     }
 
-    private Object jsonToObject(String jsonObject, Class type){
-        Gson gson = new Gson();
-        return gson.fromJson(jsonObject, type);
-    }
 
-    /**
-     *  Use this when you need to deserialize parametrized List from json String
-     * */
-    private <T extends Serializable> List<T> jsonListToObject(String jsonList, Class<T[]> type){
-        T[] arr = new Gson().fromJson(jsonList, type);
-        return Arrays.asList(arr);
-    }
 }
