@@ -225,6 +225,9 @@ public class RestFederationService implements IFederationService{
             inducement.setUid(null);
         }
 
+        //Take care of references for copies of org. unit - never show them
+        org.setCopies(null);
+
         //Take care of sharing policy reference
         org.getSharingPolicy().setUid(null);
         org.getSharingPolicy().setType(null);
@@ -244,6 +247,21 @@ public class RestFederationService implements IFederationService{
         }
 
         return null;
+    }
+
+    private void createCopyReferenceInOrigin(OrgType org, FederationMemberType member)
+            throws DatabaseCommunicationException, ObjectNotFoundException {
+
+        if(org == null || member == null){
+            return;
+        }
+
+        ObjectReferenceType<FederationMemberType> copyReference = new ObjectReferenceType<>();
+        copyReference.setSharedInFederation(false);
+        copyReference.setUid(member.getUid());
+
+        org.getCopies().add(copyReference);
+        modelService.updateObject(org);
     }
 
     @GET
@@ -582,6 +600,7 @@ public class RestFederationService implements IFederationService{
                         .entity("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue).build();
             }
 
+            createCopyReferenceInOrigin(org, currentMember);
             resolveOrgReferenceSharing(org);
             prepareOrgReferences(org, currentMember);
 
@@ -593,7 +612,7 @@ public class RestFederationService implements IFederationService{
 
             return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(org)).build();
 
-        } catch (DatabaseCommunicationException e) {
+        } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
             LOGGER.error("Could not load org. unit from the repository.", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Can't read from the repository. Internal problem: " + e).build();

@@ -118,6 +118,17 @@ public class OrgType extends ObjectType{
     private FederationIdentifierType federationIdentifier;
 
     /**
+     *  A list of references to FederationMemberType instances - in other words,
+     *  a list of members of identity federation containing a copy of this
+     *  org. unit. This also means, that only origin org. unit has this
+     *  attribute filled with values, every copy of org. unit must have this
+     *  attribute with null value. Thanks to this attribute, we are able to
+     *  track the copies of org. unit and interact with it (mostly
+     *  for change distribution in identity federation)
+     * */
+    List<ObjectReferenceType<FederationMemberType>> copies;
+
+    /**
      *  An attribute declaring, if this org. unit can be shared in
      *  federation environment. This decision is solemnly made by
      *  the 'owner' of org. unit - current identity provider.
@@ -279,6 +290,18 @@ public class OrgType extends ObjectType{
         this.provisioningPolicy = provisioningPolicy;
     }
 
+    public List<ObjectReferenceType<FederationMemberType>> getCopies() {
+        if(copies == null){
+            copies = new ArrayList<>();
+        }
+
+        return copies;
+    }
+
+    public void setCopies(List<ObjectReferenceType<FederationMemberType>> copies) {
+        this.copies = copies;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -290,6 +313,7 @@ public class OrgType extends ObjectType{
         if (overrideParentSharing != orgType1.overrideParentSharing) return false;
         if (sharedInFederation != orgType1.sharedInFederation) return false;
         if (sharedSubtree != orgType1.sharedSubtree) return false;
+        if (copies != null ? !copies.equals(orgType1.copies) : orgType1.copies != null) return false;
         if (displayName != null ? !displayName.equals(orgType1.displayName) : orgType1.displayName != null)
             return false;
         if (federationIdentifier != null ? !federationIdentifier.equals(orgType1.federationIdentifier) : orgType1.federationIdentifier != null)
@@ -326,6 +350,7 @@ public class OrgType extends ObjectType{
         result = 31 * result + (sharingPolicy != null ? sharingPolicy.hashCode() : 0);
         result = 31 * result + (provisioningPolicy != null ? provisioningPolicy.hashCode() : 0);
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
+        result = 31 * result + (copies != null ? copies.hashCode() : 0);
         result = 31 * result + (sharedInFederation ? 1 : 0);
         result = 31 * result + (sharedSubtree ? 1 : 0);
         result = 31 * result + (overrideParentSharing ? 1 : 0);
