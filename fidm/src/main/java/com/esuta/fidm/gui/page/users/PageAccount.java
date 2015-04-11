@@ -1,5 +1,6 @@
 package com.esuta.fidm.gui.page.users;
 
+import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.modal.ObjectChooserDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
@@ -122,6 +123,13 @@ public class PageAccount extends PageBase{
                ownerEditPerformed(target);
             }
         };
+        ownerEdit.add(new AttributeAppender("class", new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return isEditingAccount() ? " disabled" : null;
+            }
+        }));
         mainForm.add(ownerEdit);
 
         DropDownChoice resource = new DropDownChoice<>(ID_RESOURCE, new PropertyModel<ObjectReferenceType>(model, "resource"),
@@ -140,6 +148,13 @@ public class PageAccount extends PageBase{
             @Override
             public String getIdValue(ObjectReferenceType object, int index) {
                 return Integer.toString(index);
+            }
+        });
+        resource.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isEnabled() {
+                return !isEditingAccount();
             }
         });
         resource.setRequired(true);
@@ -292,13 +307,14 @@ public class PageAccount extends PageBase{
                 modelService.updateObject(account);
             }
 
-            if(account.getOwner() == null){
+            if(!isEditingAccount()){
                 ObjectReferenceType owner = account.getOwner();
 
                 UserType user = modelService.readObject(UserType.class, owner.getUid());
                 AssignmentType accountAssignment = new AssignmentType(account.getUid());
+                accountAssignment.setSharedInFederation(false);
 
-                if(!user.getAccounts().contains(accountAssignment)){
+                if(!accountExists(accountAssignment, user)){
                     user.getAccounts().add(accountAssignment);
                     modelService.updateObject(user);
                 }
@@ -313,5 +329,15 @@ public class PageAccount extends PageBase{
         LOGGER.info("Account '" + account.getName() + "' has been saved successfully.");
         setResponsePage(PageUserList.class);
         target.add(getFeedbackPanel());
+    }
+
+    private boolean accountExists(AssignmentType accountAssignment, UserType user){
+        for(AssignmentType assignment: user.getAccounts()){
+            if(assignment.getUid().equals(accountAssignment.getUid())){
+                return true;
+            }
+        }
+
+        return false;
     }
 }
