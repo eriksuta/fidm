@@ -10,6 +10,7 @@
             <div wicket:id="sharingPolicyViewer" />
             <div wicket:id="objectInformationViewer" />
             <div wicket:id="provisioningPolicyViewer" />
+            <div wicket:id="federationCopyViewer" />
 
             <form wicket:id="mainForm" class="form-horizontal inputForm">
 
@@ -118,6 +119,9 @@
                         <!-- Federation attributes -->
                         <div wicket:id="federationContainer">
                             <h4>Federation options</h4>
+                            <div style="float: right">
+                                <a class="btn btn-info btn-sm" wicket:id="showFederationCopies">Show Federation Copies</a>
+                            </div>
 
                             <dl class="dl-horizontal">
                                 <dt>

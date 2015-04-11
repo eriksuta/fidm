@@ -13,6 +13,7 @@ import com.esuta.fidm.gui.component.modal.ObjectInformationDialog;
 import com.esuta.fidm.gui.component.modal.SharingPolicyViewerDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.gui.page.federation.PageFederation;
 import com.esuta.fidm.gui.page.resource.PageResource;
 import com.esuta.fidm.gui.page.roles.PageRole;
 import com.esuta.fidm.gui.page.users.PageUser;
@@ -68,6 +69,7 @@ public class PageOrg extends PageBase {
     private static final String ID_PARENT_ORG_UNIT = "parentOrgUnits";
 
     private static final String ID_FEDERATION_CONTAINER = "federationContainer";
+    private static final String ID_BUTTON_SHOW_COPIES = "showFederationCopies";
     private static final String ID_SHARE_IN_FEDERATION = "sharedInFederation";
     private static final String ID_SHARE_SUBTREE = "sharedSubtree";
     private static final String ID_OVERRIDE_SHARING = "overrideParentSharing";
@@ -109,6 +111,7 @@ public class PageOrg extends PageBase {
     private static final String ID_SHARING_POLICY_VIEWER = "sharingPolicyViewer";
     private static final String ID_OBJECT_INFORMATION_VIEWER = "objectInformationViewer";
     private static final String ID_PROVISIONING_POLICY_VIEWER = "provisioningPolicyViewer";
+    private static final String ID_FEDERATION_COPIES_VIEWER = "federationCopyViewer";
 
     private IModel<OrgType> model;
     private IModel<FederationSharingPolicyType> sharingPolicyModel;
@@ -341,6 +344,22 @@ public class PageOrg extends PageBase {
             }
         });
         mainForm.add(federationContainer);
+
+        AjaxLink showFederationCopies = new AjaxLink(ID_BUTTON_SHOW_COPIES) {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                showFederationCopiesPerformed(target);
+            }
+        };
+        showFederationCopies.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return isLocalOrgUnit() && !model.getObject().getCopies().isEmpty();
+            }
+        });
+        federationContainer.add(showFederationCopies);
 
         CheckBox sharedInFederation = new CheckBox(ID_SHARE_IN_FEDERATION, new PropertyModel<Boolean>(model, "sharedInFederation"));
         sharedInFederation.add(new OnChangeAjaxBehavior() {
@@ -729,6 +748,26 @@ public class PageOrg extends PageBase {
             }
         };
         add(provisioningPolicyChooser);
+
+        ModalWindow federationCopiesViewer = new ObjectChooserDialog<FederationMemberType>(ID_FEDERATION_COPIES_VIEWER,
+                FederationMemberType.class){
+
+            @Override
+            public List<FederationMemberType> applyObjectFilter(List<FederationMemberType> list) {
+                return prepareListOfFederationCopies();
+            }
+
+            @Override
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<FederationMemberType> rowModel) {
+                federationMemberEditPerformed(target, rowModel);
+            }
+
+            @Override
+            public boolean isSharedInFederationEnabled() {
+                return false;
+            }
+        };
+        add(federationCopiesViewer);
 
         ModalWindow sharingPolicyViewer = new SharingPolicyViewerDialog(ID_SHARING_POLICY_VIEWER, null, null);
         add(sharingPolicyViewer);
@@ -1170,6 +1209,24 @@ public class PageOrg extends PageBase {
         target.add(getRoleInducementsContainer());
     }
 
+    private void federationMemberEditPerformed(AjaxRequestTarget target, IModel<FederationMemberType> memberModel){
+        if(memberModel == null || memberModel.getObject() == null){
+            return;
+        }
+
+        if(model.getObject() == null){
+            return;
+        }
+
+        ModalWindow window = (ModalWindow) get(ID_FEDERATION_COPIES_VIEWER);
+        window.close(target);
+
+        String memberUid = memberModel.getObject().getUid();
+        PageParameters parameters = new PageParameters();
+        parameters.add(UID_PAGE_PARAMETER_NAME, memberUid);
+        setResponsePage(new PageFederation(parameters));
+    }
+
     private void governorChoosePerformed(AjaxRequestTarget target, IModel<UserType> governorModel, boolean sharedInFederation){
         if(governorModel == null || governorModel.getObject() == null){
             return;
@@ -1209,6 +1266,25 @@ public class PageOrg extends PageBase {
         window.close(target);
 
         target.add(get(ID_MAIN_FORM + ":" + ID_SHARING_POLICY_LABEL));
+    }
+
+    private List<FederationMemberType> prepareListOfFederationCopies(){
+        List<FederationMemberType> members = new ArrayList<>();
+
+        try {
+            for(ObjectReferenceType memberRef: model.getObject().getCopies()){
+                FederationMemberType member = getModelService().readObject(FederationMemberType.class, memberRef.getUid());
+
+                if(member != null){
+                    members.add(member);
+                }
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not retrieve the list of org. unit federation copies.", e);
+        }
+
+        return members;
     }
 
     private void provisioningPolicyChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
@@ -1364,6 +1440,12 @@ public class PageOrg extends PageBase {
         }
 
         return !MultiValueTolerance.ENFORCE.equals(rule.getMultiValueTolerance());
+    }
+
+    private void showFederationCopiesPerformed(AjaxRequestTarget target){
+        ObjectChooserDialog modal = (ObjectChooserDialog) get(ID_FEDERATION_COPIES_VIEWER);
+        modal.refreshTable(target);
+        modal.show(target);
     }
 
     private void editParentOrgUnitPerformed(AjaxRequestTarget target){

@@ -126,6 +126,7 @@ public class OrgType extends ObjectType{
      *  track the copies of org. unit and interact with it (mostly
      *  for change distribution in identity federation)
      * */
+    @OneToMany(fetch = FetchType.EAGER)
     List<ObjectReferenceType> copies;
 
     /**

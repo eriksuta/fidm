@@ -55,6 +55,10 @@ public class ObjectChooserDialog<T extends ObjectType> extends ModalWindow{
         this.sharedInFederation = sharedInFederation;
     }
 
+    public void refreshTable(AjaxRequestTarget target){
+        target.add(get(getContentId() + ":" + ID_TABLE));
+    }
+
     @Override
     protected void onBeforeRender(){
         super.onBeforeRender();
