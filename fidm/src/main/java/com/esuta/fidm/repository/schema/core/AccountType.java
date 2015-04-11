@@ -21,14 +21,14 @@ public class AccountType extends ObjectType{
      *  A reference to the resource, on which the account
      *  is located
      * */
-    private ObjectReferenceType<ResourceType> resource;
+    private ObjectReferenceType resource;
 
     /**
      *  A reference to the UserType instance, a user that
      *  is an owner of account entity in identity provider
      *  as well as on the target system
      * */
-    private ObjectReferenceType<UserType> owner;
+    private ObjectReferenceType owner;
 
     /**
      *  A password used to login, or verify the identity
@@ -68,19 +68,19 @@ public class AccountType extends ObjectType{
         this.name = name;
     }
 
-    public ObjectReferenceType<ResourceType> getResource() {
+    public ObjectReferenceType getResource() {
         return resource;
     }
 
-    public void setResource(ObjectReferenceType<ResourceType> resource) {
+    public void setResource(ObjectReferenceType resource) {
         this.resource = resource;
     }
 
-    public ObjectReferenceType<UserType> getOwner() {
+    public ObjectReferenceType getOwner() {
         return owner;
     }
 
-    public void setOwner(ObjectReferenceType<UserType> owner) {
+    public void setOwner(ObjectReferenceType owner) {
         this.owner = owner;
     }
 

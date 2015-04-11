@@ -228,7 +228,7 @@ public class PageResource extends PageBase {
 
             @Override
             public String getObject() {
-                ObjectReferenceType<UserType> ownerReference = rowModel.getObject().getOwner();
+                ObjectReferenceType ownerReference = rowModel.getObject().getOwner();
                 UserType owner = null;
 
                 try {
@@ -268,11 +268,11 @@ public class PageResource extends PageBase {
             getModelService().deleteObject(account);
 
             //We also have to remove account reference from its owner
-            ObjectReferenceType<UserType> ownerReference = account.getOwner();
+            ObjectReferenceType ownerReference = account.getOwner();
 
             if(ownerReference != null){
                 UserType owner = getModelService().readObject(UserType.class, ownerReference.getUid());
-                AssignmentType<AccountType> accountAssignment = new AssignmentType<>(account.getUid(), AccountType.class);
+                AssignmentType accountAssignment = new AssignmentType(account.getUid());
                 owner.getAccounts().remove(accountAssignment);
                 getModelService().updateObject(owner);
             }

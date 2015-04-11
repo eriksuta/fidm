@@ -267,21 +267,21 @@ public class PageOrg extends PageBase {
         };
         mainForm.add(orgType);
 
-        MultiValueTextEditPanel parentOrgUnit = new MultiValueTextEditPanel<ObjectReferenceType<OrgType>>(ID_PARENT_ORG_UNIT,
-                new PropertyModel<List<ObjectReferenceType<OrgType>>>(model, "parentOrgUnits"), false){
+        MultiValueTextEditPanel parentOrgUnit = new MultiValueTextEditPanel<ObjectReferenceType>(ID_PARENT_ORG_UNIT,
+                new PropertyModel<List<ObjectReferenceType>>(model, "parentOrgUnits"), false){
 
             @Override
-            protected IModel<String> createTextModel(IModel<ObjectReferenceType<OrgType>> model) {
+            protected IModel<String> createTextModel(IModel<ObjectReferenceType> model) {
                 return createParentOrgUnitDisplayModel(model);
             }
 
             @Override
-            protected ObjectReferenceType<OrgType> createNewEmptyItem() {
-                return new ObjectReferenceType<>();
+            protected ObjectReferenceType createNewEmptyItem() {
+                return new ObjectReferenceType();
             }
 
             @Override
-            protected void editPerformed(AjaxRequestTarget target, ObjectReferenceType<OrgType> object) {
+            protected void editPerformed(AjaxRequestTarget target, ObjectReferenceType object) {
                 PageOrg.this.editParentOrgUnitPerformed(target);
             }
 
@@ -538,7 +538,7 @@ public class PageOrg extends PageBase {
     private List<FederationIdentifierType> getGovernorIdentifiers(){
         List<FederationIdentifierType> list = new ArrayList<>();
 
-        for(ObjectReferenceType<UserType> ref: model.getObject().getGovernors()){
+        for(ObjectReferenceType ref: model.getObject().getGovernors()){
             list.add(ref.getFederationIdentifier());
         }
 
@@ -548,7 +548,7 @@ public class PageOrg extends PageBase {
     private List<FederationIdentifierType> getResourceInducementsIdentifier(){
         List<FederationIdentifierType> list = new ArrayList<>();
 
-        for(InducementType<ResourceType> ref: model.getObject().getResourceInducements()){
+        for(InducementType ref: model.getObject().getResourceInducements()){
             list.add(ref.getFederationIdentifier());
         }
 
@@ -558,7 +558,7 @@ public class PageOrg extends PageBase {
     private List<FederationIdentifierType> getRoleInducementsIdentifiers(){
         List<FederationIdentifierType> list = new ArrayList<>();
 
-        for(InducementType<RoleType> ref: model.getObject().getRoleInducements()){
+        for(InducementType ref: model.getObject().getRoleInducements()){
             list.add(ref.getFederationIdentifier());
         }
 
@@ -771,7 +771,7 @@ public class PageOrg extends PageBase {
                     OrgType org = model.getObject();
 
                     for(ResourceType resource: list){
-                        for(InducementType<ResourceType> resourceInducement: org.getResourceInducements()){
+                        for(InducementType resourceInducement: org.getResourceInducements()){
                             if(resourceInducement.getUid().equals(resource.getUid())){
                                 resourceInducementList.add(resource);
                                 break;
@@ -829,7 +829,7 @@ public class PageOrg extends PageBase {
                     OrgType org = model.getObject();
 
                     for(RoleType role: list){
-                        for(InducementType<RoleType> roleInducement: org.getRoleInducements()){
+                        for(InducementType roleInducement: org.getRoleInducements()){
                             if(roleInducement.getUid().equals(role.getUid())){
                                 roleInducementList.add(role);
                                 break;
@@ -926,7 +926,7 @@ public class PageOrg extends PageBase {
                     String orgUid = model.getObject().getUid();
 
                     for(UserType user: list){
-                        for(AssignmentType<OrgType> orgAssignment: user.getOrgUnitAssignments()){
+                        for(AssignmentType orgAssignment: user.getOrgUnitAssignments()){
                             if(orgAssignment.getUid().equals(orgUid)){
                                 memberList.add(user);
                             }
@@ -979,10 +979,10 @@ public class PageOrg extends PageBase {
                 List<UserType> managersList = new ArrayList<>();
 
                 if(model != null && model.getObject() != null){
-                    List<ObjectReferenceType<UserType>> managers = model.getObject().getGovernors();
+                    List<ObjectReferenceType> managers = model.getObject().getGovernors();
 
                     for(UserType user: list){
-                        for(ObjectReferenceType<UserType> managerRef: managers){
+                        for(ObjectReferenceType managerRef: managers){
                             if(managerRef.getUid().equals(user.getUid())){
                                 managersList.add(user);
                             }
@@ -1086,7 +1086,7 @@ public class PageOrg extends PageBase {
         return (WebMarkupContainer) get(ID_MAIN_FORM + ":" + ID_GOVERNORS_CONTAINER);
     }
 
-    private IModel<String> createParentOrgUnitDisplayModel(final IModel<ObjectReferenceType<OrgType>> parentRef){
+    private IModel<String> createParentOrgUnitDisplayModel(final IModel<ObjectReferenceType> parentRef){
         return new LoadableModel<String>() {
 
             @Override
@@ -1142,7 +1142,7 @@ public class PageOrg extends PageBase {
         }
 
         String resourceUid = resourceModel.getObject().getUid();
-        InducementType<ResourceType> resourceInducement = new InducementType<>(resourceUid, ResourceType.class);
+        InducementType resourceInducement = new InducementType(resourceUid);
         resourceInducement.setSharedInFederation(isSharedInFederation);
         model.getObject().getResourceInducements().add(resourceInducement);
 
@@ -1161,7 +1161,7 @@ public class PageOrg extends PageBase {
         }
 
         String roleUid = roleModel.getObject().getUid();
-        InducementType<RoleType> roleInducement = new InducementType<>(roleUid, RoleType.class);
+        InducementType roleInducement = new InducementType(roleUid);
         roleInducement.setSharedInFederation(isSharedInFederation);
         model.getObject().getRoleInducements().add(roleInducement);
 
@@ -1180,7 +1180,7 @@ public class PageOrg extends PageBase {
         }
 
         String governorUid = governorModel.getObject().getUid();
-        ObjectReferenceType<UserType> governorReference = new ObjectReferenceType<>(governorUid, UserType.class);
+        ObjectReferenceType governorReference = new ObjectReferenceType(governorUid);
         governorReference.setSharedInFederation(sharedInFederation);
         model.getObject().getGovernors().add(governorReference);
 
@@ -1200,10 +1200,9 @@ public class PageOrg extends PageBase {
 
         OrgType org = model.getObject();
         FederationSharingPolicyType policy = rowModel.getObject();
-        ObjectReferenceType<FederationSharingPolicyType> policyRef = new ObjectReferenceType<>();
+        ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
         policyRef.setSharedInFederation(true);
-        policyRef.setType(FederationSharingPolicyType.class);
         org.setSharingPolicy(policyRef);
 
         ModalWindow window = (ModalWindow) get(ID_SHARING_POLICY_CHOOSER);
@@ -1223,10 +1222,9 @@ public class PageOrg extends PageBase {
 
         OrgType org = model.getObject();
         FederationProvisioningPolicyType policy = rowModel.getObject();
-        ObjectReferenceType<FederationProvisioningPolicyType> policyRef = new ObjectReferenceType<>();
+        ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
         policyRef.setSharedInFederation(false);
-        policyRef.setType(FederationProvisioningPolicyType.class);
         org.setProvisioningPolicy(policyRef);
 
         ModalWindow window = (ModalWindow) get(ID_PROVISIONING_POLICY_VIEWER);
@@ -1246,11 +1244,11 @@ public class PageOrg extends PageBase {
             return list;
         }
 
-        List<ObjectReferenceType<OrgType>> parentOrgUnits = model.getObject().getParentOrgUnits();
+        List<ObjectReferenceType> parentOrgUnits = model.getObject().getParentOrgUnits();
         String currentOrgUid = model.getObject().getUid();
 
         for(OrgType org: list){
-            ObjectReferenceType<OrgType> parentReference = new ObjectReferenceType<>(org.getUid(), OrgType.class);
+            ObjectReferenceType parentReference = new ObjectReferenceType(org.getUid());
 
             if(!parentOrgUnits.contains(parentReference) && !currentOrgUid.equals(org.getUid())){
                 newOrgList.add(org);
@@ -1267,10 +1265,10 @@ public class PageOrg extends PageBase {
             return list;
         }
 
-        List<InducementType<ResourceType>> currentResourceInducements = model.getObject().getResourceInducements();
+        List<InducementType> currentResourceInducements = model.getObject().getResourceInducements();
 
         for(ResourceType resource: list){
-            InducementType<ResourceType> resourceInducement = new InducementType<>(resource.getUid(), ResourceType.class);
+            InducementType resourceInducement = new InducementType(resource.getUid());
 
             if(!currentResourceInducements.contains(resourceInducement)){
                 newResourceList.add(resource);
@@ -1287,10 +1285,10 @@ public class PageOrg extends PageBase {
             return list;
         }
 
-        List<InducementType<RoleType>> currentRoleInducements = model.getObject().getRoleInducements();
+        List<InducementType> currentRoleInducements = model.getObject().getRoleInducements();
 
         for(RoleType role: list){
-            InducementType<RoleType> roleInducement = new InducementType<>(role.getUid(), RoleType.class);
+            InducementType roleInducement = new InducementType(role.getUid());
 
             if(!currentRoleInducements.contains(roleInducement)){
                 newRoleList.add(role);
@@ -1307,10 +1305,10 @@ public class PageOrg extends PageBase {
             return list;
         }
 
-        List<ObjectReferenceType<UserType>> currentGovernors = model.getObject().getGovernors();
+        List<ObjectReferenceType> currentGovernors = model.getObject().getGovernors();
 
         for(UserType user: list){
-            ObjectReferenceType<UserType> governorReference = new ObjectReferenceType<>(user.getUid(), UserType.class);
+            ObjectReferenceType governorReference = new ObjectReferenceType(user.getUid());
 
             if(!currentGovernors.contains(governorReference)){
                 newUserList.add(user);
@@ -1392,7 +1390,7 @@ public class PageOrg extends PageBase {
         }
 
         String uid = rowModel.getObject().getUid();
-        ObjectReferenceType<OrgType> parentReference = new ObjectReferenceType<>(uid, OrgType.class);
+        ObjectReferenceType parentReference = new ObjectReferenceType(uid);
         parentReference.setSharedInFederation(isSharedInFederation);
         model.getObject().getParentOrgUnits().add(parentReference);
 
@@ -1486,8 +1484,8 @@ public class PageOrg extends PageBase {
 
         String governorUid = rowModel.getObject().getUid();
 
-        ObjectReferenceType<UserType> governorToRemove = new ObjectReferenceType<>();
-        for(ObjectReferenceType<UserType> governorRef: model.getObject().getGovernors()){
+        ObjectReferenceType governorToRemove = new ObjectReferenceType();
+        for(ObjectReferenceType governorRef: model.getObject().getGovernors()){
             if(governorRef.getUid().equals(governorUid)){
                 governorToRemove = governorRef;
                 break;
@@ -1508,8 +1506,8 @@ public class PageOrg extends PageBase {
 
         String resourceInducementUid = resourceModel.getObject().getUid();
 
-        InducementType<ResourceType> resourceInducementToRemove = new InducementType<>();
-        for(InducementType<ResourceType> inducementRef: model.getObject().getResourceInducements()){
+        InducementType resourceInducementToRemove = new InducementType();
+        for(InducementType inducementRef: model.getObject().getResourceInducements()){
             if(inducementRef.getUid().equals(resourceInducementUid)){
                 resourceInducementToRemove = inducementRef;
                 break;
@@ -1529,8 +1527,8 @@ public class PageOrg extends PageBase {
 
         String roleInducementUid = roleModel.getObject().getUid();
 
-        InducementType<RoleType> roleInducementToRemove = new InducementType<>();
-        for(InducementType<RoleType> inducementRef: model.getObject().getRoleInducements()){
+        InducementType roleInducementToRemove = new InducementType();
+        for(InducementType inducementRef: model.getObject().getRoleInducements()){
             if(inducementRef.getUid().equals(roleInducementUid)){
                 roleInducementToRemove = inducementRef;
                 break;
@@ -1658,9 +1656,9 @@ public class PageOrg extends PageBase {
         orgUnit.getOrgType().addAll(newOrgTypes);
 
         //Filtering empty parent references
-        List<ObjectReferenceType<OrgType>> newParentReferences = new ArrayList<>();
-        for(ObjectReferenceType<OrgType> parentRef: orgUnit.getParentOrgUnits()){
-            if(parentRef != null && parentRef.getUid() != null && parentRef.getType() != null){
+        List<ObjectReferenceType> newParentReferences = new ArrayList<>();
+        for(ObjectReferenceType parentRef: orgUnit.getParentOrgUnits()){
+            if(parentRef != null && parentRef.getUid() != null){
                 newParentReferences.add(parentRef);
             }
         }

@@ -52,21 +52,21 @@ public class UserType extends ObjectType{
      *  that user has assigned
      * */
     @OneToMany(fetch= FetchType.EAGER)
-    private List<AssignmentType<RoleType>> roleAssignments;
+    private List<AssignmentType> roleAssignments;
 
     /**
      *  A list of AssignmentType references that point to org. units
      *  that user has assigned
      * */
     @OneToMany(fetch= FetchType.EAGER)
-    private List<AssignmentType<OrgType>> orgUnitAssignments;
+    private List<AssignmentType> orgUnitAssignments;
 
     /**
      *  A list of AssignmentType references that point to accounts
      *  that user has assigned
      * */
     @OneToMany(fetch= FetchType.EAGER)
-    private List<AssignmentType<AccountType>> accounts;
+    private List<AssignmentType> accounts;
 
     /**
      *  A federation identifier used to uniquely identify the user
@@ -189,7 +189,7 @@ public class UserType extends ObjectType{
         this.password = password;
     }
 
-    public List<AssignmentType<RoleType>> getRoleAssignments() {
+    public List<AssignmentType> getRoleAssignments() {
         if(roleAssignments == null){
             roleAssignments = new ArrayList<>();
         }
@@ -197,11 +197,11 @@ public class UserType extends ObjectType{
         return roleAssignments;
     }
 
-    public void setRoleAssignments(List<AssignmentType<RoleType>> roleAssignments) {
+    public void setRoleAssignments(List<AssignmentType> roleAssignments) {
         this.roleAssignments = roleAssignments;
     }
 
-    public List<AssignmentType<OrgType>> getOrgUnitAssignments() {
+    public List<AssignmentType> getOrgUnitAssignments() {
         if(orgUnitAssignments == null){
             orgUnitAssignments = new ArrayList<>();
         }
@@ -209,11 +209,11 @@ public class UserType extends ObjectType{
         return orgUnitAssignments;
     }
 
-    public void setOrgUnitAssignments(List<AssignmentType<OrgType>> orgUnitAssignments) {
+    public void setOrgUnitAssignments(List<AssignmentType> orgUnitAssignments) {
         this.orgUnitAssignments = orgUnitAssignments;
     }
 
-    public List<AssignmentType<AccountType>> getAccounts() {
+    public List<AssignmentType> getAccounts() {
         if(accounts == null){
             accounts = new ArrayList<>();
         }
@@ -221,7 +221,7 @@ public class UserType extends ObjectType{
         return accounts;
     }
 
-    public void setAccounts(List<AssignmentType<AccountType>> accounts) {
+    public void setAccounts(List<AssignmentType> accounts) {
         this.accounts = accounts;
     }
 

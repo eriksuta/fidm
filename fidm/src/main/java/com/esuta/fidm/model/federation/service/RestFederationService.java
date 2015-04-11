@@ -122,8 +122,8 @@ public class RestFederationService implements IFederationService{
 
     private void resolveOrgReferenceSharing(OrgType org){
         //Resolve parent org. ref sharing
-        List<ObjectReferenceType<OrgType>> newParentOrgRefs = new ArrayList<>();
-        for(ObjectReferenceType<OrgType> parentRef: org.getParentOrgUnits()){
+        List<ObjectReferenceType> newParentOrgRefs = new ArrayList<>();
+        for(ObjectReferenceType parentRef: org.getParentOrgUnits()){
             if(parentRef.isSharedInFederation()){
                 newParentOrgRefs.add(parentRef);
             }
@@ -132,8 +132,8 @@ public class RestFederationService implements IFederationService{
         org.getParentOrgUnits().addAll(newParentOrgRefs);
 
         //Resolve governors sharing
-        List<ObjectReferenceType<UserType>> newGovernorRefs = new ArrayList<>();
-        for(ObjectReferenceType<UserType> governorRef: org.getGovernors()){
+        List<ObjectReferenceType> newGovernorRefs = new ArrayList<>();
+        for(ObjectReferenceType governorRef: org.getGovernors()){
             if(governorRef.isSharedInFederation()){
                 newGovernorRefs.add(governorRef);
             }
@@ -142,8 +142,8 @@ public class RestFederationService implements IFederationService{
         org.getGovernors().addAll(newGovernorRefs);
 
         //Resolve resource inducements sharing
-        List<InducementType<ResourceType>> newResourceInducements = new ArrayList<>();
-        for(InducementType<ResourceType> inducementRef: org.getResourceInducements()){
+        List<InducementType> newResourceInducements = new ArrayList<>();
+        for(InducementType inducementRef: org.getResourceInducements()){
             if(inducementRef.isSharedInFederation()){
                 newResourceInducements.add(inducementRef);
             }
@@ -152,8 +152,8 @@ public class RestFederationService implements IFederationService{
         org.getResourceInducements().addAll(newResourceInducements);
 
         //Resolve role inducements sharing
-        List<InducementType<RoleType>> newRoleInducements = new ArrayList<>();
-        for(InducementType<RoleType> inducementRef: org.getRoleInducements()){
+        List<InducementType> newRoleInducements = new ArrayList<>();
+        for(InducementType inducementRef: org.getRoleInducements()){
             if(inducementRef.isSharedInFederation()){
                 newRoleInducements.add(inducementRef);
             }
@@ -229,8 +229,7 @@ public class RestFederationService implements IFederationService{
         org.setCopies(null);
 
         //Take care of sharing policy reference
-        org.getSharingPolicy().setUid(null);
-        org.getSharingPolicy().setType(null);
+        org.setSharingPolicy(null);
 
         //Take care of provisioning policy - this is never shared in federation,
         //so we always set the reference to null
@@ -256,7 +255,7 @@ public class RestFederationService implements IFederationService{
             return;
         }
 
-        ObjectReferenceType<FederationMemberType> copyReference = new ObjectReferenceType<>();
+        ObjectReferenceType copyReference = new ObjectReferenceType();
         copyReference.setSharedInFederation(false);
         copyReference.setUid(member.getUid());
 

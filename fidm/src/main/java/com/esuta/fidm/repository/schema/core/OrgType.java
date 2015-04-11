@@ -57,7 +57,7 @@ public class OrgType extends ObjectType{
      *        in the chain of it's parents (to prevent cycles)
      * */
     @OneToMany(fetch = FetchType.EAGER)
-     private List<ObjectReferenceType<OrgType>> parentOrgUnits;
+     private List<ObjectReferenceType> parentOrgUnits;
 
     /**
      *  A list of governors, a references to the users that
@@ -65,7 +65,7 @@ public class OrgType extends ObjectType{
      *  decisions made with org. units
      * */
     @OneToMany(fetch = FetchType.EAGER)
-     private List<ObjectReferenceType<UserType>> governors;
+     private List<ObjectReferenceType> governors;
 
     /**
      *  A list of references to relying parties (service providers,
@@ -77,14 +77,14 @@ public class OrgType extends ObjectType{
      *  as inconsistent.
      * */
     @OneToMany(fetch = FetchType.EAGER)
-    private List<InducementType<ResourceType>> resourceInducements;
+    private List<InducementType> resourceInducements;
 
     /**
      *  The same concept as with the attribute 'resourceInducements', but
      *  with roles.
      * */
     @OneToMany(fetch = FetchType.EAGER)
-    private List<InducementType<RoleType>> roleInducements;
+    private List<InducementType> roleInducements;
 
     /**
      *  A unique sharing policy - or a set of sharing rules that
@@ -92,7 +92,7 @@ public class OrgType extends ObjectType{
      *  determines, what can be changed by the copies of this
      *  org. unit.
      * */
-    private ObjectReferenceType<FederationSharingPolicyType> sharingPolicy;
+    private ObjectReferenceType sharingPolicy;
 
     /**
      *  A unique provisioning policy that contains a set of rules that
@@ -100,7 +100,7 @@ public class OrgType extends ObjectType{
      *  routines to changes in identity federations. This reference is
      *  unique to every copy of org. unit in the federation.
      * */
-    private ObjectReferenceType<FederationProvisioningPolicyType> provisioningPolicy;
+    private ObjectReferenceType provisioningPolicy;
 
     /**
      *  A federation identifier used to uniquely identify the org. unit
@@ -126,7 +126,7 @@ public class OrgType extends ObjectType{
      *  track the copies of org. unit and interact with it (mostly
      *  for change distribution in identity federation)
      * */
-    List<ObjectReferenceType<FederationMemberType>> copies;
+    List<ObjectReferenceType> copies;
 
     /**
      *  An attribute declaring, if this org. unit can be shared in
@@ -194,7 +194,7 @@ public class OrgType extends ObjectType{
         this.locality = locality;
     }
 
-    public List<ObjectReferenceType<OrgType>> getParentOrgUnits() {
+    public List<ObjectReferenceType> getParentOrgUnits() {
         if(parentOrgUnits == null){
             parentOrgUnits = new ArrayList<>();
         }
@@ -202,11 +202,11 @@ public class OrgType extends ObjectType{
         return parentOrgUnits;
     }
 
-    public void setParentOrgUnits(List<ObjectReferenceType<OrgType>> parentOrgUnits) {
+    public void setParentOrgUnits(List<ObjectReferenceType> parentOrgUnits) {
         this.parentOrgUnits = parentOrgUnits;
     }
 
-    public List<ObjectReferenceType<UserType>> getGovernors() {
+    public List<ObjectReferenceType> getGovernors() {
         if(governors == null){
             governors = new ArrayList<>();
         }
@@ -214,11 +214,11 @@ public class OrgType extends ObjectType{
         return governors;
     }
 
-    public void setGovernors(List<ObjectReferenceType<UserType>> governors) {
+    public void setGovernors(List<ObjectReferenceType> governors) {
         this.governors = governors;
     }
 
-    public List<InducementType<ResourceType>> getResourceInducements() {
+    public List<InducementType> getResourceInducements() {
         if(resourceInducements == null){
             resourceInducements = new ArrayList<>();
         }
@@ -226,11 +226,11 @@ public class OrgType extends ObjectType{
         return resourceInducements;
     }
 
-    public void setResourceInducements(List<InducementType<ResourceType>> resourceInducements) {
+    public void setResourceInducements(List<InducementType> resourceInducements) {
         this.resourceInducements = resourceInducements;
     }
 
-    public List<InducementType<RoleType>> getRoleInducements() {
+    public List<InducementType> getRoleInducements() {
         if(roleInducements == null){
             roleInducements = new ArrayList<>();
         }
@@ -238,7 +238,7 @@ public class OrgType extends ObjectType{
         return roleInducements;
     }
 
-    public void setRoleInducements(List<InducementType<RoleType>> roleInducements) {
+    public void setRoleInducements(List<InducementType> roleInducements) {
         this.roleInducements = roleInducements;
     }
 
@@ -274,23 +274,23 @@ public class OrgType extends ObjectType{
         this.overrideParentSharing = overrideParentSharing;
     }
 
-    public ObjectReferenceType<FederationSharingPolicyType> getSharingPolicy() {
+    public ObjectReferenceType getSharingPolicy() {
         return sharingPolicy;
     }
 
-    public void setSharingPolicy(ObjectReferenceType<FederationSharingPolicyType> sharingPolicy) {
+    public void setSharingPolicy(ObjectReferenceType sharingPolicy) {
         this.sharingPolicy = sharingPolicy;
     }
 
-    public ObjectReferenceType<FederationProvisioningPolicyType> getProvisioningPolicy() {
+    public ObjectReferenceType getProvisioningPolicy() {
         return provisioningPolicy;
     }
 
-    public void setProvisioningPolicy(ObjectReferenceType<FederationProvisioningPolicyType> provisioningPolicy) {
+    public void setProvisioningPolicy(ObjectReferenceType provisioningPolicy) {
         this.provisioningPolicy = provisioningPolicy;
     }
 
-    public List<ObjectReferenceType<FederationMemberType>> getCopies() {
+    public List<ObjectReferenceType> getCopies() {
         if(copies == null){
             copies = new ArrayList<>();
         }
@@ -298,7 +298,7 @@ public class OrgType extends ObjectType{
         return copies;
     }
 
-    public void setCopies(List<ObjectReferenceType<FederationMemberType>> copies) {
+    public void setCopies(List<ObjectReferenceType> copies) {
         this.copies = copies;
     }
 

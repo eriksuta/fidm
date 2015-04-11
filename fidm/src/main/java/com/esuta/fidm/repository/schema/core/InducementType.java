@@ -3,7 +3,6 @@ package com.esuta.fidm.repository.schema.core;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 
 import javax.persistence.Embeddable;
-import javax.persistence.Entity;
 import java.io.Serializable;
 
 /**
@@ -19,12 +18,7 @@ import java.io.Serializable;
  *  @author shood
  * */
 @Embeddable
-public class InducementType<T extends ObjectType> implements Serializable{
-
-    /**
-     *  The type of the object.
-     * */
-    private Class<T> type;
+public class InducementType implements Serializable{
 
     /**
      *  A unique identifier of object that is the target of the inducement
@@ -49,17 +43,8 @@ public class InducementType<T extends ObjectType> implements Serializable{
 
     public InducementType() {   }
 
-    public InducementType(String uid, Class<T> type) {
-        this.type = type;
+    public InducementType(String uid) {
         this.uid = uid;
-    }
-
-    public Class<T> getType() {
-        return type;
-    }
-
-    public void setType(Class<T> type) {
-        this.type = type;
     }
 
     public String getUid() {
@@ -96,7 +81,6 @@ public class InducementType<T extends ObjectType> implements Serializable{
         if (sharedInFederation != that.sharedInFederation) return false;
         if (federationIdentifier != null ? !federationIdentifier.equals(that.federationIdentifier) : that.federationIdentifier != null)
             return false;
-        if (type != null ? !type.equals(that.type) : that.type != null) return false;
         if (uid != null ? !uid.equals(that.uid) : that.uid != null) return false;
 
         return true;
@@ -104,8 +88,7 @@ public class InducementType<T extends ObjectType> implements Serializable{
 
     @Override
     public int hashCode() {
-        int result = type != null ? type.hashCode() : 0;
-        result = 31 * result + (uid != null ? uid.hashCode() : 0);
+        int result = uid != null ? uid.hashCode() : 0;
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         result = 31 * result + (sharedInFederation ? 1 : 0);
         return result;

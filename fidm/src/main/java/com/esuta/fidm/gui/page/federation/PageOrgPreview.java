@@ -363,7 +363,7 @@ public class PageOrgPreview extends PageBase{
     private List<FederationIdentifierType> getGovernorIdentifiers(){
         List<FederationIdentifierType> list = new ArrayList<>();
 
-        for(ObjectReferenceType<UserType> ref: model.getObject().getGovernors()){
+        for(ObjectReferenceType ref: model.getObject().getGovernors()){
             list.add(ref.getFederationIdentifier());
         }
 
@@ -431,7 +431,7 @@ public class PageOrgPreview extends PageBase{
     private List<FederationIdentifierType> getResourceInducementsIdentifier(){
         List<FederationIdentifierType> list = new ArrayList<>();
 
-        for(InducementType<ResourceType> ref: model.getObject().getResourceInducements()){
+        for(InducementType ref: model.getObject().getResourceInducements()){
             list.add(ref.getFederationIdentifier());
         }
 
@@ -441,7 +441,7 @@ public class PageOrgPreview extends PageBase{
     private List<FederationIdentifierType> getRoleInducementsIdentifiers(){
         List<FederationIdentifierType> list = new ArrayList<>();
 
-        for(InducementType<RoleType> ref: model.getObject().getRoleInducements()){
+        for(InducementType ref: model.getObject().getRoleInducements()){
             list.add(ref.getFederationIdentifier());
         }
 
@@ -524,7 +524,7 @@ public class PageOrgPreview extends PageBase{
         }
 
         OrgType rootToShare = model.getObject();
-        ObjectReferenceType<FederationProvisioningPolicyType> provisioningPolicyRef = rootToShare.getProvisioningPolicy();
+        ObjectReferenceType provisioningPolicyRef = rootToShare.getProvisioningPolicy();
         clearOrgParentReferences(rootToShare);
         try {
             List<OrgType> hierarchyToShare = getOrgHierarchyToShare(rootToShare, new ArrayList<OrgType>(), providedOrgUnits);
@@ -632,8 +632,7 @@ public class PageOrgPreview extends PageBase{
 
         //Prepare references for current children
         for(OrgType child: children){
-            for(ObjectReferenceType<OrgType> parent: child.getParentOrgUnits()){
-                parent.setType(OrgType.class);
+            for(ObjectReferenceType parent: child.getParentOrgUnits()){
                 parent.setUid(root.getUid());
             }
         }
@@ -670,10 +669,9 @@ public class PageOrgPreview extends PageBase{
 
         OrgType org = model.getObject();
         FederationProvisioningPolicyType policy = rowModel.getObject();
-        ObjectReferenceType<FederationProvisioningPolicyType> policyRef = new ObjectReferenceType<>();
+        ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
         policyRef.setSharedInFederation(false);
-        policyRef.setType(FederationProvisioningPolicyType.class);
         org.setProvisioningPolicy(policyRef);
 
         ModalWindow window = (ModalWindow) get(ID_PROVISIONING_POLICY_CHOOSER);

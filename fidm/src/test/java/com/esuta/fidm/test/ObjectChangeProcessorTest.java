@@ -362,7 +362,7 @@ public class ObjectChangeProcessorTest {
 
         OrgType newOrg = new OrgType();
         newOrg.setName("Org");
-        ObjectReferenceType<UserType> governor = new ObjectReferenceType<>();
+        ObjectReferenceType governor = new ObjectReferenceType();
         governor.setSharedInFederation(false);
         governor.setUid("uid");
 
@@ -409,7 +409,7 @@ public class ObjectChangeProcessorTest {
         //Initialize org. units
         OrgType oldOrg = new OrgType();
         oldOrg.setName("Org");
-        ObjectReferenceType<UserType> oldGovernor = new ObjectReferenceType<>();
+        ObjectReferenceType oldGovernor = new ObjectReferenceType();
         oldGovernor.setSharedInFederation(false);
         oldGovernor.setUid("uid");
         oldGovernor.setFederationIdentifier(federationIdentifier);
@@ -417,7 +417,7 @@ public class ObjectChangeProcessorTest {
 
         OrgType newOrg = new OrgType();
         newOrg.setName("Org");
-        ObjectReferenceType<UserType> newGovernor = new ObjectReferenceType<>();
+        ObjectReferenceType newGovernor = new ObjectReferenceType();
         newGovernor.setSharedInFederation(false);
         newGovernor.setUid("new uid");
         newGovernor.setFederationIdentifier(federationIdentifier);
@@ -460,7 +460,7 @@ public class ObjectChangeProcessorTest {
         //Initialize org. units
         OrgType oldOrg = new OrgType();
         oldOrg.setName("Org");
-        ObjectReferenceType<UserType> oldGovernor = new ObjectReferenceType<>();
+        ObjectReferenceType oldGovernor = new ObjectReferenceType();
         oldGovernor.setSharedInFederation(false);
         oldGovernor.setUid("uid");
         oldGovernor.setFederationIdentifier(federationIdentifier);
@@ -499,7 +499,7 @@ public class ObjectChangeProcessorTest {
 
         OrgType newOrg = new OrgType();
         newOrg.setName("Org");
-        InducementType<RoleType> roleInducement = new InducementType<>();
+        InducementType roleInducement = new InducementType();
         roleInducement.setSharedInFederation(false);
         roleInducement.setUid("uid");
 
@@ -546,15 +546,15 @@ public class ObjectChangeProcessorTest {
         //Initialize org. units
         OrgType oldOrg = new OrgType();
         oldOrg.setName("Org");
-        InducementType<RoleType> oldRroleInducement = new InducementType<>();
-        oldRroleInducement.setSharedInFederation(false);
-        oldRroleInducement.setUid("uid");
-        oldRroleInducement.setFederationIdentifier(federationIdentifier);
-        oldOrg.getRoleInducements().add(oldRroleInducement);
+        InducementType oldRoleInducement = new InducementType();
+        oldRoleInducement.setSharedInFederation(false);
+        oldRoleInducement.setUid("uid");
+        oldRoleInducement.setFederationIdentifier(federationIdentifier);
+        oldOrg.getRoleInducements().add(oldRoleInducement);
 
         OrgType newOrg = new OrgType();
         newOrg.setName("Org");
-        InducementType<RoleType> newRoleInducement = new InducementType<>();
+        InducementType newRoleInducement = new InducementType();
         newRoleInducement.setSharedInFederation(false);
         newRoleInducement.setUid("new uid");
         newRoleInducement.setFederationIdentifier(federationIdentifier);
@@ -597,7 +597,7 @@ public class ObjectChangeProcessorTest {
         //Initialize org. units
         OrgType oldOrg = new OrgType();
         oldOrg.setName("Org");
-        InducementType<RoleType> roleInducement = new InducementType<>();
+        InducementType roleInducement = new InducementType();
         roleInducement.setSharedInFederation(false);
         roleInducement.setUid("uid");
         roleInducement.setFederationIdentifier(federationIdentifier);

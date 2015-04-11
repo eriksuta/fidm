@@ -414,7 +414,7 @@ public class PageUser extends PageBase {
                 }
 
                 AccountType account = rowModel.getObject();
-                ObjectReferenceType<ResourceType> resourceReference = account.getResource();
+                ObjectReferenceType resourceReference = account.getResource();
                 String resourceUid = resourceReference.getUid();
 
                 ResourceType resource;
@@ -472,7 +472,7 @@ public class PageUser extends PageBase {
         }
 
         RoleType role = rowModel.getObject();
-        AssignmentType<RoleType> roleAssignment = new AssignmentType<>(role.getUid(), RoleType.class);
+        AssignmentType roleAssignment = new AssignmentType(role.getUid());
         model.getObject().getUser().getRoleAssignments().add(roleAssignment);
 
         ModalWindow dialog = (ModalWindow) get(ID_ROLE_ASSIGNABLE_POPUP);
@@ -486,7 +486,7 @@ public class PageUser extends PageBase {
         }
 
         OrgType org = rowModel.getObject();
-        AssignmentType<OrgType> roleAssignment = new AssignmentType<>(org.getUid(), OrgType.class);
+        AssignmentType roleAssignment = new AssignmentType(org.getUid());
         model.getObject().getUser().getOrgUnitAssignments().add(roleAssignment);
 
         ModalWindow dialog = (ModalWindow) get(ID_ORG_ASSIGNABLE_POPUP);
@@ -502,10 +502,10 @@ public class PageUser extends PageBase {
         ResourceType resource = rowModel.getObject();
         AccountType account = new AccountType();
 
-        ObjectReferenceType<UserType> ownerReference = new ObjectReferenceType<>(model.getObject().getUser().getUid(), UserType.class);
+        ObjectReferenceType ownerReference = new ObjectReferenceType(model.getObject().getUser().getUid());
         account.setOwner(ownerReference);
 
-        ObjectReferenceType<ResourceType> resourceReference = new ObjectReferenceType<>(resource.getUid(), ResourceType.class);
+        ObjectReferenceType resourceReference = new ObjectReferenceType(resource.getUid());
         account.setResource(resourceReference);
 
         try {
@@ -519,7 +519,7 @@ public class PageUser extends PageBase {
             error("Can't add account to the user. Reason: " + e.getExceptionMessage());
         }
 
-        AssignmentType<AccountType> accountAssignment = new AssignmentType<>(account.getUid(), AccountType.class);
+        AssignmentType accountAssignment = new AssignmentType(account.getUid());
         model.getObject().getUser().getAccounts().add(accountAssignment);
         LOGGER.info("Account " + account.getUid() + " added to the user.");
 
@@ -564,8 +564,8 @@ public class PageUser extends PageBase {
 
         String roleUid = rowModel.getObject().getUid();
 
-        AssignmentType<RoleType> toRemove = new AssignmentType<>();
-        for(AssignmentType<RoleType> roleRef: model.getObject().getUser().getRoleAssignments()){
+        AssignmentType toRemove = new AssignmentType();
+        for(AssignmentType roleRef: model.getObject().getUser().getRoleAssignments()){
             if(roleRef.getUid().equals(roleUid)){
                 toRemove = roleRef;
                 break;
@@ -597,8 +597,8 @@ public class PageUser extends PageBase {
 
         String orgUid = rowModel.getObject().getUid();
 
-        AssignmentType<OrgType> toRemove = new AssignmentType<>();
-        for(AssignmentType<OrgType> orgRef: model.getObject().getUser().getOrgUnitAssignments()){
+        AssignmentType toRemove = new AssignmentType();
+        for(AssignmentType orgRef: model.getObject().getUser().getOrgUnitAssignments()){
             if(orgRef.getUid().equals(orgUid)){
                 toRemove = orgRef;
                 break;
@@ -644,8 +644,8 @@ public class PageUser extends PageBase {
             target.add(getFeedbackPanel());
         }
 
-        AssignmentType<AccountType> toRemove = new AssignmentType<>();
-        for(AssignmentType<AccountType> accountRef: model.getObject().getUser().getAccounts()){
+        AssignmentType toRemove = new AssignmentType();
+        for(AssignmentType accountRef: model.getObject().getUser().getAccounts()){
             if(accountRef.getUid().equals(accountUid)){
                 toRemove = accountRef;
                 break;

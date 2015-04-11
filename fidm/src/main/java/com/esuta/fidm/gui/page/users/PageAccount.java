@@ -25,8 +25,6 @@ import java.util.List;
 
 /**
  *  @author shood
- *
- *  TODO
  * */
 public class PageAccount extends PageBase{
 
@@ -71,7 +69,7 @@ public class PageAccount extends PageBase{
             if(!getPageParameters().get(PAGE_ACCOUNT_RESOURCE_UID).isEmpty()){
                 PageParameters parameters = getPageParameters();
                 String resourceUid = parameters.get(PAGE_ACCOUNT_RESOURCE_UID).toString();
-                ObjectReferenceType<ResourceType> resourceReference = new ObjectReferenceType<>(resourceUid, ResourceType.class);
+                ObjectReferenceType resourceReference = new ObjectReferenceType(resourceUid);
                 newAccount.setResource(resourceReference);
             }
 
@@ -126,21 +124,21 @@ public class PageAccount extends PageBase{
         };
         mainForm.add(ownerEdit);
 
-        DropDownChoice resource = new DropDownChoice<>(ID_RESOURCE, new PropertyModel<ObjectReferenceType<ResourceType>>(model, "resource"),
-                new AbstractReadOnlyModel<List<ObjectReferenceType<ResourceType>>>() {
+        DropDownChoice resource = new DropDownChoice<>(ID_RESOURCE, new PropertyModel<ObjectReferenceType>(model, "resource"),
+                new AbstractReadOnlyModel<List<ObjectReferenceType>>() {
 
                     @Override
-                    public List<ObjectReferenceType<ResourceType>> getObject() {
+                    public List<ObjectReferenceType> getObject() {
                         return getResourceNames();
                     }
-                }, new IChoiceRenderer<ObjectReferenceType<ResourceType>>() {
+                }, new IChoiceRenderer<ObjectReferenceType>() {
             @Override
-            public String getDisplayValue(ObjectReferenceType<ResourceType> object) {
+            public String getDisplayValue(ObjectReferenceType object) {
                 return getNameFromReference(object);
             }
 
             @Override
-            public String getIdValue(ObjectReferenceType<ResourceType> object, int index) {
+            public String getIdValue(ObjectReferenceType object, int index) {
                 return Integer.toString(index);
             }
         });
@@ -218,14 +216,14 @@ public class PageAccount extends PageBase{
         };
     }
 
-    private List<ObjectReferenceType<ResourceType>> getResourceNames(){
-        List<ObjectReferenceType<ResourceType>> resourceReferences = new ArrayList<>();
+    private List<ObjectReferenceType> getResourceNames(){
+        List<ObjectReferenceType> resourceReferences = new ArrayList<>();
 
         try {
             List<ResourceType> resources = getModelService().getAllObjectsOfType(ResourceType.class);
 
             for(ResourceType resource: resources){
-                ObjectReferenceType<ResourceType> ref = new ObjectReferenceType<>(resource.getUid(), ResourceType.class);
+                ObjectReferenceType ref = new ObjectReferenceType(resource.getUid());
                 resourceReferences.add(ref);
             }
         } catch (DatabaseCommunicationException e) {
@@ -235,7 +233,7 @@ public class PageAccount extends PageBase{
         return resourceReferences;
     }
 
-    private String getNameFromReference(ObjectReferenceType<ResourceType> resourceRef){
+    private String getNameFromReference(ObjectReferenceType resourceRef){
         try {
             ResourceType resource = getModelService().readObject(ResourceType.class, resourceRef.getUid());
             return resource.getName();
@@ -261,7 +259,7 @@ public class PageAccount extends PageBase{
         }
 
         String userUid = userModel.getObject().getUid();
-        ObjectReferenceType<UserType> ownerReference = new ObjectReferenceType<>(userUid, UserType.class);
+        ObjectReferenceType ownerReference = new ObjectReferenceType(userUid);
         model.getObject().setOwner(ownerReference);
 
         ModalWindow window = (ModalWindow) get(ID_OWNER_CHOOSER_MODAL);
@@ -284,8 +282,8 @@ public class PageAccount extends PageBase{
         account = model.getObject();
 
         try{
-            ResourceType resource = modelService.readObjectByName(ResourceType.class, account.getResource().getUid());
-            ObjectReferenceType<ResourceType> resourceReference = new ObjectReferenceType<>(resource.getUid(), ResourceType.class);
+            ResourceType resource = modelService.readObject(ResourceType.class, account.getResource().getUid());
+            ObjectReferenceType resourceReference = new ObjectReferenceType(resource.getUid());
             account.setResource(resourceReference);
 
             if(!isEditingAccount()){
@@ -295,10 +293,10 @@ public class PageAccount extends PageBase{
             }
 
             if(account.getOwner() == null){
-                ObjectReferenceType<UserType> owner = account.getOwner();
+                ObjectReferenceType owner = account.getOwner();
 
                 UserType user = modelService.readObject(UserType.class, owner.getUid());
-                AssignmentType<AccountType> accountAssignment = new AssignmentType<>(account.getUid(), AccountType.class);
+                AssignmentType accountAssignment = new AssignmentType(account.getUid());
 
                 if(!user.getAccounts().contains(accountAssignment)){
                     user.getAccounts().add(accountAssignment);
