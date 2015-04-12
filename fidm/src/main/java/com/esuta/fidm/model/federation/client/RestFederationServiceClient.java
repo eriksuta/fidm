@@ -306,18 +306,18 @@ public class RestFederationServiceClient {
 
     public SimpleRestResponse createPostOrgChangesRequest(FederationMemberType federationMember,
                                                           FederationIdentifierType federationIdentifier,
-                                                          ObjectModificationType modificationObject){
+                                                          ObjectModificationType modificationObject) throws DatabaseCommunicationException {
 
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
-        String url = RestFederationServiceUtil.createPostProcessOrgChangesRequest(address, port);
+        String url = RestFederationServiceUtil.createPostProcessOrgChangesRequestUrl(address, port);
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
         OrgChangeWrapper requestObject = new OrgChangeWrapper();
         requestObject.setUniqueAttributeValue(federationIdentifier.getUniqueAttributeValue());
-        requestObject.setFederationMember(federationMember.getFederationMemberName());
+        requestObject.setFederationMember(getLocalFederationMemberIdentifier());
         requestObject.setModificationObject(modificationObject);
 
         String jsonRequest = JsonUtil.objectToJson(requestObject);
@@ -331,5 +331,24 @@ public class RestFederationServiceClient {
         return new SimpleRestResponse(responseStatus, responseMessage);
     }
 
+    public SimpleRestResponse createRemoveOrgLinkRequest(FederationMemberType federationMember,
+                                                         FederationIdentifierType federationIdentifier) throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetRemoveOrgLinkUrl(address, port,
+                getLocalFederationMemberIdentifier(), federationIdentifier.getUniqueAttributeValue());
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        return new SimpleRestResponse(responseStatus, responseMessage);
+    }
 
 }
