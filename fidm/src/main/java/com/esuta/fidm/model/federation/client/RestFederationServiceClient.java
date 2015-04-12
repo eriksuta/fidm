@@ -350,5 +350,4 @@ public class RestFederationServiceClient {
 
         return new SimpleRestResponse(responseStatus, responseMessage);
     }
-
 }

@@ -16,6 +16,7 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.federation.client.SimpleRestResponse;
 import com.esuta.fidm.repository.schema.core.AssignmentType;
 import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
 import com.esuta.fidm.repository.schema.core.OrgType;
@@ -44,6 +45,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -414,6 +416,10 @@ public class OrgUnitTreePanel extends Panel {
                 return;
             }
 
+            if(root.getFederationIdentifier() != null){
+                removeOriginLink(root);
+            }
+
             modelService.deleteObject(root);
             LOGGER.info("Root org. unit with uid: '" + rootOrgUid + "' was deleted.");
 
@@ -488,6 +494,10 @@ public class OrgUnitTreePanel extends Panel {
         String orgName = org.getName();
 
         try {
+            if(org.getFederationIdentifier() != null){
+                removeOriginLink(org);
+            }
+
             getPageBase().getModelService().deleteObject(org);
         } catch (GeneralException e){
             LOGGER.error("Could not delete org. unit: '" + orgName + "'. Reason: ", e);
@@ -499,6 +509,22 @@ public class OrgUnitTreePanel extends Panel {
         LOGGER.info("Org. unit '" + orgName + "' was successfully deleted from the system.");
         success("Org. unit '" + orgName + "' was successfully deleted from the system.");
         target.add(getPageBase().getFeedbackPanel(), getChildrenTable());
+    }
+
+    private void removeOriginLink(OrgType org) throws DatabaseCommunicationException {
+        String federationMemberName = org.getFederationIdentifier().getFederationMemberId();
+
+        SimpleRestResponse response = getPageBase().getFederationServiceClient()
+                .createRemoveOrgLinkRequest(getPageBase().getFederationMemberByName(federationMemberName), org.getFederationIdentifier());
+
+        int status = response.getStatus();
+        String message = response.getMessage();
+
+        if(HttpStatus.OK_200 == status){
+            success("Link to deleted org. unit removed from origin. Message: " + message);
+        } else {
+            error("Link to deleted org. unit NOT removed from origin. Message: " + message);
+        }
     }
 
     private void removeMemberPerformed(AjaxRequestTarget target, IModel<UserType> rowModel){
