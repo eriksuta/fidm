@@ -240,6 +240,19 @@ public class OrgUnitTreePanel extends Panel {
                 }));
             }
         });
+        columns.add(new AbstractColumn<OrgType, String>(new Model<>("Origin")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<OrgType>> cellItem, String componentId, final IModel<OrgType> rowModel) {
+                cellItem.add(new Label(componentId, new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return rowModel.getObject().getFederationIdentifier() == null ? "Origin" : "Copy";
+                    }
+                }));
+            }
+        });
         columns.add(new AbstractColumn<OrgType, String>(new Model<>("Members")) {
 
             @Override

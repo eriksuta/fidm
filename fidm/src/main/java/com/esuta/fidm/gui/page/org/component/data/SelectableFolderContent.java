@@ -33,11 +33,15 @@ public class SelectableFolderContent extends Folder<OrgType>{
 
             @Override
             public String getObject() {
+                StringBuilder sb = new StringBuilder();
+
                 OrgType dto = model.getObject();
-                if (StringUtils.isNotEmpty(dto.getDisplayName())) {
-                    return dto.getDisplayName();
-                }
-                return dto.getName();
+                sb.append(dto.getName());
+                sb.append(" (");
+                sb.append(dto.getFederationIdentifier() == null ? "Origin" : "Copy");
+                sb.append(")");
+
+                return sb.toString();
             }
         };
     }

@@ -1709,6 +1709,7 @@ public class PageOrg extends PageBase {
         }
 
         orgUnit = model.getObject();
+        String orgName = orgUnit.getName();
 
         //Provisioning policy must always be specified
         if(orgUnit.getProvisioningPolicy() == null){
@@ -1747,7 +1748,6 @@ public class PageOrg extends PageBase {
         orgUnit.getParentOrgUnits().clear();
         orgUnit.getParentOrgUnits().addAll(newParentReferences);
 
-
         try{
             if(!isEditingOrgUnit()){
                 modelService.createObject(orgUnit);
@@ -1769,8 +1769,8 @@ public class PageOrg extends PageBase {
             error("Can't add org. unit with name: '" + orgUnit.getName() + "'. Reason: " + e.getExceptionMessage());
         }
 
-        getSession().success("Org. Unit '" + orgUnit.getName() + "' has been saved successfully.");
-        LOGGER.info("Org. Unit '" + orgUnit.getName() + "' has been saved successfully.");
+        getSession().success("Org. Unit '" + orgName + "' has been saved successfully.");
+        LOGGER.info("Org. Unit '" + orgName + "' has been saved successfully.");
         setResponsePage(PageOrgList.class);
         target.add(getFeedbackPanel());
     }
