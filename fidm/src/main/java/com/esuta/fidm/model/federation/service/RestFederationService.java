@@ -367,6 +367,7 @@ public class RestFederationService implements IFederationService{
                 responseFederationMember.setStatus(FederationMemberType.FederationMemberStatusType.AVAILABLE);
                 LOGGER.info("Federation membership request for federation member: '" + responseFederationMember.getFederationMemberName() +
                         "'(" + responseFederationMember.getUid() + ") was accepted.");
+                modelService.updateObject(responseFederationMember);
             } else if(response.getResponse().equals(FederationMembershipRequest.Response.DENY)){
                 LOGGER.info("Federation membership request for federation member: '" + responseFederationMember.getFederationMemberName() +
                         "'(" + responseFederationMember.getUid() + ") was denied. Deleting federation member.");
