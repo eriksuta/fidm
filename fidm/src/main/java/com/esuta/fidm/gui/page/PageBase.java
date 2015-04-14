@@ -6,6 +6,7 @@ import com.esuta.fidm.gui.page.config.PageDebugList;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.ObjectChangeProcessor;
+import com.esuta.fidm.model.ProvisioningService;
 import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
@@ -43,6 +44,12 @@ public abstract class PageBase extends WebPage{
      *  A component that processes changes in objects and provides a unified format for object modifications
      * */
     private transient ObjectChangeProcessor objectChangeProcessor;
+
+    /**
+     *  A component that takes care about provisioning. It processes all incoming changes regarding
+     *  org. units and performs processing and change application due to defined provisioning rules.
+     * */
+    private transient ProvisioningService provisioningService;
 
     //Constant used to identify page parameter name (uid) - used when editing objects
     public static final String UID_PAGE_PARAMETER_NAME = "uid";
@@ -121,6 +128,14 @@ public abstract class PageBase extends WebPage{
         }
 
         return objectChangeProcessor;
+    }
+
+    public ProvisioningService getProvisioningService() {
+        if(provisioningService == null){
+            provisioningService = ProvisioningService.getInstance();
+        }
+
+        return provisioningService;
     }
 
     public WebMarkupContainer getFeedbackPanel(){
