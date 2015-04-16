@@ -3,6 +3,7 @@ package com.esuta.fidm.repository.schema.core;
 import javax.jdo.annotations.Index;
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,7 +40,15 @@ public class FederationProvisioningPolicyType extends ObjectType{
      *  rules defined for specific attributes.
      * */
     @Enumerated(EnumType.STRING)
-     private ProvisioningBehaviorType defaultRule;
+    private ProvisioningBehaviorType defaultRule;
+
+    /**
+     *  The default time of execution of provisioning changes. This field has meaning
+     *  only if CONSTANT provisioning behavior is configured and it sets a moment
+     *  in future, where all current changes will be triggered. If no date is set,
+     *  the changes will be applied next time the configured time is here.
+     * */
+    private Date defaultExecutionTime;
 
     /**
      *  A list of provisioning rules that together compose a policy of
@@ -86,6 +95,14 @@ public class FederationProvisioningPolicyType extends ObjectType{
         this.rules = rules;
     }
 
+    public Date getDefaultExecutionTime() {
+        return defaultExecutionTime;
+    }
+
+    public void setDefaultExecutionTime(Date defaultExecutionTime) {
+        this.defaultExecutionTime = defaultExecutionTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -94,7 +111,9 @@ public class FederationProvisioningPolicyType extends ObjectType{
 
         FederationProvisioningPolicyType that = (FederationProvisioningPolicyType) o;
 
-        if (defaultRule != null ? !defaultRule.equals(that.defaultRule) : that.defaultRule != null) return false;
+        if (defaultExecutionTime != null ? !defaultExecutionTime.equals(that.defaultExecutionTime) : that.defaultExecutionTime != null)
+            return false;
+        if (defaultRule != that.defaultRule) return false;
         if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (rules != null ? !rules.equals(that.rules) : that.rules != null) return false;
@@ -108,6 +127,7 @@ public class FederationProvisioningPolicyType extends ObjectType{
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (defaultRule != null ? defaultRule.hashCode() : 0);
+        result = 31 * result + (defaultExecutionTime != null ? defaultExecutionTime.hashCode() : 0);
         result = 31 * result + (rules != null ? rules.hashCode() : 0);
         return result;
     }

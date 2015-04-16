@@ -10,16 +10,21 @@ import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
-import com.esuta.fidm.repository.schema.core.*;
+import com.esuta.fidm.repository.schema.core.FederationProvisioningPolicyType;
+import com.esuta.fidm.repository.schema.core.FederationProvisioningRuleType;
+import com.esuta.fidm.repository.schema.core.ModificationType;
+import com.esuta.fidm.repository.schema.core.ProvisioningBehaviorType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.*;
@@ -32,6 +37,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -52,6 +58,8 @@ public class PageProvisioningPolicy extends PageBase{
     private static final String ID_DISPLAY_NAME = "displayName";
     private static final String ID_DESCRIPTION = "description";
     private static final String ID_DEFAULT_BEHAVIOR = "defaultBehavior";
+    private static final String ID_DEFAULT_DATE_TIME_CONTAINER = "defaultDateTimeContainer";
+    private static final String ID_DEFAULT_DATE_TIME = "defaultDateTime";
 
     private static final String ID_RULES_CONTAINER = "rulesContainer";
     private static final String ID_BUTTON_ADD_RULE = "addRuleButton";
@@ -63,6 +71,8 @@ public class PageProvisioningPolicy extends PageBase{
     private static final String ID_RULE_ATTRIBUTE = "ruleAttributeSelect";
     private static final String ID_RULE_CHANGE = "ruleChangeType";
     private static final String ID_RULE_BEHAVIOR = "ruleBehavior";
+    private static final String ID_RULE_DATE_TIME_CONTAINER = "ruleDateTimeContainer";
+    private static final String ID_RULE_DATE_TIME = "roleDateTime";
 
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
@@ -198,7 +208,35 @@ public class PageProvisioningPolicy extends PageBase{
                 WebMiscUtil.createReadonlyModelFromEnum(ProvisioningBehaviorType.class),
                 new EnumChoiceRenderer<ProvisioningBehaviorType>(this));
         defaultBehavior.setRequired(true);
+        defaultBehavior.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(get(ID_POLICY_FORM + ":" + ID_POLICY_CONTAINER + ":" + ID_DEFAULT_DATE_TIME_CONTAINER));
+            }
+        });
         policyContainer.add(defaultBehavior);
+
+        WebMarkupContainer defaultDateTimeContainer = new WebMarkupContainer(ID_DEFAULT_DATE_TIME_CONTAINER);
+        defaultDateTimeContainer.setOutputMarkupId(true);
+        defaultDateTimeContainer.setOutputMarkupPlaceholderTag(true);
+        defaultDateTimeContainer.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return ProvisioningBehaviorType.CONSTANT.equals(selected.getObject().getDefaultRule());
+            }
+        });
+        policyContainer.add(defaultDateTimeContainer);
+
+        DateTimeField defaultDateField = new DateTimeField(ID_DEFAULT_DATE_TIME, new PropertyModel<Date>(selected, "defaultExecutionTime")){
+
+            @Override
+            protected boolean use12HourFormat() {
+                return false;
+            }
+        };
+        defaultDateTimeContainer.add(defaultDateField);
 
         WebMarkupContainer rulesContainer = new WebMarkupContainer(ID_RULES_CONTAINER);
         rulesContainer.setOutputMarkupId(true);
@@ -287,6 +325,35 @@ public class PageProvisioningPolicy extends PageBase{
                         new EnumChoiceRenderer<ProvisioningBehaviorType>(this));
                 provisioningType.setRequired(true);
                 ruleBody.add(provisioningType);
+
+                final WebMarkupContainer ruleDateTimeContainer = new WebMarkupContainer(ID_RULE_DATE_TIME_CONTAINER);
+                ruleDateTimeContainer.setOutputMarkupId(true);
+                ruleDateTimeContainer.setOutputMarkupPlaceholderTag(true);
+                ruleDateTimeContainer.add(new VisibleEnableBehavior(){
+
+                    @Override
+                    public boolean isVisible() {
+                        return ProvisioningBehaviorType.CONSTANT.equals(item.getModelObject().getProvisioningType());
+                    }
+                });
+                ruleBody.add(ruleDateTimeContainer);
+
+                DateTimeField defaultDateField = new DateTimeField(ID_RULE_DATE_TIME, new PropertyModel<Date>(item.getModelObject(), "executionTime")){
+
+                    @Override
+                    protected boolean use12HourFormat() {
+                        return false;
+                    }
+                };
+                ruleDateTimeContainer.add(defaultDateField);
+
+                provisioningType.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        target.add(ruleDateTimeContainer);
+                    }
+                });
             }
         };
         ruleRepeater.setOutputMarkupId(true);

@@ -4,6 +4,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  *  @author shood
@@ -33,6 +34,14 @@ public class FederationProvisioningRuleType implements Serializable{
     @Enumerated(EnumType.STRING)
     private ProvisioningBehaviorType provisioningType;
 
+    /**
+     *  The time of execution of provisioning changes. This field has meaning
+     *  only if CONSTANT provisioning behavior is configured and it sets a moment
+     *  in future, where all current changes will be triggered. If no date is set,
+     *  the changes will be applied next time the configured time is here.
+     * */
+    private Date executionTime;
+
     public FederationProvisioningRuleType(){}
 
     public String getAttributeName() {
@@ -59,6 +68,14 @@ public class FederationProvisioningRuleType implements Serializable{
         this.provisioningType = provisioningType;
     }
 
+    public Date getExecutionTime() {
+        return executionTime;
+    }
+
+    public void setExecutionTime(Date executionTime) {
+        this.executionTime = executionTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -67,6 +84,8 @@ public class FederationProvisioningRuleType implements Serializable{
         FederationProvisioningRuleType that = (FederationProvisioningRuleType) o;
 
         if (attributeName != null ? !attributeName.equals(that.attributeName) : that.attributeName != null)
+            return false;
+        if (executionTime != null ? !executionTime.equals(that.executionTime) : that.executionTime != null)
             return false;
         if (modificationType != that.modificationType) return false;
         if (provisioningType != that.provisioningType) return false;
@@ -79,6 +98,7 @@ public class FederationProvisioningRuleType implements Serializable{
         int result = attributeName != null ? attributeName.hashCode() : 0;
         result = 31 * result + (modificationType != null ? modificationType.hashCode() : 0);
         result = 31 * result + (provisioningType != null ? provisioningType.hashCode() : 0);
+        result = 31 * result + (executionTime != null ? executionTime.hashCode() : 0);
         return result;
     }
 }
