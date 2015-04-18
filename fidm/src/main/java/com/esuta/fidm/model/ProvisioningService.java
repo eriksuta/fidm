@@ -1,10 +1,13 @@
 package com.esuta.fidm.model;
 
-import com.esuta.fidm.repository.schema.core.OrgType;
-import com.esuta.fidm.repository.schema.core.UserType;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
+import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.AttributeModificationType;
+import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,11 @@ public class ProvisioningService {
     private ObjectChangeProcessor changeProcessor;
 
     /**
+     *  Model service instance for all kinds of support operations
+     * */
+    private ModelService modelService;
+
+    /**
      *  A special map of changes for individual org. units (represented by uid of org. unit).
      *  This list is populated with modifications (multi-value attribute modifications in
      *  most cases) that are evaluated when certain actions are triggered - these are the actions,
@@ -44,6 +52,7 @@ public class ProvisioningService {
 
     private ProvisioningService(){
         changeProcessor = ObjectChangeProcessor.getInstance();
+        modelService = ModelService.getInstance();
     }
 
     public static ProvisioningService getInstance(){
@@ -64,8 +73,68 @@ public class ProvisioningService {
      *      * A special task is created for CONSTANT provisioning changes - this task will be
      *        performed when the time specified in provisioning rule is met
      * */
-    public void applyProvisioningPolicy(OrgType org, List<AttributeModificationType> modifications){
-        //TODO
+    public void applyProvisioningPolicy(OrgType org, List<AttributeModificationType> modifications)
+            throws DatabaseCommunicationException, ObjectNotFoundException, NoSuchFieldException, IllegalAccessException {
+
+        if(org == null || modifications == null || modifications.isEmpty()){
+            return;
+        }
+
+        FederationProvisioningPolicyType policy = modelService.readObject(FederationProvisioningPolicyType.class,
+                org.getProvisioningPolicy().getUid());
+
+        if(policy == null){
+            return;
+        }
+
+        for(AttributeModificationType modification: modifications){
+            FederationProvisioningRuleType rule = findRuleForModification(modification, policy);
+            List<AttributeModificationType> constantUpdateModifications = new ArrayList<>();
+
+            if(rule == null){
+                //Apply default provisioning behavior
+                switch (policy.getDefaultRule()){
+                    case PRO_ACTIVE:
+                        changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
+                        break;
+                    case JUST_IN_TIME:
+                        insertChangeIntoJitModificationList(org.getUid(), modification);
+                        break;
+                    case CONSTANT:
+                        constantUpdateModifications.add(modification);
+                        break;
+                    default:
+                        LOGGER.error("Invalid provisioning behavior type encountered. Processing not completed correctly.");
+                }
+
+            } else {
+                //Find out, if there is a specific rule for this modification and act accordingly
+                switch (rule.getProvisioningType()){
+                    case PRO_ACTIVE:
+                        changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
+                        break;
+                    case JUST_IN_TIME:
+                        insertChangeIntoJitModificationList(org.getUid(), modification);
+                        break;
+                    case CONSTANT:
+                        constantUpdateModifications.add(modification);
+                        break;
+                    default:
+                        LOGGER.error("Invalid provisioning behavior type encountered. Processing not completed correctly.");
+                }
+            }
+
+            if(!constantUpdateModifications.isEmpty()){
+                createConstantProvisioningUpdateTask(org, constantUpdateModifications, policy);
+            }
+
+            OrgType oldOrg = modelService.readObject(OrgType.class, org.getUid());
+
+            //And finally, save the changes, if there is anything to save at the moment
+            if(!oldOrg.equals(org)){
+                modelService.updateObject(org);
+            }
+        }
     }
 
     /**
@@ -86,5 +155,43 @@ public class ProvisioningService {
      * */
     public void cleanJitProvisioningList(){
         //TODO
+    }
+
+    /**
+     *  Creates a special task according to configured times options for changes contained
+     *  in provided list. It also groups changes according to attributes and may create
+     *  multiple tasks according to time options set in specific provisioning rules.
+     * */
+    private void createConstantProvisioningUpdateTask(OrgType org, List<AttributeModificationType> modifications, FederationProvisioningPolicyType policy){
+        //TODO
+    }
+
+    private FederationProvisioningRuleType findRuleForModification(AttributeModificationType modification, FederationProvisioningPolicyType policy){
+        String attributeName = modification.getAttribute();
+        ModificationType modificationType = modification.getModificationType();
+
+        for(FederationProvisioningRuleType rule: policy.getRules()){
+            if(attributeName.equals(rule.getAttributeName()) && modificationType.equals(rule.getModificationType())){
+                return rule;
+            }
+        }
+
+        return null;
+    }
+
+    private ObjectModificationType wrapModification(AttributeModificationType modification){
+        ObjectModificationType modificationObject = new ObjectModificationType();
+        modificationObject.getModificationList().add(modification);
+        return modificationObject;
+    }
+
+    private void insertChangeIntoJitModificationList(String uid, AttributeModificationType modification){
+        if(jitModificationList.containsKey(uid)){
+            jitModificationList.get(uid).add(modification);
+        } else {
+            List<AttributeModificationType> modificationList = new ArrayList<>();
+            modificationList.add(modification);
+            jitModificationList.put(uid, modificationList);
+        }
     }
 }

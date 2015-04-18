@@ -18,7 +18,7 @@ import com.esuta.fidm.gui.page.resource.PageResource;
 import com.esuta.fidm.gui.page.roles.PageRole;
 import com.esuta.fidm.gui.page.users.PageUser;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
-import com.esuta.fidm.infra.exception.GeneralException;
+import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
@@ -1753,9 +1753,26 @@ public class PageOrg extends PageBase {
                 modelService.createObject(orgUnit);
             } else {
 
+                OrgType oldOrg = modelService.readObject(OrgType.class, orgUnit.getUid());
+                ObjectModificationType modificationObject = getObjectChangeProcessor().getOrgModifications(oldOrg, orgUnit);
+
                 if(!isLocalOrgUnit()){
-                    OrgType oldOrg = modelService.readObject(OrgType.class, orgUnit.getUid());
-                    ObjectModificationType modifications = getObjectChangeProcessor().getOrgModifications(oldOrg, orgUnit);
+                    getProvisioningService().applyProvisioningPolicy(oldOrg, modificationObject.getModificationList());
+                } else{
+
+                    //First, apply changes applicable only locally
+                    ObjectModificationType localModificationObject = getObjectChangeProcessor()
+                            .prepareLocalChanges(modificationObject, sharingPolicyModel.getObject());
+
+                    getProvisioningService().applyProvisioningPolicy(oldOrg, localModificationObject.getModificationList());
+
+                    //Then send changes to origin for processing
+                    ObjectModificationType remoteModificationObject = getObjectChangeProcessor()
+                            .prepareDistributedChanges(modificationObject, sharingPolicyModel.getObject());
+
+                    FederationIdentifierType orgIdentifier = oldOrg.getFederationIdentifier();
+                    getFederationServiceClient().createPostOrgChangesRequest(getFederationMemberByName(orgIdentifier.getFederationMemberId()),
+                            orgIdentifier, remoteModificationObject);
                 }
 
                 modelService.updateObject(orgUnit);
@@ -1764,9 +1781,18 @@ public class PageOrg extends PageBase {
                 }
             }
 
-        } catch (GeneralException e){
-            LOGGER.error("Can't add org. unit: ", e);
-            error("Can't add org. unit with name: '" + orgUnit.getName() + "'. Reason: " + e.getExceptionMessage());
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Can't update org. unit: ", e);
+            error("Can't update org. unit with name: '" + orgUnit.getName() + "'. Reason: " + e.getExceptionMessage());
+        } catch (ObjectAlreadyExistsException e) {
+            LOGGER.error("Can't update org. unit: ", e);
+            error("Can't update org. unit with name: '" + orgUnit.getName() + "'. Reason: " + e.getExceptionMessage());
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Can't correctly process org. unit changes: ", e);
+            error("Can't correctly process org. unit changes: " + orgUnit.getName() + "'. Reason: " + e.getExceptionMessage());
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Can't correctly process org. unit changes: ", e);
+            error("Can't correctly process org. unit changes: " + orgUnit.getName() + "'. Reason: " + e.getMessage());
         }
 
         getSession().success("Org. Unit '" + orgName + "' has been saved successfully.");
