@@ -8,9 +8,14 @@ import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.repository.schema.core.RoleType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -51,6 +56,20 @@ public class PageRoleList extends PageBase {
         columns.add(new PropertyColumn<RoleType, String>(new Model<>("Name"), "name", "name"));
         columns.add(new PropertyColumn<RoleType, String>(new Model<>("DisplayName"), "displayName", "displayName"));
         columns.add(new PropertyColumn<RoleType, String>(new Model<>("Type"), "roleType", "roleType"));
+
+        columns.add(new AbstractColumn<RoleType, String>(new Model<>("Origin")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<RoleType>> cellItem, String componentId, final IModel<RoleType> rowModel) {
+                cellItem.add(new Label(componentId, new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return rowModel.getObject().getFederationIdentifier() == null ? "Origin" : "Copy";
+                    }
+                }));
+            }
+        });
 
         columns.add(new EditDeleteButtonColumn<RoleType>(new Model<>("Actions")){
 

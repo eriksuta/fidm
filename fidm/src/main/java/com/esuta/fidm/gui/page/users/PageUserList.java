@@ -8,8 +8,12 @@ import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.repository.schema.core.UserType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -52,6 +56,19 @@ public class PageUserList extends PageBase {
         columns.add(new PropertyColumn<UserType, String>(new Model<>("Family Name"), "familyName", "familyName"));
         columns.add(new PropertyColumn<UserType, String>(new Model<>("E-mail"), "emailAddress", "emailAddress"));
         columns.add(new PropertyColumn<UserType, String>(new Model<>("Locality"), "locality", "locality"));
+        columns.add(new AbstractColumn<UserType, String>(new Model<>("Origin")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<UserType>> cellItem, String componentId, final IModel<UserType> rowModel) {
+                cellItem.add(new Label(componentId, new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return rowModel.getObject().getFederationIdentifier() == null ? "Origin" : "Copy";
+                    }
+                }));
+            }
+        });
 
         columns.add(new EditDeleteButtonColumn<UserType>(new Model<>("Actions")){
 
