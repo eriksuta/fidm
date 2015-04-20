@@ -96,8 +96,10 @@ public class ProvisioningService {
                 switch (policy.getDefaultRule()){
                     case PRO_ACTIVE:
                         changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
+                        recomputeInducementsIfNeeded(org, modification);
                         break;
                     case JUST_IN_TIME:
+                        changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
                         insertChangeIntoJitModificationList(org.getUid(), modification);
                         break;
                     case CONSTANT:
@@ -112,8 +114,10 @@ public class ProvisioningService {
                 switch (rule.getProvisioningType()){
                     case PRO_ACTIVE:
                         changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
+                        recomputeInducementsIfNeeded(org, modification);
                         break;
                     case JUST_IN_TIME:
+                        changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
                         insertChangeIntoJitModificationList(org.getUid(), modification);
                         break;
                     case CONSTANT:
@@ -141,8 +145,19 @@ public class ProvisioningService {
      *  This method will check the existing list with just-in-time provisioning changes and will apply
      *  (if there are any) modifications for the user that triggered the action.
      * */
-    public void checkJitProvisioningList(UserType user){
-        //TODO
+    public void checkJitProvisioningList(UserType user, ResourceType resource){
+        if(user == null){
+            LOGGER.debug("Can't apply any changes on non-existing user");
+            return;
+        }
+
+        for(AssignmentType orgRef: user.getOrgUnitAssignments()){
+            if(jitModificationList.containsKey(orgRef.getUid())){
+                List<AttributeModificationType> modifications = jitModificationList.get(orgRef.getUid());
+
+                //TODO - continue here
+            }
+        }
     }
 
     /**
@@ -164,6 +179,18 @@ public class ProvisioningService {
      * */
     private void createConstantProvisioningUpdateTask(OrgType org, List<AttributeModificationType> modifications, FederationProvisioningPolicyType policy){
         //TODO
+    }
+
+    /**
+     *  Recomputes inducements of users of selected org. unit using inducement processor instance.
+     *  Adds accounts, if needed
+     * */
+    private void recomputeInducementsIfNeeded(OrgType org, AttributeModificationType modification)
+            throws DatabaseCommunicationException, ObjectNotFoundException {
+
+        if(modification.getAttribute().equals("resourceInducements") || modification.getAttribute().equals("roleInducements")) {
+            modelService.recomputeOrganizationalUnit(org);
+        }
     }
 
     private FederationProvisioningRuleType findRuleForModification(AttributeModificationType modification, FederationProvisioningPolicyType policy){

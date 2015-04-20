@@ -6,6 +6,7 @@ import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.ProvisioningService;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
@@ -32,7 +33,9 @@ public class RestFederationService implements IFederationService{
      *  Single ModelService instance
      * */
     private static RestFederationService instance = null;
+
     private IModelService modelService;
+    private ProvisioningService provisioningService;
 
     public static RestFederationService getInstance(){
         if(instance == null){
@@ -48,6 +51,7 @@ public class RestFederationService implements IFederationService{
 
     public void initRestFederationService(){
         this.modelService = ModelService.getInstance();
+        this.provisioningService = ProvisioningService.getInstance();
     }
 
     private String getLocalFederationMemberIdentifier() throws DatabaseCommunicationException {
@@ -755,7 +759,7 @@ public class RestFederationService implements IFederationService{
             OrgType org = getOrgUnitByUniqueAttributeValue(currentMember, uniqueAttributeValue);
             ObjectModificationType modificationObject = orgChange.getModificationObject();
 
-            //TODO - process changes with some provisioning service here
+            provisioningService.applyProvisioningPolicy(org, modificationObject.getModificationList());
             return Response.status(HttpStatus.OK_200).entity("Org. changes processed correctly.").build();
 
         } catch (DatabaseCommunicationException e) {
@@ -766,6 +770,10 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: ", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: " + e).build();
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Could not correctly process received org. unit changes. Reason: ", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not correctly process received org. unit changes. Reason: " + e).build();
         }
     }
 

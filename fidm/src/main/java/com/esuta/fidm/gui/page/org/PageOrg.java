@@ -1756,9 +1756,30 @@ public class PageOrg extends PageBase {
                 OrgType oldOrg = modelService.readObject(OrgType.class, orgUnit.getUid());
                 ObjectModificationType modificationObject = getObjectChangeProcessor().getOrgModifications(oldOrg, orgUnit);
 
-                if(!isLocalOrgUnit()){
-                    getProvisioningService().applyProvisioningPolicy(oldOrg, modificationObject.getModificationList());
-                } else{
+                if(isLocalOrgUnit()){
+
+                    //First, apply local changes
+                    ObjectModificationType localModificationObject = getObjectChangeProcessor()
+                            .prepareLocalChanges(modificationObject, sharingPolicyModel.getObject());
+
+                    getProvisioningService().applyProvisioningPolicy(oldOrg, localModificationObject.getModificationList());
+
+                    //Then, filter changes that are distributed
+                    ObjectModificationType remoteModificationObject = getObjectChangeProcessor()
+                            .prepareDistributedChanges(modificationObject, sharingPolicyModel.getObject());
+
+                    //And send them to every copy of org. unit in federation
+                    for(ObjectReferenceType memberRef: oldOrg.getCopies()){
+                        String memberUid = memberRef.getUid();
+
+                        FederationMemberType member = modelService.readObject(FederationMemberType.class, memberUid);
+                        String uniqueOrgAttributeName = member.getUniqueOrgIdentifier();
+                        String uniqueAttributeValue = WebMiscUtil.getUniqueAttributeValue(oldOrg, uniqueOrgAttributeName);
+
+                        getFederationServiceClient().createPostOrgChangesRequest(member, uniqueAttributeValue, remoteModificationObject);
+                    }
+
+                } else {
 
                     //First, apply changes applicable only locally
                     ObjectModificationType localModificationObject = getObjectChangeProcessor()

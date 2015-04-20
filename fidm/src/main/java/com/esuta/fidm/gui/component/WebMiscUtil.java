@@ -28,6 +28,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -181,5 +182,14 @@ public final class WebMiscUtil {
         attributeList.add("resourceInducements");
         attributeList.add("roleInducements");
         return attributeList;
+    }
+
+    public static String getUniqueAttributeValue(ObjectType object, String uniqueAttributeName) throws NoSuchFieldException, IllegalAccessException {
+        String attributeValue;
+
+        Field attribute = object.getClass().getDeclaredField(uniqueAttributeName);
+        attribute.setAccessible(true);
+        attributeValue = (String)attribute.get(object);
+        return attributeValue;
     }
 }
