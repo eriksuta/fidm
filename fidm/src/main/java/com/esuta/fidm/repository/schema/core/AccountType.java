@@ -14,7 +14,6 @@ public class AccountType extends ObjectType{
     /**
      *  A system unique name of the account.
      * */
-    @Index(unique = "true")
     private String name;
 
     /**

@@ -130,7 +130,6 @@ public class InducementProcessor {
 
             ObjectReferenceType ownerReference = new ObjectReferenceType(user.getUid());
             newAccount.setOwner(ownerReference);
-            newAccount.setName(user.getName());
 
             try {
                 newAccount = modelService.createObject(newAccount);
@@ -142,6 +141,35 @@ public class InducementProcessor {
             } catch (ObjectAlreadyExistsException | DatabaseCommunicationException e) {
                 LOGGER.error("Could not create new account for user: '" + user.getUid() + "' on resource: '" + resourceUid + "'. ", e);
             }
+        }
+
+        //Remove accounts, if necessary
+        List<String> resourceInducementUids = new ArrayList<>();
+        for(InducementType inducement: resourceInducementIdentifiers){
+            resourceInducementUids.add(inducement.getUid());
+        }
+
+        try {
+
+            List<AssignmentType> assignmentsToRemove = new ArrayList<>();
+            for(AssignmentType accountAssignment: user.getAccounts()){
+                AccountType account = modelService.readObject(AccountType.class, accountAssignment.getUid());
+                String resourceUid = account.getResource().getUid();
+
+                if(!resourceInducementUids.contains(resourceUid) && accountAssignment.isAssignedByInducement()){
+                    assignmentsToRemove.add(accountAssignment);
+                }
+            }
+
+            for(AssignmentType assignmentToRemove: assignmentsToRemove){
+                AccountType account = modelService.readObject(AccountType.class, assignmentToRemove.getUid());
+                modelService.deleteObject(account);
+
+                user.getAccounts().remove(assignmentToRemove);
+                LOGGER.debug("Removing rp;e assignment with uid: '" + assignmentToRemove.getUid() + "' from user with uid: '" + user.getName() + "'.");
+            }
+        } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
+            LOGGER.error("Could not remove an account for user: '" + user.getUid() + "Reason: ", e);
         }
     }
 
@@ -171,16 +199,38 @@ public class InducementProcessor {
     }
 
     private void handleExistingUserRoleInducements(UserType user, List<InducementType> roleIdentifiers){
-        List<AssignmentType> userRoleAssignments = user.getRoleAssignments();
+        List<String> userRoleAssignmentUids = new ArrayList<>();
+        for(AssignmentType assignment: user.getRoleAssignments()){
+            userRoleAssignmentUids.add(assignment.getUid());
+        }
 
+        //Create role assignments, if needed
         for(InducementType roleInducement: roleIdentifiers){
-            AssignmentType roleAssignment = new AssignmentType(roleInducement.getUid());
 
-            if(!userRoleAssignments.contains(roleAssignment)){
-                roleAssignment.setAssignedByInducement(true);
-                user.getRoleAssignments().add(roleAssignment);
+            if(!userRoleAssignmentUids.contains(roleInducement.getUid())){
+                AssignmentType newAssignment = new AssignmentType(roleInducement.getUid());
+                newAssignment.setAssignedByInducement(true);
+                user.getRoleAssignments().add(newAssignment);
                 LOGGER.debug("New assignment of role with uid: '" + roleInducement.getUid() + "' added to user with uid: '" + user.getName() + "'.");
             }
+        }
+
+        //Remove inducement enforced role assignments, if there are any
+        List<String> roleInducementUids = new ArrayList<>();
+        for(InducementType inducement: roleIdentifiers){
+            roleInducementUids.add(inducement.getUid());
+        }
+
+        List<AssignmentType> assignmentsToRemove = new ArrayList<>();
+        for(AssignmentType roleAssignment: user.getRoleAssignments()){
+            if(!roleInducementUids.contains(roleAssignment.getUid()) && roleAssignment.isAssignedByInducement()){
+                assignmentsToRemove.add(roleAssignment);
+            }
+        }
+
+        for(AssignmentType assignmentToRemove: assignmentsToRemove){
+            user.getRoleAssignments().remove(assignmentToRemove);
+            LOGGER.debug("Removing rp;e assignment with uid: '" + assignmentToRemove.getUid() + "' from user with uid: '" + user.getName() + "'.");
         }
     }
 
