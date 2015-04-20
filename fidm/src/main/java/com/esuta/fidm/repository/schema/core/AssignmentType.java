@@ -26,6 +26,14 @@ public class AssignmentType implements Serializable{
     private String uid;
 
     /**
+     *  This attribute identifies the source of assignment. In general,
+     *  assignment may be manual (done by administrator by GUI) or
+     *  automatic - performed by system based on inducement configuration.
+     *  This attribute stores the information about it.
+     * */
+    private boolean assignedByInducement = false;
+
+    /**
      *  An identifier of the target object in remote identity provider.
      * */
     private FederationIdentifierType federationIdentifier;
@@ -53,6 +61,14 @@ public class AssignmentType implements Serializable{
         this.uid = uid;
     }
 
+    public boolean isAssignedByInducement() {
+        return assignedByInducement;
+    }
+
+    public void setAssignedByInducement(boolean assignedByInducement) {
+        this.assignedByInducement = assignedByInducement;
+    }
+
     public FederationIdentifierType getFederationIdentifier() {
         return federationIdentifier;
     }
@@ -76,17 +92,17 @@ public class AssignmentType implements Serializable{
 
         AssignmentType that = (AssignmentType) o;
 
+        if (assignedByInducement != that.assignedByInducement) return false;
         if (sharedInFederation != that.sharedInFederation) return false;
-        if (federationIdentifier != null ? !federationIdentifier.equals(that.federationIdentifier) : that.federationIdentifier != null)
-            return false;
         if (uid != null ? !uid.equals(that.uid) : that.uid != null) return false;
+        return !(federationIdentifier != null ? !federationIdentifier.equals(that.federationIdentifier) : that.federationIdentifier != null);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
         int result = uid != null ? uid.hashCode() : 0;
+        result = 31 * result + (assignedByInducement ? 1 : 0);
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         result = 31 * result + (sharedInFederation ? 1 : 0);
         return result;

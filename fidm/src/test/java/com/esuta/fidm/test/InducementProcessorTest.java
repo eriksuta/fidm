@@ -4,6 +4,8 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 /**
+ *  TODO - add tests that will consider assignment source (manual or inducement)
+ *
  * @author shood
  * */
 public class InducementProcessorTest {

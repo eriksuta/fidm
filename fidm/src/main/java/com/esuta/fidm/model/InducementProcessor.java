@@ -2,6 +2,7 @@ package com.esuta.fidm.model;
 
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
+import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.repository.schema.core.*;
 import org.apache.log4j.Logger;
 
@@ -135,6 +136,7 @@ public class InducementProcessor {
                 newAccount = modelService.createObject(newAccount);
 
                 AssignmentType accountAssignment = new AssignmentType(newAccount.getUid());
+                accountAssignment.setAssignedByInducement(true);
                 user.getAccounts().add(accountAssignment);
                 LOGGER.debug("New account with uid: '" + newAccount.getUid() + "' created on resource: '" + resourceUid + "' for user: '" + user.getUid() + "'.");
             } catch (ObjectAlreadyExistsException | DatabaseCommunicationException e) {
@@ -159,6 +161,7 @@ public class InducementProcessor {
                 newAccount = modelService.createObject(newAccount);
 
                 AssignmentType accountAssignment = new AssignmentType(newAccount.getUid());
+                accountAssignment.setAssignedByInducement(true);
                 user.getAccounts().add(accountAssignment);
                 LOGGER.debug("New account with uid: '" + newAccount.getUid() + "' created on resource: '" + inducementUid + "' for user: '" + user.getName() + "'.");
             } catch (ObjectAlreadyExistsException | DatabaseCommunicationException e) {
@@ -174,7 +177,7 @@ public class InducementProcessor {
             AssignmentType roleAssignment = new AssignmentType(roleInducement.getUid());
 
             if(!userRoleAssignments.contains(roleAssignment)){
-
+                roleAssignment.setAssignedByInducement(true);
                 user.getRoleAssignments().add(roleAssignment);
                 LOGGER.debug("New assignment of role with uid: '" + roleInducement.getUid() + "' added to user with uid: '" + user.getName() + "'.");
             }
@@ -184,6 +187,7 @@ public class InducementProcessor {
     private void handleNewUserRoleInducements(UserType user, List<InducementType> roleInducements){
         for(InducementType inducement: roleInducements){
             AssignmentType roleAssignment = new AssignmentType(inducement.getUid());
+            roleAssignment.setAssignedByInducement(true);
             user.getRoleAssignments().add(roleAssignment);
             LOGGER.debug("New assignment of role with uid: '" + inducement.getUid() + "' added to user with uid: '" + user.getUid() + "'.");
         }
