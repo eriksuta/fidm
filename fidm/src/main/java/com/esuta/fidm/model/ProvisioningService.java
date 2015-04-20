@@ -1,7 +1,9 @@
 package com.esuta.fidm.model;
 
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
+import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.AttributeModificationType;
 import com.esuta.fidm.repository.schema.support.ObjectModificationType;
@@ -155,7 +157,56 @@ public class ProvisioningService {
             if(jitModificationList.containsKey(orgRef.getUid())){
                 List<AttributeModificationType> modifications = jitModificationList.get(orgRef.getUid());
 
-                //TODO - continue here
+                for(AttributeModificationType modification: modifications){
+                    if(modification.getAttribute().equals("resourceInducements")){
+                        ObjectReferenceType newResourceRef = (ObjectReferenceType)JsonUtil
+                                .jsonToObject(modification.getNewValue(), ObjectReferenceType.class);
+
+                        ObjectReferenceType oldResourceRef = (ObjectReferenceType)JsonUtil
+                                .jsonToObject(modification.getOldValue(), ObjectReferenceType.class);
+
+                        switch (modification.getModificationType()){
+                            case ADD:
+                                addAccountToUser(user, newResourceRef);
+                                break;
+                            case MODIFY:
+                                removeAccountFromUser(user, oldResourceRef);
+                                addAccountToUser(user, newResourceRef);
+                                break;
+                            case DELETE:
+                                removeAccountFromUser(user, oldResourceRef);
+                                break;
+                            default:
+                                LOGGER.error("Invalid modification type. Could not process Just-In-Time provisioning modification.");
+                                break;
+                        }
+
+                    } else if (modification.getAttribute().equals("roleInducements")){
+                        ObjectReferenceType newRoleRef = (ObjectReferenceType)JsonUtil
+                                .jsonToObject(modification.getNewValue(), ObjectReferenceType.class);
+
+                        ObjectReferenceType oldRoleRef = (ObjectReferenceType)JsonUtil
+                                .jsonToObject(modification.getOldValue(), ObjectReferenceType.class);
+
+                        switch (modification.getModificationType()) {
+                            case ADD:
+                                addRoleToUser(user, newRoleRef);
+                                break;
+                            case MODIFY:
+                                removeRoleFromUser(user, oldRoleRef);
+                                addRoleToUser(user, newRoleRef);
+                                break;
+                            case DELETE:
+                                removeRoleFromUser(user, oldRoleRef);
+                                break;
+                            default:
+                                LOGGER.error("Invalid modification type. Could not process Just-In-Time provisioning modification.");
+                                break;
+                        }
+                    }
+                }
+
+                //Save user, if there were any changes
             }
         }
     }
@@ -179,6 +230,121 @@ public class ProvisioningService {
      * */
     private void createConstantProvisioningUpdateTask(OrgType org, List<AttributeModificationType> modifications, FederationProvisioningPolicyType policy){
         //TODO
+    }
+
+    /**
+     *  Simply adds a new role reference to the user, if it already does not exist
+     * */
+    private void addRoleToUser(UserType user, ObjectReferenceType roleReference){
+        if(user == null || roleReference == null){
+            return;
+        }
+
+        //Check, if role assignment already exists for this user
+        for(AssignmentType roleAssignment: user.getRoleAssignments()){
+            if(roleAssignment.getUid().equals(roleReference.getUid())){
+                LOGGER.debug("Could not add role assignment with uid: " + roleReference.getUid()
+                        + ". Such assignment already exists");
+                return;
+            }
+        }
+
+        //Create new role assignment
+        AssignmentType roleAssignment = new AssignmentType(roleReference.getUid());
+        roleAssignment.setAssignedByInducement(true);
+        user.getRoleAssignments().add(roleAssignment);
+        LOGGER.debug("New role assignment added to role: " + roleReference.getUid());
+    }
+
+    /**
+     *  Simply removes a role assignment, if such assignment exists.
+     * */
+    private void removeRoleFromUser(UserType user, ObjectReferenceType roleReference){
+        if(user == null || roleReference == null){
+            return;
+        }
+
+        AssignmentType assignmentToRemove = null;
+        for(AssignmentType roleAssignment: user.getRoleAssignments()){
+            if(roleAssignment.getUid().equals(roleReference.getUid())){
+                assignmentToRemove = roleAssignment;
+            }
+        }
+
+        if(assignmentToRemove != null && assignmentToRemove.isAssignedByInducement()){
+            user.getRoleAssignments().remove(assignmentToRemove);
+            LOGGER.debug("Removing role assignment to role: " + assignmentToRemove.getUid());
+            return;
+        }
+
+        LOGGER.debug("Could not remove role assignment. Assignment to role with uid: "
+                + roleReference.getUid() + " does not exists.");
+    }
+
+    /**
+     *  Adds an account to the user, if account on such resource does not exist
+     * */
+    private void addAccountToUser(UserType user, ObjectReferenceType resourceReference){
+        if(user == null || resourceReference == null){
+            return;
+        }
+
+        //Check, if user has an account on provided resource and add it, if not
+        try {
+            for(AssignmentType accountAssignment: user.getAccounts()){
+                AccountType account = modelService.readObject(AccountType.class, accountAssignment.getUid());
+
+                if(account != null && resourceReference.getUid().equals(account.getResource().getUid())){
+                    //Account exists, log this information and return to provisioning processing without
+                    //new account addition
+                    LOGGER.debug("Account not added. Account on provided resource already exists.");
+                    return;
+                }
+            }
+
+            AccountType account = new AccountType();
+            account.setOwner(new ObjectReferenceType(user.getUid()));
+            account.setResource(new ObjectReferenceType(resourceReference.getUid()));
+            account = modelService.createObject(account);
+
+            AssignmentType assignment = new AssignmentType(account.getUid());
+            assignment.setAssignedByInducement(true);
+            user.getAccounts().add(assignment);
+            LOGGER.debug("Creating new user account: " + assignment.getUid());
+
+        } catch (DatabaseCommunicationException | ObjectAlreadyExistsException e) {
+            LOGGER.error("Could not create new account. Reason: ", e);
+        }
+    }
+
+    /**
+     *  Removes an account from user, if it exists
+     * */
+    private void removeAccountFromUser(UserType user, ObjectReferenceType resourceReference){
+        if(user == null || resourceReference == null){
+            return;
+        }
+
+        //Check, if user has an account that is to be removed and remove it, if it exists
+        AssignmentType accountToRemove = null;
+        try {
+            for(AssignmentType accountAssignment: user.getAccounts()){
+                AccountType account = modelService.readObject(AccountType.class, accountAssignment.getUid());
+
+                if(account != null && resourceReference.getUid().equals(account.getResource().getUid())){
+                    accountToRemove = accountAssignment;
+                    modelService.deleteObject(account);
+                    break;
+                }
+            }
+
+            if (accountToRemove != null && accountToRemove.isAssignedByInducement()){
+                user.getAccounts().remove(accountToRemove);
+                LOGGER.debug("Removing user account with uid: " + accountToRemove.getUid());
+            }
+        } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
+            LOGGER.error("Could not remove an account from the user. Reason: ", e);
+        }
     }
 
     /**
