@@ -20,7 +20,7 @@ import java.util.UUID;
  * */
 public class RepositoryService implements IRepositoryService{
 
-    private static final transient Logger LOGGER = Logger.getLogger(RepositoryService.class);
+    private static final Logger LOGGER = Logger.getLogger(RepositoryService.class);
 
     /**
      *  Single RepositoryService instance
