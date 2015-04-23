@@ -1,6 +1,7 @@
 package com.esuta.fidm;
 
 import com.esuta.fidm.gui.page.dashboard.PageDashboard;
+import com.esuta.fidm.gui.page.login.PageLogin;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.model.federation.service.RestFederationService;
@@ -25,7 +26,7 @@ public class FederatedIDMApplication extends WebApplication{
 	 */
 	@Override
 	public Class<? extends WebPage> getHomePage(){
-		return PageDashboard.class;
+		return PageLogin.class;
 	}
 
     @Override
