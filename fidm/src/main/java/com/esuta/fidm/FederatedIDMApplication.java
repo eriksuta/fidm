@@ -6,6 +6,7 @@ import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.model.federation.service.RestFederationService;
 import com.esuta.fidm.repository.api.RepositoryService;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
+import com.esuta.fidm.repository.schema.core.UserType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.markup.html.WebPage;
@@ -82,15 +83,27 @@ public class FederatedIDMApplication extends WebApplication{
                 LOGGER.info("Creating initial system configuration object");
             }
 
+            addAdministrator(repositoryService);
+
         } catch (DatabaseCommunicationException | ObjectAlreadyExistsException e) {
             LOGGER.error("Could not read or save initial system configuration object", e);
         }
 
 //        Initialization of RestFederationService
         RestFederationService.getInstance();
-
-//        TODO - add initial configuration here
 	}
+
+    private void addAdministrator(RepositoryService service) throws ObjectAlreadyExistsException, DatabaseCommunicationException {
+        if(service.readObjectByName(UserType.class, "Administrator") != null){
+            return;
+        }
+
+        UserType user = new UserType();
+        user.setUid("00000000-0000-0000-0000-000000000002");
+        user.setName("Administrator");
+        user.setPassword("123456");
+        service.createObject(user);
+    }
 
     @Override
     protected void onDestroy() {
