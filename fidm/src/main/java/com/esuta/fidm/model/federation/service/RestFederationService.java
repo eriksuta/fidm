@@ -33,12 +33,12 @@ public class RestFederationService implements IFederationService{
     /**
      *  Single ModelService instance
      * */
-    private static RestFederationService instance = null;
+    private static IFederationService instance = null;
 
     private IModelService modelService;
     private IProvisioningService provisioningService;
 
-    public static RestFederationService getInstance(){
+    public static IFederationService getInstance(){
         if(instance == null){
             instance = new RestFederationService();
         }

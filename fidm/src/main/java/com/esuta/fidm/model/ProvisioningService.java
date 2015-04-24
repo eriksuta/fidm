@@ -1,5 +1,6 @@
 package com.esuta.fidm.model;
 
+import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
@@ -10,10 +11,7 @@ import com.esuta.fidm.repository.schema.support.AttributeModificationType;
 import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *  This service serves as a simple provisioning engine that takes care about change
@@ -206,8 +204,6 @@ public class ProvisioningService implements IProvisioningService{
                         }
                     }
                 }
-
-                //Save user, if there were any changes
             }
         }
     }
@@ -229,8 +225,47 @@ public class ProvisioningService implements IProvisioningService{
      *  in provided list. It also groups changes according to attributes and may create
      *  multiple tasks according to time options set in specific provisioning rules.
      * */
-    public void createConstantProvisioningUpdateTask(OrgType org, List<AttributeModificationType> modifications, FederationProvisioningPolicyType policy){
-        //TODO
+    public void createConstantProvisioningUpdateTask(final OrgType org, List<AttributeModificationType> modifications,
+                                                     FederationProvisioningPolicyType policy){
+
+        List<String> attributeNames = WebMiscUtil.createOrgAttributeList();
+
+        for(String attributeName: attributeNames){
+            final List<AttributeModificationType> attributeModifications = new ArrayList<>();
+
+            //First, select changes for current attribute
+            for(AttributeModificationType mod: modifications){
+                if(attributeName.equals(mod.getAttribute())){
+                    attributeModifications.add(mod);
+                }
+            }
+
+            if(attributeModifications.isEmpty()){
+                continue;
+            }
+
+            FederationProvisioningRuleType rule = findRuleForModification(attributeModifications.get(0), policy);
+            Date executionTime = rule == null ? policy.getDefaultExecutionTime() : rule.getExecutionTime();
+
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+
+                @Override
+                public void run() {
+                    try {
+                        for(AttributeModificationType modification: attributeModifications){
+                            changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
+                            recomputeInducementsIfNeeded(org, modification);
+                        }
+                        LOGGER.info("Timer task applied all modifications for org: " + org.getName());
+                    } catch (ObjectNotFoundException | DatabaseCommunicationException | IllegalAccessException | NoSuchFieldException e) {
+                        LOGGER.error("Could not apply object modification on org. unit.");
+                    }
+                }
+
+            }, executionTime);
+            LOGGER.info("New timer task created for changes in org. " + org.getName());
+        }
     }
 
     /**
@@ -251,10 +286,15 @@ public class ProvisioningService implements IProvisioningService{
         }
 
         //Create new role assignment
-        AssignmentType roleAssignment = new AssignmentType(roleReference.getUid());
-        roleAssignment.setAssignedByInducement(true);
-        user.getRoleAssignments().add(roleAssignment);
-        LOGGER.debug("New role assignment added to role: " + roleReference.getUid());
+        try {
+            AssignmentType roleAssignment = new AssignmentType(roleReference.getUid());
+            roleAssignment.setAssignedByInducement(true);
+            user.getRoleAssignments().add(roleAssignment);
+            modelService.updateObject(user);
+            LOGGER.debug("New role assignment added to role: " + roleReference.getUid());
+        } catch (ObjectNotFoundException | DatabaseCommunicationException e) {
+            LOGGER.error("Could not create new role assignment in user. Reason: ", e);
+        }
     }
 
     /**
@@ -272,10 +312,15 @@ public class ProvisioningService implements IProvisioningService{
             }
         }
 
-        if(assignmentToRemove != null && assignmentToRemove.isAssignedByInducement()){
-            user.getRoleAssignments().remove(assignmentToRemove);
-            LOGGER.debug("Removing role assignment to role: " + assignmentToRemove.getUid());
-            return;
+        try {
+            if(assignmentToRemove != null && assignmentToRemove.isAssignedByInducement()){
+                user.getRoleAssignments().remove(assignmentToRemove);
+                modelService.updateObject(user);
+                LOGGER.debug("Removing role assignment to role: " + assignmentToRemove.getUid());
+                return;
+            }
+        } catch (ObjectNotFoundException | DatabaseCommunicationException e) {
+            LOGGER.error("Could not remove role assignment from the user. Reason: ", e);
         }
 
         LOGGER.debug("Could not remove role assignment. Assignment to role with uid: "
@@ -345,6 +390,7 @@ public class ProvisioningService implements IProvisioningService{
 
             if (accountToRemove != null && accountToRemove.isAssignedByInducement()){
                 user.getAccounts().remove(accountToRemove);
+                modelService.updateObject(user);
                 LOGGER.debug("Removing user account with uid: " + accountToRemove.getUid());
             }
         } catch (DatabaseCommunicationException | ObjectNotFoundException e) {

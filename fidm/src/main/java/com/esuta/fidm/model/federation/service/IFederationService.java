@@ -29,7 +29,7 @@ public interface IFederationService {
      *                   identifier of requested federation member etc.
      *
      * */
-    public Response getFederationIdentifier();
+    Response getFederationIdentifier();
 
     /**
      *  <p>
@@ -64,7 +64,7 @@ public interface IFederationService {
      *                   in internal identity providers operations, such as handling the uniqueness
      *                   of requested federation member etc.
      * */
-    public Response handleFederationRequest(FederationMembershipRequest membershipRequest);
+    Response handleFederationRequest(FederationMembershipRequest membershipRequest);
 
     /**
      *  <p>
@@ -94,7 +94,7 @@ public interface IFederationService {
      *                   in internal identity providers operations, such as handling the uniqueness
      *                   of requested federation member etc.
      * */
-    public Response handleFederationResponse(FederationMembershipRequest membershipResponse);
+    Response handleFederationResponse(FederationMembershipRequest membershipResponse);
 
     /**
      *  <p>
@@ -125,7 +125,7 @@ public interface IFederationService {
      *                   error on the server side of federation member processing the request, such
      *                   as problems with reading or updating objects in repository.
      * */
-    public Response handleFederationDeleteRequest(FederationMembershipRequest deletionRequest);
+    Response handleFederationDeleteRequest(FederationMembershipRequest deletionRequest);
 
     /**
      *  <p>
@@ -158,7 +158,7 @@ public interface IFederationService {
      *                   error on the server side of federation member processing the request, such
      *                   as problems with reading or deleting objects in repository.
      * */
-    public Response handleFederationDeleteResponse(FederationMembershipRequest deletionResponse);
+    Response handleFederationDeleteResponse(FederationMembershipRequest deletionResponse);
 
     /**
      *  <p>
@@ -191,7 +191,7 @@ public interface IFederationService {
      *                   error on the server side of federation member processing the request, such
      *                   as problems with reading objects in repository.
      * */
-    public Response getSharedOrgUnitCount(String memberIdentifier);
+    Response getSharedOrgUnitCount(String memberIdentifier);
 
     /**
      *  <p>
@@ -224,7 +224,7 @@ public interface IFederationService {
      *                   error on the server side of federation member processing the request, such
      *                   as problems with reading objects in repository.
      * */
-    public Response getSharedOrgUnits(String memberIdentifier);
+    Response getSharedOrgUnits(String memberIdentifier);
 
     /**
      *  <p>
@@ -262,7 +262,7 @@ public interface IFederationService {
      *                   as problems with reading objects in repository.
      *
      * */
-    public Response getOrgUnit(String memberIdentifier, String uniqueAttributeValue);
+    Response getOrgUnit(String memberIdentifier, String uniqueAttributeValue);
 
     /**
      *  <p>
@@ -307,7 +307,7 @@ public interface IFederationService {
      *                   error on the server side of federation member processing the request, such
      *                   as problems with reading objects in repository.
      * */
-    public Response getObjectInformation(String memberIdentifier, String uniqueAttributeValue, String objectType);
+    Response getObjectInformation(String memberIdentifier, String uniqueAttributeValue, String objectType);
 
     /**
      *  <p>
@@ -348,7 +348,7 @@ public interface IFederationService {
      *                   as problems with reading objects in repository.
      *
      * */
-    public Response getOrgSharingPolicy(String memberIdentifier, String uniqueAttributeValue);
+    Response getOrgSharingPolicy(String memberIdentifier, String uniqueAttributeValue);
 
     /**
      *  <p>
@@ -385,7 +385,7 @@ public interface IFederationService {
      *                   as problems with reading objects in repository.
      *
      * */
-    public Response processOrgChanges(OrgChangeWrapper orgChange);
+    Response processOrgChanges(OrgChangeWrapper orgChange);
 
     /**
      *  <p>
@@ -425,5 +425,5 @@ public interface IFederationService {
      *                   as problems with reading objects in repository.
      *
      * */
-    public Response removeOrgLink(String memberIdentifier, String uniqueAttributeValue);
+    Response removeOrgLink(String memberIdentifier, String uniqueAttributeValue);
 }
