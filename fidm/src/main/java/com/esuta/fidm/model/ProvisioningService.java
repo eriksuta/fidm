@@ -356,6 +356,7 @@ public class ProvisioningService implements IProvisioningService{
             throws DatabaseCommunicationException, ObjectNotFoundException {
 
         if(modification.getAttribute().equals("resourceInducements") || modification.getAttribute().equals("roleInducements")) {
+            modelService.updateObject(org);
             modelService.recomputeOrganizationalUnit(org);
         }
     }
