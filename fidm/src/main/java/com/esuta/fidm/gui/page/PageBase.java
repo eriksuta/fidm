@@ -64,6 +64,7 @@ public abstract class PageBase extends WebPage{
     private static final String ID_FEEDBACK = "feedback";
 
     public static final String SYSTEM_CONFIG_UID = "00000000-0000-0000-0000-000000000001";
+    public static final String ADMINISTRATOR_UID = "00000000-0000-0000-0000-000000000002";
 
     public PageBase(){
         this(null);

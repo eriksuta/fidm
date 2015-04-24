@@ -1,5 +1,6 @@
 package com.esuta.fidm.gui.page.login;
 
+import com.esuta.fidm.gui.component.CustomFeedbackPanel;
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.dashboard.PageDashboard;
@@ -20,6 +21,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.form.*;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
@@ -42,6 +44,8 @@ public class PageLogin extends WebPage {
     private transient IAuthService authService;
 
     private static final String ID_LOGIN_FORM = "loginForm";
+    private static final String ID_FEEDBACK_CONTAINER = "feedbackContainer";
+    private static final String ID_FEEDBACK = "feedback";
     private static final String ID_NAME = "name";
     private static final String ID_PASSWORD = "password";
     private static final String ID_LOGIN_TO_RESOURCE = "logToResource";
@@ -67,6 +71,14 @@ public class PageLogin extends WebPage {
     }
 
     private void initLayout(){
+        WebMarkupContainer feedbackContainer = new WebMarkupContainer(ID_FEEDBACK_CONTAINER);
+        feedbackContainer.setOutputMarkupId(true);
+        add(feedbackContainer);
+
+        final FeedbackPanel feedback = new CustomFeedbackPanel(ID_FEEDBACK);
+        feedback.setOutputMarkupId(true);
+        feedbackContainer.add(feedback);
+
         Form loginForm = new Form(ID_LOGIN_FORM);
         loginForm.setOutputMarkupId(true);
         add(loginForm);
@@ -79,6 +91,7 @@ public class PageLogin extends WebPage {
 
         final WebMarkupContainer resourceContainer = new WebMarkupContainer(ID_RESOURCE_CONTAINER);
         resourceContainer.setOutputMarkupId(true);
+        resourceContainer.setOutputMarkupPlaceholderTag(true);
         resourceContainer.add(new VisibleEnableBehavior() {
 
             @Override
@@ -118,11 +131,16 @@ public class PageLogin extends WebPage {
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
                 error("Could not login. Form validation problem");
+                target.add(getFeedbackPanel());
             }
         };
         loginForm.add(login);
 
         info("If you don't have an account, please use default account: 'Administrator' with password: '123456'.");
+    }
+
+    private WebMarkupContainer getFeedbackPanel(){
+        return (WebMarkupContainer) get(ID_FEEDBACK_CONTAINER);
     }
 
     private List<String> prepareResourceList(){
@@ -154,6 +172,7 @@ public class PageLogin extends WebPage {
                 StringUtils.isEmpty(name) || StringUtils.isEmpty(password)){
             error("Name or password fields are empty. Specify these fields to login. " +
                     "Or use default account 'Administrator', with password '123456'.");
+            target.add(getFeedbackPanel());
             return;
         }
 
@@ -167,6 +186,7 @@ public class PageLogin extends WebPage {
 
                 if(resourceName == null || StringUtils.isEmpty(resourceName)){
                     error("You must specify a resource to log to.");
+                    target.add(getFeedbackPanel());
                     return;
                 }
 
@@ -197,6 +217,6 @@ public class PageLogin extends WebPage {
             error("Can't perform login operation. Internal server error.");
         }
 
-        target.add();
+        target.add(getFeedbackPanel());
     }
 }
