@@ -1699,7 +1699,7 @@ public class PageOrg extends PageBase {
     }
 
     private void savePerformed(AjaxRequestTarget target){
-        ModelService modelService = getModelService();
+        ModelService modelService = (ModelService) getModelService();
         OrgType orgUnit;
 
         if(model == null || model.getObject() == null){

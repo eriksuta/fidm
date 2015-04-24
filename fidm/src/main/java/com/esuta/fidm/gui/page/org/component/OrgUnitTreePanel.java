@@ -417,7 +417,7 @@ public class OrgUnitTreePanel extends Panel {
 
     private void deleteRootPerformed(AjaxRequestTarget target){
         String rootOrgUid = rootUidModel.getObject();
-        ModelService modelService = getPageBase().getModelService();
+        ModelService modelService = (ModelService) getPageBase().getModelService();
 
         try {
             OrgType root = modelService.readObject(OrgType.class, rootOrgUid);

@@ -4,10 +4,12 @@ import com.esuta.fidm.gui.component.CustomFeedbackPanel;
 import com.esuta.fidm.gui.component.nav.RightNavigationMenu;
 import com.esuta.fidm.gui.page.config.PageDebugList;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.ObjectChangeProcessor;
 import com.esuta.fidm.model.ProvisioningService;
 import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
+import com.esuta.fidm.model.util.IProvisioningService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
@@ -33,7 +35,7 @@ public abstract class PageBase extends WebPage{
     /**
      *  Every page is able to communicate with model through this ModelService instance
      * */
-    private transient ModelService modelService;
+    private transient IModelService modelService;
 
     /**
      *  Every page is able to communicate with other federation members using this federation service rest client instance
@@ -49,7 +51,7 @@ public abstract class PageBase extends WebPage{
      *  A component that takes care about provisioning. It processes all incoming changes regarding
      *  org. units and performs processing and change application due to defined provisioning rules.
      * */
-    private transient ProvisioningService provisioningService;
+    private transient IProvisioningService provisioningService;
 
     //Constant used to identify page parameter name (uid) - used when editing objects
     public static final String UID_PAGE_PARAMETER_NAME = "uid";
@@ -107,7 +109,7 @@ public abstract class PageBase extends WebPage{
         return new StringResourceModel(resourceKey, this, new Model<String>(), resourceKey, objects);
     }
 
-    public ModelService getModelService(){
+    public IModelService getModelService(){
         if(modelService == null){
             modelService = ModelService.getInstance();
         }
@@ -131,7 +133,7 @@ public abstract class PageBase extends WebPage{
         return objectChangeProcessor;
     }
 
-    public ProvisioningService getProvisioningService() {
+    public IProvisioningService getProvisioningService() {
         if(provisioningService == null){
             provisioningService = ProvisioningService.getInstance();
         }

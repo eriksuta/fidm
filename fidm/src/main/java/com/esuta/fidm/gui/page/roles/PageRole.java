@@ -125,7 +125,7 @@ public class PageRole extends PageBase {
     }
 
     private void savePerformed(AjaxRequestTarget target){
-        ModelService modelService = getModelService();
+        ModelService modelService = (ModelService) getModelService();
         RoleType role;
 
         if(model == null || model.getObject() == null){

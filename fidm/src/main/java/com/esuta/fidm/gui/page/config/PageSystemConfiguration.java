@@ -113,7 +113,7 @@ public class PageSystemConfiguration extends PageBase {
     }
 
     private void savePerformed(AjaxRequestTarget target){
-        ModelService modelService = getModelService();
+        ModelService modelService = (ModelService) getModelService();
         SystemConfigurationType systemConfig;
 
         if(model == null || model.getObject() == null){

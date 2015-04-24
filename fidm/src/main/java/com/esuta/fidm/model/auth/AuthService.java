@@ -4,6 +4,7 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.ProvisioningService;
+import com.esuta.fidm.model.util.IProvisioningService;
 import com.esuta.fidm.repository.schema.core.AccountType;
 import com.esuta.fidm.repository.schema.core.AssignmentType;
 import com.esuta.fidm.repository.schema.core.ResourceType;
@@ -35,7 +36,7 @@ public class AuthService implements IAuthService{
      *  An instance of provisioning service - to perform a check, if
      *  user is trying to log to resource in federation.
      * */
-    private ProvisioningService provisioningService;
+    private IProvisioningService provisioningService;
 
     private AuthService(){
         modelService = ModelService.getInstance();

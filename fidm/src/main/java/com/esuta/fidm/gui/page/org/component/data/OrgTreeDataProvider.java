@@ -2,6 +2,7 @@ package com.esuta.fidm.gui.page.org.component.data;
 
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
 import com.esuta.fidm.repository.schema.core.OrgType;
@@ -34,7 +35,7 @@ public class OrgTreeDataProvider extends SortableTreeProvider<OrgType, String>{
         this.rootUidModel = rootUidModel;
     }
 
-    private ModelService getModelService() {
+    private IModelService getModelService() {
         PageBase page = (PageBase) component.getPage();
         return page.getModelService();
     }

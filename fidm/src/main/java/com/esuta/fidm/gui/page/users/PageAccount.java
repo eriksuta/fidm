@@ -287,7 +287,7 @@ public class PageAccount extends PageBase{
     }
 
     private void savePerformed(AjaxRequestTarget target){
-        ModelService modelService = getModelService();
+        ModelService modelService = (ModelService) getModelService();
         AccountType account;
 
         if(model == null || model.getObject() == null){

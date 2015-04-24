@@ -7,6 +7,7 @@ import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.ProvisioningService;
+import com.esuta.fidm.model.util.IProvisioningService;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
@@ -35,7 +36,7 @@ public class RestFederationService implements IFederationService{
     private static RestFederationService instance = null;
 
     private IModelService modelService;
-    private ProvisioningService provisioningService;
+    private IProvisioningService provisioningService;
 
     public static RestFederationService getInstance(){
         if(instance == null){

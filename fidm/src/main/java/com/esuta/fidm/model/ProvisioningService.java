@@ -3,6 +3,7 @@ package com.esuta.fidm.model;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
+import com.esuta.fidm.model.util.IProvisioningService;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.AttributeModificationType;
@@ -23,7 +24,7 @@ import java.util.Map;
  *
  *  @author shood
  * */
-public class ProvisioningService {
+public class ProvisioningService implements IProvisioningService{
 
     private static final Logger LOGGER = Logger.getLogger(ProvisioningService.class);
 
@@ -41,7 +42,7 @@ public class ProvisioningService {
     /**
      *  Model service instance for all kinds of support operations
      * */
-    private ModelService modelService;
+    private IModelService modelService;
 
     /**
      *  A special map of changes for individual org. units (represented by uid of org. unit).
@@ -228,7 +229,7 @@ public class ProvisioningService {
      *  in provided list. It also groups changes according to attributes and may create
      *  multiple tasks according to time options set in specific provisioning rules.
      * */
-    private void createConstantProvisioningUpdateTask(OrgType org, List<AttributeModificationType> modifications, FederationProvisioningPolicyType policy){
+    public void createConstantProvisioningUpdateTask(OrgType org, List<AttributeModificationType> modifications, FederationProvisioningPolicyType policy){
         //TODO
     }
 

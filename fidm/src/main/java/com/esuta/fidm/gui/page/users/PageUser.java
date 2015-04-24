@@ -684,7 +684,7 @@ public class PageUser extends PageBase {
     }
 
     private void savePerformed(AjaxRequestTarget target){
-        ModelService modelService = getModelService();
+        ModelService modelService = (ModelService) getModelService();
         UserTypeDto userDto;
         UserType user;
 

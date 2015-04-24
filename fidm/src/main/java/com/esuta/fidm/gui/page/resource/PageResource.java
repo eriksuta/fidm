@@ -312,7 +312,7 @@ public class PageResource extends PageBase {
     }
 
     private void savePerformed(AjaxRequestTarget target){
-        ModelService modelService = getModelService();
+        ModelService modelService = (ModelService) getModelService();
         ResourceType resource;
 
         if(model == null || model.getObject() == null){

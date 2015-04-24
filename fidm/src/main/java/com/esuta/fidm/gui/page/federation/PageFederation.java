@@ -681,7 +681,7 @@ public class PageFederation extends PageBase {
     }
 
     private void savePerformed(AjaxRequestTarget target){
-        ModelService modelService = getModelService();
+        ModelService modelService = (ModelService) getModelService();
         FederationMemberType federationMember;
 
         if(model == null || model.getObject() == null){

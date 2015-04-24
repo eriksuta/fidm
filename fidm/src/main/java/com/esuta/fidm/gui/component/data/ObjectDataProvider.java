@@ -1,6 +1,7 @@
 package com.esuta.fidm.gui.component.data;
 
 import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.repository.schema.core.ObjectType;
 import org.apache.log4j.Logger;
@@ -71,7 +72,7 @@ public class ObjectDataProvider<T extends ObjectType> extends SortableDataProvid
         throw new IllegalStateException("Provided component is nor an instance of 'PageBase' neither is it placed on page of that instance.");
     }
 
-    protected ModelService getModelService() throws IllegalStateException{
+    protected IModelService getModelService() throws IllegalStateException{
         return getPageBase().getModelService();
     }
 
