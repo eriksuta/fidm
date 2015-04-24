@@ -306,15 +306,19 @@ public class ProvisioningService implements IProvisioningService{
             AccountType account = new AccountType();
             account.setOwner(new ObjectReferenceType(user.getUid()));
             account.setResource(new ObjectReferenceType(resourceReference.getUid()));
+            account.setPassword(user.getPassword());
             account = modelService.createObject(account);
 
             AssignmentType assignment = new AssignmentType(account.getUid());
             assignment.setAssignedByInducement(true);
             user.getAccounts().add(assignment);
+            modelService.updateObject(user);
             LOGGER.debug("Creating new user account: " + assignment.getUid());
 
         } catch (DatabaseCommunicationException | ObjectAlreadyExistsException e) {
             LOGGER.error("Could not create new account. Reason: ", e);
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Could not update the user. Reason: ", e);
         }
     }
 
@@ -366,7 +370,8 @@ public class ProvisioningService implements IProvisioningService{
         ModificationType modificationType = modification.getModificationType();
 
         for(FederationProvisioningRuleType rule: policy.getRules()){
-            if(attributeName.equals(rule.getAttributeName()) && modificationType.equals(rule.getModificationType())){
+            if(attributeName.equals(rule.getAttributeName()) &&
+                    (modificationType.equals(rule.getModificationType()) || ModificationType.ALL.equals(rule.getModificationType()))){
                 return rule;
             }
         }

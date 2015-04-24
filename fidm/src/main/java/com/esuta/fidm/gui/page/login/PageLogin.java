@@ -8,10 +8,13 @@ import com.esuta.fidm.gui.page.login.dto.LoginDto;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.ProvisioningService;
 import com.esuta.fidm.model.auth.AuthResult;
 import com.esuta.fidm.model.auth.AuthService;
 import com.esuta.fidm.model.auth.IAuthService;
+import com.esuta.fidm.model.util.IProvisioningService;
 import com.esuta.fidm.repository.schema.core.ResourceType;
+import com.esuta.fidm.repository.schema.core.UserType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -43,6 +46,9 @@ public class PageLogin extends WebPage {
     //the system, or to one accounts on connected resources
     private transient IAuthService authService;
 
+    //Provisioning service - needed when user tries to log in to an account
+    private transient IProvisioningService provisioningService;
+
     private static final String ID_LOGIN_FORM = "loginForm";
     private static final String ID_FEEDBACK_CONTAINER = "feedbackContainer";
     private static final String ID_FEEDBACK = "feedback";
@@ -58,6 +64,7 @@ public class PageLogin extends WebPage {
     public PageLogin(){
         modelService = ModelService.getInstance();
         authService = AuthService.getInstance();
+        provisioningService = ProvisioningService.getInstance();
 
         loginModel = new LoadableModel<LoginDto>(false) {
 
@@ -190,6 +197,8 @@ public class PageLogin extends WebPage {
                     return;
                 }
 
+                provisioningService.checkJitProvisioningList(modelService.readObjectByName(UserType.class, name),
+                        modelService.readObjectByName(ResourceType.class, resourceName));
                 result = authService.loginToResource(name, password, resourceName);
             }
 

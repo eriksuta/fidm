@@ -127,6 +127,7 @@ public class InducementProcessor {
 
             AccountType newAccount = new AccountType();
             newAccount.setResource(resourceReference);
+            newAccount.setPassword(user.getPassword());
 
             ObjectReferenceType ownerReference = new ObjectReferenceType(user.getUid());
             newAccount.setOwner(ownerReference);
@@ -180,6 +181,7 @@ public class InducementProcessor {
 
             ObjectReferenceType resourceReference = new ObjectReferenceType(inducementUid);
             newAccount.setResource(resourceReference);
+            newAccount.setPassword(user.getPassword());
 
             ObjectReferenceType ownerReference = new ObjectReferenceType(user.getUid());
             newAccount.setOwner(ownerReference);
