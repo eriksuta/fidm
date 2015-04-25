@@ -23,7 +23,9 @@ import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
 import com.esuta.fidm.model.federation.service.ObjectInformation;
+import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
+import com.esuta.fidm.repository.schema.support.AttributeModificationType;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import org.apache.commons.lang3.StringUtils;
@@ -811,7 +813,7 @@ public class PageOrg extends PageBase {
 
                     for(ResourceType resource: list){
                         for(InducementType resourceInducement: org.getResourceInducements()){
-                            if(resourceInducement.getUid().equals(resource.getUid())){
+                            if(resourceInducement.getFederationIdentifier() == null && resourceInducement.getUid().equals(resource.getUid())){
                                 resourceInducementList.add(resource);
                                 break;
                             }
@@ -869,7 +871,7 @@ public class PageOrg extends PageBase {
 
                     for(RoleType role: list){
                         for(InducementType roleInducement: org.getRoleInducements()){
-                            if(roleInducement.getUid().equals(role.getUid())){
+                            if(roleInducement.getFederationIdentifier() == null && roleInducement.getUid().equals(role.getUid())){
                                 roleInducementList.add(role);
                                 break;
                             }
@@ -1698,6 +1700,55 @@ public class PageOrg extends PageBase {
         }
     }
 
+    private void createRemoteReferencesIfNeeded(ObjectModificationType modificationObject, OrgType org, FederationMemberType member)
+            throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
+
+        for(AttributeModificationType modification: modificationObject.getModificationList()){
+            if("resourceInducements".equals(modification.getAttribute())
+                    || "roleInducements".equals(modification.getAttribute())){
+
+                switch (modification.getModificationType()){
+                    case ADD:
+                        modification.setNewValue(createFederationInducement(modification.getNewValue(), modification.getAttribute(), member));
+                        break;
+                    case DELETE:
+                        modification.setOldValue(createFederationInducement(modification.getOldValue(), modification.getAttribute(), member));
+                        break;
+                    case MODIFY:
+                        modification.setOldValue(createFederationInducement(modification.getOldValue(), modification.getAttribute(), member));
+                        modification.setNewValue(createFederationInducement(modification.getNewValue(), modification.getAttribute(), member));
+                        break;
+                    default:
+                        LOGGER.error("Invalid modification type.");
+                        break;
+                }
+            }
+        }
+    }
+
+    private String createFederationInducement(String oldValue, String attributeName, FederationMemberType member)
+            throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
+
+        InducementType inducement = (InducementType) JsonUtil.jsonToObject(oldValue, InducementType.class);
+
+        String objectUid = inducement.getUid();
+        Class<? extends ObjectType> type = attributeName.equals("resourceInducements") ? ResourceType.class : RoleType.class;
+        String uniqueAttributeName = attributeName.equals("resourceInducements") ? member.getUniqueResourceIdentifier() : member.getUniqueRoleIdentifier();
+
+
+        ObjectType object = getModelService().readObject(type, objectUid);
+
+        FederationIdentifierType identifier = new FederationIdentifierType();
+        identifier.setFederationMemberId(getLocalFederationMemberIdentifier());
+        identifier.setObjectType(object.getClass().getCanonicalName());
+        identifier.setUniqueAttributeValue(getUniqueAttributeValue(object, uniqueAttributeName));
+
+        inducement.setUid(null);
+        inducement.setFederationIdentifier(identifier);
+
+        return JsonUtil.objectToJson(inducement);
+    }
+
     private void savePerformed(AjaxRequestTarget target){
         ModelService modelService = (ModelService) getModelService();
         OrgType orgUnit;
@@ -1769,6 +1820,7 @@ public class PageOrg extends PageBase {
                         String uniqueOrgAttributeName = member.getUniqueOrgIdentifier();
                         String uniqueAttributeValue = WebMiscUtil.getUniqueAttributeValue(oldOrg, uniqueOrgAttributeName);
 
+                        createRemoteReferencesIfNeeded(modificationObject, oldOrg, member);
                         getFederationServiceClient().createPostOrgChangesRequest(member, uniqueAttributeValue, modificationObject);
                     }
 

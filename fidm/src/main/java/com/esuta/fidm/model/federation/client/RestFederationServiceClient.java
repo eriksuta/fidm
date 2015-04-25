@@ -349,7 +349,7 @@ public class RestFederationServiceClient {
 
         String jsonRequest = JsonUtil.objectToJson(requestObject);
 
-        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
+        ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
 
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);

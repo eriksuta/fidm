@@ -11,6 +11,7 @@ import com.esuta.fidm.model.ProvisioningService;
 import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
 import com.esuta.fidm.model.util.IProvisioningService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
+import com.esuta.fidm.repository.schema.core.ObjectType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
@@ -23,6 +24,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -176,5 +178,19 @@ public abstract class PageBase extends WebPage{
         }
 
         return memberToRetrieve;
+    }
+
+    public String getLocalFederationMemberIdentifier() throws DatabaseCommunicationException {
+        SystemConfigurationType systemConfiguration = modelService.readObject(SystemConfigurationType.class, PageBase.SYSTEM_CONFIG_UID);
+        return systemConfiguration.getIdentityProviderIdentifier();
+    }
+
+    public String getUniqueAttributeValue(ObjectType object, String uniqueAttributeName) throws NoSuchFieldException, IllegalAccessException {
+        String attributeValue;
+
+        Field attribute = object.getClass().getDeclaredField(uniqueAttributeName);
+        attribute.setAccessible(true);
+        attributeValue = (String)attribute.get(object);
+        return attributeValue;
     }
 }
