@@ -4,7 +4,7 @@ import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.ProvisioningService;
-import com.esuta.fidm.model.util.IProvisioningService;
+import com.esuta.fidm.model.IProvisioningService;
 import com.esuta.fidm.repository.schema.core.AccountType;
 import com.esuta.fidm.repository.schema.core.AssignmentType;
 import com.esuta.fidm.repository.schema.core.ResourceType;

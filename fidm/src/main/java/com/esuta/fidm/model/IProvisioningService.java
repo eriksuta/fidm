@@ -1,4 +1,4 @@
-package com.esuta.fidm.model.util;
+package com.esuta.fidm.model;
 
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;

@@ -12,7 +12,7 @@ import com.esuta.fidm.model.ProvisioningService;
 import com.esuta.fidm.model.auth.AuthResult;
 import com.esuta.fidm.model.auth.AuthService;
 import com.esuta.fidm.model.auth.IAuthService;
-import com.esuta.fidm.model.util.IProvisioningService;
+import com.esuta.fidm.model.IProvisioningService;
 import com.esuta.fidm.repository.schema.core.ResourceType;
 import com.esuta.fidm.repository.schema.core.UserType;
 import org.apache.commons.lang3.StringUtils;

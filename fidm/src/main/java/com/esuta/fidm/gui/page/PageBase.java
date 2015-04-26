@@ -9,7 +9,7 @@ import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.ObjectChangeProcessor;
 import com.esuta.fidm.model.ProvisioningService;
 import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
-import com.esuta.fidm.model.util.IProvisioningService;
+import com.esuta.fidm.model.IProvisioningService;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.ObjectType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
