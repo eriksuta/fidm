@@ -143,7 +143,7 @@ public class OrgType extends ObjectType{
      *  attribute is set to true. If set to false, only this org. unit
      *  is shared among federation members, not it's subtree.
      * */
-    private boolean sharedSubtree;
+    private boolean shareSubtree;
 
     /**
      *  An attribute used to override the decision of parent org. unit.
@@ -259,12 +259,12 @@ public class OrgType extends ObjectType{
         this.sharedInFederation = sharedInFederation;
     }
 
-    public boolean isSharedSubtree() {
-        return sharedSubtree;
+    public boolean isShareSubtree() {
+        return shareSubtree;
     }
 
-    public void setSharedSubtree(boolean sharedSubtree) {
-        this.sharedSubtree = sharedSubtree;
+    public void setShareSubtree(boolean shareSubtree) {
+        this.shareSubtree = shareSubtree;
     }
 
     public boolean isOverrideParentSharing() {
@@ -313,7 +313,7 @@ public class OrgType extends ObjectType{
 
         if (overrideParentSharing != orgType1.overrideParentSharing) return false;
         if (sharedInFederation != orgType1.sharedInFederation) return false;
-        if (sharedSubtree != orgType1.sharedSubtree) return false;
+        if (shareSubtree != orgType1.shareSubtree) return false;
         if (copies != null ? !copies.equals(orgType1.copies) : orgType1.copies != null) return false;
         if (displayName != null ? !displayName.equals(orgType1.displayName) : orgType1.displayName != null)
             return false;
@@ -353,7 +353,7 @@ public class OrgType extends ObjectType{
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         result = 31 * result + (copies != null ? copies.hashCode() : 0);
         result = 31 * result + (sharedInFederation ? 1 : 0);
-        result = 31 * result + (sharedSubtree ? 1 : 0);
+        result = 31 * result + (shareSubtree ? 1 : 0);
         result = 31 * result + (overrideParentSharing ? 1 : 0);
         return result;
     }

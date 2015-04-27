@@ -32,7 +32,7 @@ public enum MultiValueTolerance implements Serializable{
      *  values of multi-value attribute, however the changes are still
      *  only applied on local values of such org. unit
      * */
-    ALLOW_CHANGE_OWN,
+    ALLOW_MODIFY_OWN,
 
     /**
      *  An origin. org unit allows the copy of org. unit in federation
@@ -49,5 +49,5 @@ public enum MultiValueTolerance implements Serializable{
      *  as well as on every other copy of org. unit in identity
      *  federation.
      * */
-    ALLOW_CHANGE
+    ALLOW_MODIFY
 }

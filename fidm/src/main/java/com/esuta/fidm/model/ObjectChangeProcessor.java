@@ -153,7 +153,7 @@ public class ObjectChangeProcessor {
      *  that changes that can be applied in federation (and thus in local identity provider)
      *  will not be returned by this method.
      * */
-    public ObjectModificationType prepareLocalChanges(ObjectModificationType modificationObject, FederationSharingPolicyType policy){
+    public ObjectModificationType prepareLocalChanges(ObjectModificationType modificationObject, SharingPolicyType policy){
         List<AttributeModificationType> validModifications = new ArrayList<>();
 
         if(modificationObject == null || policy == null){
@@ -166,7 +166,7 @@ public class ObjectChangeProcessor {
 
         for(AttributeModificationType modification: modificationObject.getModificationList()){
             String attributeName = modification.getAttribute();
-            FederationSharingRuleType rule = getRuleByAttributeName(policy, attributeName);
+            SharingRuleType rule = getRuleByAttributeName(policy, attributeName);
 
             if(rule == null){
                 //We need to apply default sharing policies, since there is no specific rule for current attribute
@@ -183,7 +183,7 @@ public class ObjectChangeProcessor {
                             ModificationType.ADD.equals(modification.getModificationType())){
                         validModifications.add(modification);
 
-                    } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+                    } else if(MultiValueTolerance.ALLOW_MODIFY_OWN.equals(tolerance)){
                         validModifications.add(modification);
                     }
                 }
@@ -203,7 +203,7 @@ public class ObjectChangeProcessor {
                             ModificationType.ADD.equals(modification.getModificationType())){
                         validModifications.add(modification);
 
-                    } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+                    } else if(MultiValueTolerance.ALLOW_MODIFY_OWN.equals(tolerance)){
                         validModifications.add(modification);
                     }
                 }
@@ -225,7 +225,7 @@ public class ObjectChangeProcessor {
      *  for both local and origin distribution, so it is obvious, that only
      *  locally valid changes are not returned by this method - use prepareLocalChanges() instead.
      * */
-    public ObjectModificationType prepareDistributedChanges(ObjectModificationType modificationObject, FederationSharingPolicyType policy){
+    public ObjectModificationType prepareDistributedChanges(ObjectModificationType modificationObject, SharingPolicyType policy){
         List<AttributeModificationType> validModifications = new ArrayList<>();
 
         if(modificationObject == null || policy == null){
@@ -238,14 +238,14 @@ public class ObjectChangeProcessor {
 
         for(AttributeModificationType modification: modificationObject.getModificationList()){
             String attributeName = modification.getAttribute();
-            FederationSharingRuleType rule = getRuleByAttributeName(policy, attributeName);
+            SharingRuleType rule = getRuleByAttributeName(policy, attributeName);
 
             if(rule == null){
                 //We need to apply default sharing policies, since there is no specific rule for current attribute
                 if(isOrgAttributeSingleValue(attributeName)){
                     SingleValueTolerance tolerance = policy.getDefaultSingleValueTolerance();
 
-                    if(SingleValueTolerance.ALLOW_CHANGE.equals(tolerance)){
+                    if(SingleValueTolerance.ALLOW_MODIFY.equals(tolerance)){
                         validModifications.add(modification);
                     }
                 } else if(isOrgAttributeMultiValue(attributeName)){
@@ -255,7 +255,7 @@ public class ObjectChangeProcessor {
                             ModificationType.ADD.equals(modification.getModificationType())){
                         validModifications.add(modification);
 
-                    } else if(MultiValueTolerance.ALLOW_CHANGE.equals(tolerance)){
+                    } else if(MultiValueTolerance.ALLOW_MODIFY.equals(tolerance)){
                         validModifications.add(modification);
                     }
                 }
@@ -264,7 +264,7 @@ public class ObjectChangeProcessor {
                 if(isOrgAttributeSingleValue(attributeName)){
                     SingleValueTolerance tolerance = rule.getSingleValueTolerance();
 
-                    if(SingleValueTolerance.ALLOW_CHANGE.equals(tolerance)){
+                    if(SingleValueTolerance.ALLOW_MODIFY.equals(tolerance)){
                         validModifications.add(modification);
                     }
 
@@ -275,7 +275,7 @@ public class ObjectChangeProcessor {
                             ModificationType.ADD.equals(modification.getModificationType())){
                         validModifications.add(modification);
 
-                    } else if(MultiValueTolerance.ALLOW_CHANGE.equals(tolerance)){
+                    } else if(MultiValueTolerance.ALLOW_MODIFY.equals(tolerance)){
                         validModifications.add(modification);
                     }
                 }
@@ -364,12 +364,12 @@ public class ObjectChangeProcessor {
         }
     }
 
-    private FederationSharingRuleType getRuleByAttributeName(FederationSharingPolicyType policy, String attributeName){
+    private SharingRuleType getRuleByAttributeName(SharingPolicyType policy, String attributeName){
         if(policy == null || attributeName == null){
             return null;
         }
 
-        for(FederationSharingRuleType rule: policy.getRules()){
+        for(SharingRuleType rule: policy.getRules()){
             if(attributeName.equals(rule.getAttributeName())){
                 return rule;
             }

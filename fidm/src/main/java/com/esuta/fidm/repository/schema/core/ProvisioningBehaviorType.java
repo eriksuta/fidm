@@ -39,5 +39,5 @@ public enum ProvisioningBehaviorType implements Serializable{
      *  intensive process (such as addition of resource inducement to org.
      *  unit - the system may need to create accounts for thousands of members).
      * */
-    CONSTANT
+    STATIC
 }

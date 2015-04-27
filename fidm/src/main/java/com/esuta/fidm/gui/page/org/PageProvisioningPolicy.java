@@ -10,8 +10,8 @@ import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
-import com.esuta.fidm.repository.schema.core.FederationProvisioningPolicyType;
-import com.esuta.fidm.repository.schema.core.FederationProvisioningRuleType;
+import com.esuta.fidm.repository.schema.core.ProvisioningPolicyType;
+import com.esuta.fidm.repository.schema.core.ProvisioningRuleType;
 import com.esuta.fidm.repository.schema.core.ModificationType;
 import com.esuta.fidm.repository.schema.core.ProvisioningBehaviorType;
 import org.apache.log4j.Logger;
@@ -77,13 +77,13 @@ public class PageProvisioningPolicy extends PageBase{
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
-    private IModel<FederationProvisioningPolicyType> selected;
+    private IModel<ProvisioningPolicyType> selected;
 
     public PageProvisioningPolicy(){
-        selected = new LoadableModel<FederationProvisioningPolicyType>(false) {
+        selected = new LoadableModel<ProvisioningPolicyType>(false) {
 
             @Override
-            protected FederationProvisioningPolicyType load() {
+            protected ProvisioningPolicyType load() {
                 //By default, no policy is selected on page load
                 return null;
             }
@@ -118,8 +118,8 @@ public class PageProvisioningPolicy extends PageBase{
     }
 
     private void initPolicyList(Form form){
-        ObjectDataProvider<FederationProvisioningPolicyType> provider = new ObjectDataProvider<>(getPage(),
-                FederationProvisioningPolicyType.class);
+        ObjectDataProvider<ProvisioningPolicyType> provider = new ObjectDataProvider<>(getPage(),
+                ProvisioningPolicyType.class);
         List<IColumn> columns = createProvisioningPolicyColumns();
 
         TablePanel table = new TablePanel(ID_POLICY_TABLE, provider, columns, 10);
@@ -139,12 +139,12 @@ public class PageProvisioningPolicy extends PageBase{
     private List<IColumn> createProvisioningPolicyColumns(){
         List<IColumn> columns = new ArrayList<>();
 
-        columns.add(new PropertyColumn<FederationProvisioningPolicyType, String>(new Model<>("Name"), "name", "name"));
-        columns.add(new PropertyColumn<FederationProvisioningPolicyType, String>(new Model<>("DisplayName"), "displayName", "displayName"));
-        columns.add(new AbstractColumn<FederationProvisioningPolicyType, String>(new Model<>("Rules")) {
+        columns.add(new PropertyColumn<ProvisioningPolicyType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<ProvisioningPolicyType, String>(new Model<>("DisplayName"), "displayName", "displayName"));
+        columns.add(new AbstractColumn<ProvisioningPolicyType, String>(new Model<>("Rules")) {
 
             @Override
-            public void populateItem(Item<ICellPopulator<FederationProvisioningPolicyType>> cellItem, String componentId, final IModel<FederationProvisioningPolicyType> rowModel) {
+            public void populateItem(Item<ICellPopulator<ProvisioningPolicyType>> cellItem, String componentId, final IModel<ProvisioningPolicyType> rowModel) {
                 cellItem.add(new Label(componentId, new AbstractReadOnlyModel<String>() {
 
                     @Override
@@ -154,15 +154,15 @@ public class PageProvisioningPolicy extends PageBase{
                 }));
             }
         });
-        columns.add(new EditDeleteButtonColumn<FederationProvisioningPolicyType>(new Model<>("Actions")){
+        columns.add(new EditDeleteButtonColumn<ProvisioningPolicyType>(new Model<>("Actions")){
 
             @Override
-            public void editPerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel) {
+            public void editPerformed(AjaxRequestTarget target, IModel<ProvisioningPolicyType> rowModel) {
                 PageProvisioningPolicy.this.editPolicyPerformed(target, rowModel);
             }
 
             @Override
-            public void removePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel) {
+            public void removePerformed(AjaxRequestTarget target, IModel<ProvisioningPolicyType> rowModel) {
                 PageProvisioningPolicy.this.removePolicyPerformed(target, rowModel);
             }
         });
@@ -224,7 +224,7 @@ public class PageProvisioningPolicy extends PageBase{
 
             @Override
             public boolean isVisible() {
-                return ProvisioningBehaviorType.CONSTANT.equals(selected.getObject().getDefaultRule());
+                return ProvisioningBehaviorType.STATIC.equals(selected.getObject().getDefaultBehavior());
             }
         });
         policyContainer.add(defaultDateTimeContainer);
@@ -256,11 +256,11 @@ public class PageProvisioningPolicy extends PageBase{
         };
         rulesContainer.add(addRule);
 
-        ListView ruleRepeater = new ListView<FederationProvisioningRuleType>(ID_REPEATER,
-                new PropertyModel<List<FederationProvisioningRuleType>>(selected, "rules")) {
+        ListView ruleRepeater = new ListView<ProvisioningRuleType>(ID_REPEATER,
+                new PropertyModel<List<ProvisioningRuleType>>(selected, "rules")) {
 
             @Override
-            protected void populateItem(final ListItem<FederationProvisioningRuleType> item) {
+            protected void populateItem(final ListItem<ProvisioningRuleType> item) {
                 WebMarkupContainer ruleHeader = new WebMarkupContainer(ID_RULE_HEADER);
                 ruleHeader.setOutputMarkupId(true);
                 ruleHeader.add(new AttributeModifier("href", createCollapseItemId(item, true)));
@@ -333,7 +333,7 @@ public class PageProvisioningPolicy extends PageBase{
 
                     @Override
                     public boolean isVisible() {
-                        return ProvisioningBehaviorType.CONSTANT.equals(item.getModelObject().getProvisioningType());
+                        return ProvisioningBehaviorType.STATIC.equals(item.getModelObject().getProvisioningType());
                     }
                 });
                 ruleBody.add(ruleDateTimeContainer);
@@ -388,7 +388,7 @@ public class PageProvisioningPolicy extends PageBase{
         container.add(cancel);
     }
 
-    private String createRuleLabel(FederationProvisioningRuleType rule){
+    private String createRuleLabel(ProvisioningRuleType rule){
         StringBuilder sb = new StringBuilder();
 
         if(rule.getAttributeName() == null){
@@ -405,7 +405,7 @@ public class PageProvisioningPolicy extends PageBase{
         return sb.toString();
     }
 
-    private IModel<String> createCollapseItemId(final ListItem<FederationProvisioningRuleType> item, final boolean includeSelector){
+    private IModel<String> createCollapseItemId(final ListItem<ProvisioningRuleType> item, final boolean includeSelector){
         return new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -424,11 +424,11 @@ public class PageProvisioningPolicy extends PageBase{
     }
 
     private void addPolicyPerformed(AjaxRequestTarget target){
-        selected.setObject(new FederationProvisioningPolicyType());
+        selected.setObject(new ProvisioningPolicyType());
         target.add(getPolicyForm());
     }
 
-    private void editPolicyPerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
+    private void editPolicyPerformed(AjaxRequestTarget target, IModel<ProvisioningPolicyType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             warn("Could not edit sharing policy. Malformed data.");
             target.add(getFeedbackPanel());
@@ -439,14 +439,14 @@ public class PageProvisioningPolicy extends PageBase{
         target.add(getPolicyForm());
     }
 
-    private void removePolicyPerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
+    private void removePolicyPerformed(AjaxRequestTarget target, IModel<ProvisioningPolicyType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             warn("Could not remove sharing policy. Malformed data.");
             target.add(getFeedbackPanel());
             return;
         }
 
-        FederationProvisioningPolicyType policy = rowModel.getObject();
+        ProvisioningPolicyType policy = rowModel.getObject();
 
         try {
             getModelService().deleteObject(policy);
@@ -471,11 +471,11 @@ public class PageProvisioningPolicy extends PageBase{
             return;
         }
 
-        selected.getObject().getRules().add(new FederationProvisioningRuleType());
+        selected.getObject().getRules().add(new ProvisioningRuleType());
         target.add(getRuleContainer());
     }
 
-    private void deleteRulePerformed(AjaxRequestTarget target, FederationProvisioningRuleType rule){
+    private void deleteRulePerformed(AjaxRequestTarget target, ProvisioningRuleType rule){
         if(rule == null || selected.getObject() == null){
             warn("Could not remove sharing rule. Malformed data.");
             target.add(getFeedbackPanel());
@@ -498,13 +498,13 @@ public class PageProvisioningPolicy extends PageBase{
             return;
         }
 
-        FederationProvisioningPolicyType policy = selected.getObject();
+        ProvisioningPolicyType policy = selected.getObject();
 
         try {
             if(policy.getUid() == null){
                 //We are creating new sharing policy
 
-                FederationProvisioningPolicyType created = getModelService().createObject(policy);
+                ProvisioningPolicyType created = getModelService().createObject(policy);
                 success("New Federation provisioning policy created: '" + created.getName() + "'(" + created.getUid() + ").");
                 LOGGER.info("New Federation provisioning policy created: '" + created.getName() + "'(" + created.getUid() + ").");
                 selected.setObject(null);

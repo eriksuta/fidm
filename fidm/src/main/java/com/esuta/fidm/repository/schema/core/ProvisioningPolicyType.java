@@ -18,7 +18,7 @@ import java.util.List;
  *  @author shood
  * */
 @Entity
-public class FederationProvisioningPolicyType extends ObjectType{
+public class ProvisioningPolicyType extends ObjectType{
 
     /**
      *  A system unique name of the provisioning policy.
@@ -40,11 +40,11 @@ public class FederationProvisioningPolicyType extends ObjectType{
      *  rules defined for specific attributes.
      * */
     @Enumerated(EnumType.STRING)
-    private ProvisioningBehaviorType defaultRule;
+    private ProvisioningBehaviorType defaultBehavior;
 
     /**
      *  The default time of execution of provisioning changes. This field has meaning
-     *  only if CONSTANT provisioning behavior is configured and it sets a moment
+     *  only if STATIC provisioning behavior is configured and it sets a moment
      *  in future, where all current changes will be triggered. If no date is set,
      *  the changes will be applied next time the configured time is here.
      * */
@@ -55,9 +55,9 @@ public class FederationProvisioningPolicyType extends ObjectType{
      *  this object.
      * */
     @OneToMany(fetch = FetchType.EAGER)
-    private List<FederationProvisioningRuleType> rules;
+    private List<ProvisioningRuleType> rules;
 
-    public FederationProvisioningPolicyType(){}
+    public ProvisioningPolicyType(){}
 
     public String getName() {
         return name;
@@ -75,15 +75,15 @@ public class FederationProvisioningPolicyType extends ObjectType{
         this.displayName = displayName;
     }
 
-    public ProvisioningBehaviorType getDefaultRule() {
-        return defaultRule;
+    public ProvisioningBehaviorType getDefaultBehavior() {
+        return defaultBehavior;
     }
 
-    public void setDefaultRule(ProvisioningBehaviorType defaultRule) {
-        this.defaultRule = defaultRule;
+    public void setDefaultBehavior(ProvisioningBehaviorType defaultBehavior) {
+        this.defaultBehavior = defaultBehavior;
     }
 
-    public List<FederationProvisioningRuleType> getRules() {
+    public List<ProvisioningRuleType> getRules() {
         if(rules == null){
             rules = new ArrayList<>();
         }
@@ -91,7 +91,7 @@ public class FederationProvisioningPolicyType extends ObjectType{
         return rules;
     }
 
-    public void setRules(List<FederationProvisioningRuleType> rules) {
+    public void setRules(List<ProvisioningRuleType> rules) {
         this.rules = rules;
     }
 
@@ -106,14 +106,14 @@ public class FederationProvisioningPolicyType extends ObjectType{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FederationProvisioningPolicyType)) return false;
+        if (!(o instanceof ProvisioningPolicyType)) return false;
         if (!super.equals(o)) return false;
 
-        FederationProvisioningPolicyType that = (FederationProvisioningPolicyType) o;
+        ProvisioningPolicyType that = (ProvisioningPolicyType) o;
 
         if (defaultExecutionTime != null ? !defaultExecutionTime.equals(that.defaultExecutionTime) : that.defaultExecutionTime != null)
             return false;
-        if (defaultRule != that.defaultRule) return false;
+        if (defaultBehavior != that.defaultBehavior) return false;
         if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (rules != null ? !rules.equals(that.rules) : that.rules != null) return false;
@@ -126,7 +126,7 @@ public class FederationProvisioningPolicyType extends ObjectType{
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
-        result = 31 * result + (defaultRule != null ? defaultRule.hashCode() : 0);
+        result = 31 * result + (defaultBehavior != null ? defaultBehavior.hashCode() : 0);
         result = 31 * result + (defaultExecutionTime != null ? defaultExecutionTime.hashCode() : 0);
         result = 31 * result + (rules != null ? rules.hashCode() : 0);
         return result;

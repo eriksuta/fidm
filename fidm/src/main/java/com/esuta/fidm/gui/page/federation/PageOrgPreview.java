@@ -212,7 +212,7 @@ public class PageOrgPreview extends PageBase{
                 String provisioningPolicyUid = provisioningPolicyRef.getUid();
 
                 try {
-                    FederationProvisioningPolicyType policy = getModelService().readObject(FederationProvisioningPolicyType.class, provisioningPolicyUid);
+                    ProvisioningPolicyType policy = getModelService().readObject(ProvisioningPolicyType.class, provisioningPolicyUid);
                     return policy.getName();
                 } catch (DatabaseCommunicationException e) {
                     error("Could not load provisioning policy with uid: '" + provisioningPolicyUid + "' from the repository.");
@@ -225,11 +225,11 @@ public class PageOrgPreview extends PageBase{
     }
 
     private void initModalWindows(){
-        ModalWindow provisioningPolicyChooser = new ObjectChooserDialog<FederationProvisioningPolicyType>(
-                ID_PROVISIONING_POLICY_CHOOSER, FederationProvisioningPolicyType.class){
+        ModalWindow provisioningPolicyChooser = new ObjectChooserDialog<ProvisioningPolicyType>(
+                ID_PROVISIONING_POLICY_CHOOSER, ProvisioningPolicyType.class){
 
             @Override
-            public void objectChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel) {
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<ProvisioningPolicyType> rowModel) {
                 provisioningPolicyChoosePerformed(target, rowModel);
             }
 
@@ -658,7 +658,7 @@ public class PageOrgPreview extends PageBase{
         window.show(target);
     }
 
-    private void provisioningPolicyChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
+    private void provisioningPolicyChoosePerformed(AjaxRequestTarget target, IModel<ProvisioningPolicyType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             return;
         }
@@ -668,7 +668,7 @@ public class PageOrgPreview extends PageBase{
         }
 
         OrgType org = model.getObject();
-        FederationProvisioningPolicyType policy = rowModel.getObject();
+        ProvisioningPolicyType policy = rowModel.getObject();
         ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
         policyRef.setSharedInFederation(false);

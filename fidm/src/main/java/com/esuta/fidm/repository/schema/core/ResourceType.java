@@ -18,6 +18,12 @@ public class ResourceType extends ObjectType{
     private String name;
 
     /**
+     *  A display name for resource object
+     * */
+    @Index
+    private String displayName;
+
+    /**
      *  A type of resource, represents it's intent or purpose,
      *  for example HR resource etc.
      * */
@@ -65,6 +71,14 @@ public class ResourceType extends ObjectType{
         this.federationIdentifier = federationIdentifier;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -73,18 +87,18 @@ public class ResourceType extends ObjectType{
 
         ResourceType that = (ResourceType) o;
 
-        if (federationIdentifier != null ? !federationIdentifier.equals(that.federationIdentifier) : that.federationIdentifier != null)
-            return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) return false;
         if (resourceType != null ? !resourceType.equals(that.resourceType) : that.resourceType != null) return false;
+        return !(federationIdentifier != null ? !federationIdentifier.equals(that.federationIdentifier) : that.federationIdentifier != null);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (resourceType != null ? resourceType.hashCode() : 0);
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         return result;

@@ -2,7 +2,7 @@ package com.esuta.fidm.model;
 
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
-import com.esuta.fidm.repository.schema.core.FederationProvisioningPolicyType;
+import com.esuta.fidm.repository.schema.core.ProvisioningPolicyType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.ResourceType;
 import com.esuta.fidm.repository.schema.core.UserType;
@@ -23,7 +23,7 @@ public interface IProvisioningService {
      *          * A change is processed immediately, if PRO-ACTIVE provisioning rule is specified.
      *          * A change is added to jitModificationList and checked every-time when actions requiring
      *           change processing are triggered if JUST-IN-TIME provisioning rule is defined.
-     *          * A special task is created for CONSTANT provisioning changes - this task will be
+     *          * A special task is created for STATIC provisioning changes - this task will be
      *            performed when the time specified in provisioning rule is met.
      *  </p>
      *
@@ -75,10 +75,10 @@ public interface IProvisioningService {
      *  </p>
      *
      *  @param  org
-     *      An org unit that is the source for newly created CONSTANT provisioning task.
+     *      An org unit that is the source for newly created STATIC provisioning task.
      *
      *  @param modifications
-     *      A list of modifications to be sorted and processed in newly created CONSTANT
+     *      A list of modifications to be sorted and processed in newly created STATIC
      *      provisioning task.
      *
      *  @param policy
@@ -87,5 +87,5 @@ public interface IProvisioningService {
      *      attributes.
      *
      * */
-    void createConstantProvisioningUpdateTask(OrgType org, List<AttributeModificationType> modifications, FederationProvisioningPolicyType policy);
+    void createConstantProvisioningUpdateTask(OrgType org, List<AttributeModificationType> modifications, ProvisioningPolicyType policy);
 }

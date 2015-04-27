@@ -70,7 +70,7 @@ public class ProvisioningService implements IProvisioningService{
      *      * A change is processed immediately, if PRO-ACTIVE provisioning rule is specified
      *      * A change is added to jitModificationList and checked every-time when actions requiring
      *        change processing are triggered if JUST-IN-TIME provisioning rule is defined
-     *      * A special task is created for CONSTANT provisioning changes - this task will be
+     *      * A special task is created for STATIC provisioning changes - this task will be
      *        performed when the time specified in provisioning rule is met
      * */
     public void applyProvisioningPolicy(OrgType org, List<AttributeModificationType> modifications)
@@ -80,7 +80,7 @@ public class ProvisioningService implements IProvisioningService{
             return;
         }
 
-        FederationProvisioningPolicyType policy = modelService.readObject(FederationProvisioningPolicyType.class,
+        ProvisioningPolicyType policy = modelService.readObject(ProvisioningPolicyType.class,
                 org.getProvisioningPolicy().getUid());
 
         if(policy == null){
@@ -88,12 +88,12 @@ public class ProvisioningService implements IProvisioningService{
         }
 
         for(AttributeModificationType modification: modifications){
-            FederationProvisioningRuleType rule = findRuleForModification(modification, policy);
+            ProvisioningRuleType rule = findRuleForModification(modification, policy);
             List<AttributeModificationType> constantUpdateModifications = new ArrayList<>();
 
             if(rule == null){
                 //Apply default provisioning behavior
-                switch (policy.getDefaultRule()){
+                switch (policy.getDefaultBehavior()){
                     case PRO_ACTIVE:
                         changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
                         recomputeInducementsIfNeeded(org, modification);
@@ -102,7 +102,7 @@ public class ProvisioningService implements IProvisioningService{
                         changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
                         insertChangeIntoJitModificationList(org.getUid(), modification);
                         break;
-                    case CONSTANT:
+                    case STATIC:
                         constantUpdateModifications.add(modification);
                         break;
                     default:
@@ -120,7 +120,7 @@ public class ProvisioningService implements IProvisioningService{
                         changeProcessor.applyModificationsOnOrg(org, wrapModification(modification));
                         insertChangeIntoJitModificationList(org.getUid(), modification);
                         break;
-                    case CONSTANT:
+                    case STATIC:
                         constantUpdateModifications.add(modification);
                         break;
                     default:
@@ -225,7 +225,7 @@ public class ProvisioningService implements IProvisioningService{
      *  multiple tasks according to time options set in specific provisioning rules.
      * */
     public void createConstantProvisioningUpdateTask(final OrgType org, List<AttributeModificationType> modifications,
-                                                     FederationProvisioningPolicyType policy){
+                                                     ProvisioningPolicyType policy){
 
         List<String> attributeNames = WebMiscUtil.createOrgAttributeList();
 
@@ -243,7 +243,7 @@ public class ProvisioningService implements IProvisioningService{
                 continue;
             }
 
-            FederationProvisioningRuleType rule = findRuleForModification(attributeModifications.get(0), policy);
+            ProvisioningRuleType rule = findRuleForModification(attributeModifications.get(0), policy);
             Date executionTime = rule == null ? policy.getDefaultExecutionTime() : rule.getExecutionTime();
 
             Timer timer = new Timer();
@@ -410,11 +410,11 @@ public class ProvisioningService implements IProvisioningService{
         }
     }
 
-    private FederationProvisioningRuleType findRuleForModification(AttributeModificationType modification, FederationProvisioningPolicyType policy){
+    private ProvisioningRuleType findRuleForModification(AttributeModificationType modification, ProvisioningPolicyType policy){
         String attributeName = modification.getAttribute();
         ModificationType modificationType = modification.getModificationType();
 
-        for(FederationProvisioningRuleType rule: policy.getRules()){
+        for(ProvisioningRuleType rule: policy.getRules()){
             if(attributeName.equals(rule.getAttributeName()) &&
                     (modificationType.equals(rule.getModificationType()) || ModificationType.ALL.equals(rule.getModificationType()))){
                 return rule;

@@ -65,10 +65,10 @@ public class JsonUtil {
             return gson.fromJson(jsonObject, SystemConfigurationType.class);
         } else if(clazz.equals(FederationMemberType.class)){
             return gson.fromJson(jsonObject, FederationMemberType.class);
-        } else if(clazz.equals(FederationSharingPolicyType.class)){
-            return gson.fromJson(jsonObject, FederationSharingPolicyType.class);
-        } else if(clazz.equals(FederationProvisioningPolicyType.class)){
-            return gson.fromJson(jsonObject, FederationProvisioningPolicyType.class);
+        } else if(clazz.equals(SharingPolicyType.class)){
+            return gson.fromJson(jsonObject, SharingPolicyType.class);
+        } else if(clazz.equals(ProvisioningPolicyType.class)){
+            return gson.fromJson(jsonObject, ProvisioningPolicyType.class);
         }
 
         return gson.fromJson(jsonObject, clazz);

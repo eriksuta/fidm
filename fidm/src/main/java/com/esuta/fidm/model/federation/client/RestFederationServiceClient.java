@@ -10,7 +10,7 @@ import com.esuta.fidm.model.federation.service.OrgChangeWrapper;
 import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
-import com.esuta.fidm.repository.schema.core.FederationSharingPolicyType;
+import com.esuta.fidm.repository.schema.core.SharingPolicyType;
 import com.esuta.fidm.repository.schema.core.OrgType;
 import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
@@ -276,7 +276,7 @@ public class RestFederationServiceClient {
         return responseObject;
     }
 
-    public ObjectTypeRestResponse<FederationSharingPolicyType> createGetOrgSharingPolicyRequest(FederationMemberType federationMember, FederationIdentifierType federationIdentifier)
+    public ObjectTypeRestResponse<SharingPolicyType> createGetOrgSharingPolicyRequest(FederationMemberType federationMember, FederationIdentifierType federationIdentifier)
             throws DatabaseCommunicationException {
 
         String address = federationMember.getWebAddress();
@@ -293,10 +293,10 @@ public class RestFederationServiceClient {
         String responseMessage = response.getEntity(String.class);
         LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
 
-        ObjectTypeRestResponse<FederationSharingPolicyType> responseObject = new ObjectTypeRestResponse<>();
+        ObjectTypeRestResponse<SharingPolicyType> responseObject = new ObjectTypeRestResponse<>();
         responseObject.setStatus(responseStatus);
         if(responseStatus == HttpStatus.OK_200){
-            responseObject.setValue((FederationSharingPolicyType) JsonUtil.jsonToObject(responseMessage, FederationSharingPolicyType.class));
+            responseObject.setValue((SharingPolicyType) JsonUtil.jsonToObject(responseMessage, SharingPolicyType.class));
         } else {
             responseObject.setMessage(responseMessage);
         }

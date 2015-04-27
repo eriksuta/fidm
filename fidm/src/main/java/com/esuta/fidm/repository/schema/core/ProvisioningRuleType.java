@@ -10,7 +10,7 @@ import java.util.Date;
  *  @author shood
  * */
 @Embeddable
-public class FederationProvisioningRuleType implements Serializable{
+public class ProvisioningRuleType implements Serializable{
 
     /**
      *  The String representation of a name of the attribute
@@ -36,13 +36,13 @@ public class FederationProvisioningRuleType implements Serializable{
 
     /**
      *  The time of execution of provisioning changes. This field has meaning
-     *  only if CONSTANT provisioning behavior is configured and it sets a moment
+     *  only if STATIC provisioning behavior is configured and it sets a moment
      *  in future, where all current changes will be triggered. If no date is set,
      *  the changes will be applied next time the configured time is here.
      * */
     private Date executionTime;
 
-    public FederationProvisioningRuleType(){}
+    public ProvisioningRuleType(){}
 
     public String getAttributeName() {
         return attributeName;
@@ -79,9 +79,9 @@ public class FederationProvisioningRuleType implements Serializable{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FederationProvisioningRuleType)) return false;
+        if (!(o instanceof ProvisioningRuleType)) return false;
 
-        FederationProvisioningRuleType that = (FederationProvisioningRuleType) o;
+        ProvisioningRuleType that = (ProvisioningRuleType) o;
 
         if (attributeName != null ? !attributeName.equals(that.attributeName) : that.attributeName != null)
             return false;

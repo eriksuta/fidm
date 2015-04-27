@@ -708,7 +708,7 @@ public class RestFederationService implements IFederationService{
             ObjectReferenceType sharingPolicyRef = org.getSharingPolicy();
             String sharingPolicyUid = sharingPolicyRef.getUid();
 
-            FederationSharingPolicyType policy = modelService.readObject(FederationSharingPolicyType.class, sharingPolicyUid);
+            SharingPolicyType policy = modelService.readObject(SharingPolicyType.class, sharingPolicyUid);
 
             if(policy == null){
                 LOGGER.error("No sharing policy defined for requested org. unit: " + uniqueAttributeValue);

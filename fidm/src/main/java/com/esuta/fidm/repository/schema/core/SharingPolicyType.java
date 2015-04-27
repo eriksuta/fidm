@@ -16,7 +16,7 @@ import java.util.List;
  *  @author shood
  * */
 @Entity
-public class FederationSharingPolicyType extends ObjectType{
+public class SharingPolicyType extends ObjectType{
 
     /**
      *  A system unique name of the sharing policy.
@@ -55,9 +55,9 @@ public class FederationSharingPolicyType extends ObjectType{
      *  this object.
      * */
     @OneToMany(fetch = FetchType.EAGER)
-    private List<FederationSharingRuleType> rules;
+    private List<SharingRuleType> rules;
 
-    public FederationSharingPolicyType() {}
+    public SharingPolicyType() {}
 
     public String getName() {
         return name;
@@ -75,7 +75,7 @@ public class FederationSharingPolicyType extends ObjectType{
         this.displayName = displayName;
     }
 
-    public List<FederationSharingRuleType> getRules() {
+    public List<SharingRuleType> getRules() {
         if(rules == null){
             rules = new ArrayList<>();
         }
@@ -83,7 +83,7 @@ public class FederationSharingPolicyType extends ObjectType{
         return rules;
     }
 
-    public void setRules(List<FederationSharingRuleType> rules) {
+    public void setRules(List<SharingRuleType> rules) {
         this.rules = rules;
     }
 
@@ -106,10 +106,10 @@ public class FederationSharingPolicyType extends ObjectType{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FederationSharingPolicyType)) return false;
+        if (!(o instanceof SharingPolicyType)) return false;
         if (!super.equals(o)) return false;
 
-        FederationSharingPolicyType that = (FederationSharingPolicyType) o;
+        SharingPolicyType that = (SharingPolicyType) o;
 
         if (defaultMultiValueTolerance != that.defaultMultiValueTolerance) return false;
         if (defaultSingleValueTolerance != that.defaultSingleValueTolerance) return false;

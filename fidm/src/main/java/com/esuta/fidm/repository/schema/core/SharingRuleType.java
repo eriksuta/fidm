@@ -12,7 +12,7 @@ import java.io.Serializable;
  *  @author shood
  * */
 @Embeddable
-public class FederationSharingRuleType implements Serializable{
+public class SharingRuleType implements Serializable{
 
     /**
      *  The String representation of a name of the attribute
@@ -36,7 +36,7 @@ public class FederationSharingRuleType implements Serializable{
     @Enumerated(EnumType.STRING)
     private MultiValueTolerance multiValueTolerance;
 
-    public FederationSharingRuleType() {}
+    public SharingRuleType() {}
 
     public String getAttributeName() {
         return attributeName;
@@ -65,9 +65,9 @@ public class FederationSharingRuleType implements Serializable{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FederationSharingRuleType)) return false;
+        if (!(o instanceof SharingRuleType)) return false;
 
-        FederationSharingRuleType that = (FederationSharingRuleType) o;
+        SharingRuleType that = (SharingRuleType) o;
 
         if (attributeName != null ? !attributeName.equals(that.attributeName) : that.attributeName != null)
             return false;

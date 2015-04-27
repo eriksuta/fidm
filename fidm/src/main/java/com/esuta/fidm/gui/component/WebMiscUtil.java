@@ -2,10 +2,6 @@ package com.esuta.fidm.gui.component;
 
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -102,10 +98,10 @@ public final class WebMiscUtil {
         xStream.alias("inducement", InducementType.class);
         xStream.alias("objectRef", ObjectReferenceType.class);
         xStream.alias("federationID", FederationIdentifierType.class);
-        xStream.alias("sharingPolicy", FederationSharingPolicyType.class);
-        xStream.alias("sharingRule", FederationSharingRuleType.class);
-        xStream.alias("provisioningPolicy", FederationProvisioningPolicyType.class);
-        xStream.alias("provisioningRule", FederationProvisioningRuleType.class);
+        xStream.alias("sharingPolicy", SharingPolicyType.class);
+        xStream.alias("sharingRule", SharingRuleType.class);
+        xStream.alias("provisioningPolicy", ProvisioningPolicyType.class);
+        xStream.alias("provisioningRule", ProvisioningRuleType.class);
         return xStream;
     }
 
@@ -134,7 +130,7 @@ public final class WebMiscUtil {
             return "The value of this attribute is enforced by origin org. unit and can't be modified in any way";
         } else if(SingleValueTolerance.ALLOW_OWN.equals(tolerance)){
             return "You are able to specify own value, but this will not be distributed in federation.";
-        } else if(SingleValueTolerance.ALLOW_CHANGE.equals(tolerance)){
+        } else if(SingleValueTolerance.ALLOW_MODIFY.equals(tolerance)){
             return "You can modify the value and it will be distributed in federation";
         }
 
@@ -146,23 +142,23 @@ public final class WebMiscUtil {
             return "Values enforced by origin org. unit. Can't modify in any way";
         } else if(MultiValueTolerance.ALLOW_ADD_OWN.equals(tolerance)){
             return "You are able to add own values, but they are not distributed";
-        } else if(MultiValueTolerance.ALLOW_CHANGE_OWN.equals(tolerance)){
+        } else if(MultiValueTolerance.ALLOW_MODIFY_OWN.equals(tolerance)){
             return "You are able to add own values and modify existing, but only locally";
         } else if(MultiValueTolerance.ALLOW_ADD.equals(tolerance)){
             return "You are able to add and change own values, added values will be distributed.";
-        } else if(MultiValueTolerance.ALLOW_CHANGE.equals(tolerance)){
+        } else if(MultiValueTolerance.ALLOW_MODIFY.equals(tolerance)){
             return "You are able to perform any modifications and they will be distributed";
         }
 
         return null;
     }
 
-    public static FederationSharingRuleType getRuleByAttributeName(FederationSharingPolicyType policy, String attributeName){
+    public static SharingRuleType getRuleByAttributeName(SharingPolicyType policy, String attributeName){
         if(policy == null || attributeName == null){
             return null;
         }
 
-        for(FederationSharingRuleType rule: policy.getRules()){
+        for(SharingRuleType rule: policy.getRules()){
             if(attributeName.equals(rule.getAttributeName())){
                 return rule;
             }

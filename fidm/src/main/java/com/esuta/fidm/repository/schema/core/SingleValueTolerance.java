@@ -32,5 +32,5 @@ public enum SingleValueTolerance implements Serializable{
      *  value will be then distributed and applied to origin
      *  org. unit and to all other copies of org. unit.
      * */
-    ALLOW_CHANGE
+    ALLOW_MODIFY
 }

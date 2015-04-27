@@ -2,8 +2,8 @@ package com.esuta.fidm.gui.component.modal;
 
 import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.component.model.LoadableModel;
-import com.esuta.fidm.repository.schema.core.FederationSharingPolicyType;
-import com.esuta.fidm.repository.schema.core.FederationSharingRuleType;
+import com.esuta.fidm.repository.schema.core.SharingPolicyType;
+import com.esuta.fidm.repository.schema.core.SharingRuleType;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -30,19 +30,19 @@ public class SharingPolicyViewerDialog extends ModalWindow {
     private static final String ID_BUTTON_CONTINUE = "continueButton";
 
     private boolean initialized;
-    private FederationSharingPolicyType policy;
-    private IModel<List<FederationSharingRuleType>> model;
+    private SharingPolicyType policy;
+    private IModel<List<SharingRuleType>> model;
 
-    public SharingPolicyViewerDialog(String id, final IModel<List<FederationSharingRuleType>> model,
-                                     FederationSharingPolicyType policy) {
+    public SharingPolicyViewerDialog(String id, final IModel<List<SharingRuleType>> model,
+                                     SharingPolicyType policy) {
         super(id);
 
         this.policy = policy;
-        this.model = new LoadableModel<List<FederationSharingRuleType>>(false) {
+        this.model = new LoadableModel<List<SharingRuleType>>(false) {
 
             @Override
-            protected List<FederationSharingRuleType> load() {
-                return model == null ? new ArrayList<FederationSharingRuleType>() : model.getObject();
+            protected List<SharingRuleType> load() {
+                return model == null ? new ArrayList<SharingRuleType>() : model.getObject();
             }
         };
 
@@ -60,7 +60,7 @@ public class SharingPolicyViewerDialog extends ModalWindow {
         setContent(content);
     }
 
-    public void updateModel(List<FederationSharingRuleType> rules, FederationSharingPolicyType policy){
+    public void updateModel(List<SharingRuleType> rules, SharingPolicyType policy){
         this.policy = policy;
         model.setObject(rules);
     }
@@ -96,10 +96,10 @@ public class SharingPolicyViewerDialog extends ModalWindow {
         });
         content.add(defaultMultiValueTolerance);
 
-        ListView ruleRepeater = new ListView<FederationSharingRuleType>(ID_RULE_REPEATER, model) {
+        ListView ruleRepeater = new ListView<SharingRuleType>(ID_RULE_REPEATER, model) {
 
             @Override
-            protected void populateItem(final ListItem<FederationSharingRuleType> item) {
+            protected void populateItem(final ListItem<SharingRuleType> item) {
                 final String attributeName = item.getModelObject().getAttributeName();
 
                 Label attributeLabel = new Label(ID_ATTRIBUTE_LABEL, new AbstractReadOnlyModel<String>() {

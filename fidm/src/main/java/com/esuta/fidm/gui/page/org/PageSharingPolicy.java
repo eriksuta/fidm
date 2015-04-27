@@ -10,8 +10,8 @@ import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
-import com.esuta.fidm.repository.schema.core.FederationSharingPolicyType;
-import com.esuta.fidm.repository.schema.core.FederationSharingRuleType;
+import com.esuta.fidm.repository.schema.core.SharingPolicyType;
+import com.esuta.fidm.repository.schema.core.SharingRuleType;
 import com.esuta.fidm.repository.schema.core.MultiValueTolerance;
 import com.esuta.fidm.repository.schema.core.SingleValueTolerance;
 import org.apache.log4j.Logger;
@@ -71,13 +71,13 @@ public class PageSharingPolicy extends PageBase{
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
 
-    private IModel<FederationSharingPolicyType> selected;
+    private IModel<SharingPolicyType> selected;
 
     public PageSharingPolicy(){
-        selected = new LoadableModel<FederationSharingPolicyType>(false) {
+        selected = new LoadableModel<SharingPolicyType>(false) {
 
             @Override
-            protected FederationSharingPolicyType load() {
+            protected SharingPolicyType load() {
                 //By default, no policy is selected on page load
                 return null;
             }
@@ -112,7 +112,7 @@ public class PageSharingPolicy extends PageBase{
     }
 
     private void initPolicyList(Form form){
-        ObjectDataProvider<FederationSharingPolicyType> provider = new ObjectDataProvider<>(getPage(), FederationSharingPolicyType.class);
+        ObjectDataProvider<SharingPolicyType> provider = new ObjectDataProvider<>(getPage(), SharingPolicyType.class);
         List<IColumn> columns = createSharingPolicyColumns();
 
         TablePanel table = new TablePanel(ID_POLICY_TABLE, provider, columns, 10);
@@ -132,12 +132,12 @@ public class PageSharingPolicy extends PageBase{
     private List<IColumn> createSharingPolicyColumns(){
         List<IColumn> columns = new ArrayList<>();
 
-        columns.add(new PropertyColumn<FederationSharingPolicyType, String>(new Model<>("Name"), "name", "name"));
-        columns.add(new PropertyColumn<FederationSharingPolicyType, String>(new Model<>("DisplayName"), "displayName", "displayName"));
-        columns.add(new AbstractColumn<FederationSharingPolicyType, String>(new Model<>("Rules")) {
+        columns.add(new PropertyColumn<SharingPolicyType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<SharingPolicyType, String>(new Model<>("DisplayName"), "displayName", "displayName"));
+        columns.add(new AbstractColumn<SharingPolicyType, String>(new Model<>("Rules")) {
 
             @Override
-            public void populateItem(Item<ICellPopulator<FederationSharingPolicyType>> cellItem, String componentId, final IModel<FederationSharingPolicyType> rowModel) {
+            public void populateItem(Item<ICellPopulator<SharingPolicyType>> cellItem, String componentId, final IModel<SharingPolicyType> rowModel) {
                 cellItem.add(new Label(componentId, new AbstractReadOnlyModel<String>() {
 
                     @Override
@@ -147,15 +147,15 @@ public class PageSharingPolicy extends PageBase{
                 }));
             }
         });
-        columns.add(new EditDeleteButtonColumn<FederationSharingPolicyType>(new Model<>("Actions")){
+        columns.add(new EditDeleteButtonColumn<SharingPolicyType>(new Model<>("Actions")){
 
             @Override
-            public void editPerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel) {
+            public void editPerformed(AjaxRequestTarget target, IModel<SharingPolicyType> rowModel) {
                 PageSharingPolicy.this.editPolicyPerformed(target, rowModel);
             }
 
             @Override
-            public void removePerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel) {
+            public void removePerformed(AjaxRequestTarget target, IModel<SharingPolicyType> rowModel) {
                 PageSharingPolicy.this.removePolicyPerformed(target, rowModel);
             }
         });
@@ -228,11 +228,11 @@ public class PageSharingPolicy extends PageBase{
         };
         rulesContainer.add(addRule);
 
-        ListView ruleRepeater = new ListView<FederationSharingRuleType>(ID_RULE_REPEATER,
-                new PropertyModel<List<FederationSharingRuleType>>(selected, "rules")) {
+        ListView ruleRepeater = new ListView<SharingRuleType>(ID_RULE_REPEATER,
+                new PropertyModel<List<SharingRuleType>>(selected, "rules")) {
 
             @Override
-            protected void populateItem(final ListItem<FederationSharingRuleType> item) {
+            protected void populateItem(final ListItem<SharingRuleType> item) {
                 WebMarkupContainer ruleHeader = new WebMarkupContainer(ID_RULE_HEADER);
                 ruleHeader.setOutputMarkupId(true);
                 ruleHeader.add(new AttributeModifier("href", createCollapseItemId(item, true)));
@@ -360,7 +360,7 @@ public class PageSharingPolicy extends PageBase{
         container.add(cancel);
     }
 
-    private IModel<String> createCollapseItemId(final ListItem<FederationSharingRuleType> item, final boolean includeSelector){
+    private IModel<String> createCollapseItemId(final ListItem<SharingRuleType> item, final boolean includeSelector){
         return new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -378,7 +378,7 @@ public class PageSharingPolicy extends PageBase{
         };
     }
 
-    private String createRuleLabel(FederationSharingRuleType rule){
+    private String createRuleLabel(SharingRuleType rule){
         StringBuilder sb = new StringBuilder();
 
         if(rule.getAttributeName() == null){
@@ -401,11 +401,11 @@ public class PageSharingPolicy extends PageBase{
     }
 
     private void addPolicyPerformed(AjaxRequestTarget target){
-        selected.setObject(new FederationSharingPolicyType());
+        selected.setObject(new SharingPolicyType());
         target.add(getPolicyForm());
     }
 
-    private void editPolicyPerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel){
+    private void editPolicyPerformed(AjaxRequestTarget target, IModel<SharingPolicyType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             warn("Could not edit sharing policy. Malformed data.");
             target.add(getFeedbackPanel());
@@ -416,14 +416,14 @@ public class PageSharingPolicy extends PageBase{
         target.add(getPolicyForm());
     }
 
-    private void removePolicyPerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel){
+    private void removePolicyPerformed(AjaxRequestTarget target, IModel<SharingPolicyType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             warn("Could not remove sharing policy. Malformed data.");
             target.add(getFeedbackPanel());
             return;
         }
 
-        FederationSharingPolicyType policy = rowModel.getObject();
+        SharingPolicyType policy = rowModel.getObject();
 
         try {
             getModelService().deleteObject(policy);
@@ -441,7 +441,7 @@ public class PageSharingPolicy extends PageBase{
         target.add(getFeedbackPanel(), getPolicyForm(), getListForm());
     }
 
-    private void deleteRulePerformed(AjaxRequestTarget target, FederationSharingRuleType rule){
+    private void deleteRulePerformed(AjaxRequestTarget target, SharingRuleType rule){
         if(rule == null || selected.getObject() == null){
             warn("Could not remove sharing rule. Malformed data.");
             target.add(getFeedbackPanel());
@@ -459,7 +459,7 @@ public class PageSharingPolicy extends PageBase{
             return;
         }
 
-        selected.getObject().getRules().add(new FederationSharingRuleType());
+        selected.getObject().getRules().add(new SharingRuleType());
         target.add(getRuleContainer());
     }
 
@@ -475,13 +475,13 @@ public class PageSharingPolicy extends PageBase{
             return;
         }
 
-        FederationSharingPolicyType policy = selected.getObject();
+        SharingPolicyType policy = selected.getObject();
 
         try {
             if(policy.getUid() == null){
                 //We are creating new sharing policy
 
-                FederationSharingPolicyType created = getModelService().createObject(policy);
+                SharingPolicyType created = getModelService().createObject(policy);
                 success("New Federation sharing policy created: '" + created.getName() + "'(" + created.getUid() + ").");
                 LOGGER.info("New Federation sharing policy created: '" + created.getName() + "'(" + created.getUid() + ").");
                 selected.setObject(null);

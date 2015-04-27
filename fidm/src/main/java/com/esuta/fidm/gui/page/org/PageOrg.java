@@ -116,7 +116,7 @@ public class PageOrg extends PageBase {
     private static final String ID_FEDERATION_COPIES_VIEWER = "federationCopyViewer";
 
     private IModel<OrgType> model;
-    private IModel<FederationSharingPolicyType> sharingPolicyModel;
+    private IModel<SharingPolicyType> sharingPolicyModel;
 
     public PageOrg(){
         this(null);
@@ -132,10 +132,10 @@ public class PageOrg extends PageBase {
             }
         };
 
-        sharingPolicyModel = new LoadableModel<FederationSharingPolicyType>(false) {
+        sharingPolicyModel = new LoadableModel<SharingPolicyType>(false) {
 
             @Override
-            protected FederationSharingPolicyType load() {
+            protected SharingPolicyType load() {
                 return loadSharingPolicy();
             }
         };
@@ -178,7 +178,7 @@ public class PageOrg extends PageBase {
         return org;
     }
 
-    private FederationSharingPolicyType loadSharingPolicy(){
+    private SharingPolicyType loadSharingPolicy(){
         if(isLocalOrgUnit()){
             return null;
         }
@@ -187,7 +187,7 @@ public class PageOrg extends PageBase {
         String federationMemberName = identifier.getFederationMemberId();
 
         try {
-            ObjectTypeRestResponse<FederationSharingPolicyType> response = getFederationServiceClient()
+            ObjectTypeRestResponse<SharingPolicyType> response = getFederationServiceClient()
                     .createGetOrgSharingPolicyRequest(getFederationMemberByName(federationMemberName), identifier);
 
             int responseStatus = response.getStatus();
@@ -422,7 +422,7 @@ public class PageOrg extends PageBase {
                 String sharingPolicyUid = sharingPolicyRef.getUid();
 
                 try {
-                    FederationSharingPolicyType policy = getModelService().readObject(FederationSharingPolicyType.class, sharingPolicyUid);
+                    SharingPolicyType policy = getModelService().readObject(SharingPolicyType.class, sharingPolicyUid);
                     return policy.getName();
                 } catch (DatabaseCommunicationException e) {
                     error("Could not load sharing policy with uid: '" + sharingPolicyUid + "' from the repository.");
@@ -447,7 +447,7 @@ public class PageOrg extends PageBase {
                 String provisioningPolicyUid = provisioningPolicyRef.getUid();
 
                 try {
-                    FederationProvisioningPolicyType policy = getModelService().readObject(FederationProvisioningPolicyType.class, provisioningPolicyUid);
+                    ProvisioningPolicyType policy = getModelService().readObject(ProvisioningPolicyType.class, provisioningPolicyUid);
                     return policy.getName();
                 } catch (DatabaseCommunicationException e) {
                     error("Could not load provisioning policy with uid: '" + provisioningPolicyUid + "' from the repository.");
@@ -711,10 +711,10 @@ public class PageOrg extends PageBase {
         };
         add(governorChooser);
 
-        ModalWindow sharingPolicyChooser = new ObjectChooserDialog<FederationSharingPolicyType>(ID_SHARING_POLICY_CHOOSER, FederationSharingPolicyType.class){
+        ModalWindow sharingPolicyChooser = new ObjectChooserDialog<SharingPolicyType>(ID_SHARING_POLICY_CHOOSER, SharingPolicyType.class){
 
             @Override
-            public void objectChoosePerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel) {
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<SharingPolicyType> rowModel) {
                 sharingPolicyChoosePerformed(target, rowModel);
             }
 
@@ -731,11 +731,11 @@ public class PageOrg extends PageBase {
         ((ObjectChooserDialog)sharingPolicyChooser).setSharedInFederation(true);
         add(sharingPolicyChooser);
 
-        ModalWindow provisioningPolicyChooser = new ObjectChooserDialog<FederationProvisioningPolicyType>(
-                ID_PROVISIONING_POLICY_VIEWER, FederationProvisioningPolicyType.class){
+        ModalWindow provisioningPolicyChooser = new ObjectChooserDialog<ProvisioningPolicyType>(
+                ID_PROVISIONING_POLICY_VIEWER, ProvisioningPolicyType.class){
 
             @Override
-            public void objectChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel) {
+            public void objectChoosePerformed(AjaxRequestTarget target, IModel<ProvisioningPolicyType> rowModel) {
                 provisioningPolicyChoosePerformed(target, rowModel);
             }
 
@@ -1248,7 +1248,7 @@ public class PageOrg extends PageBase {
         target.add(getGovernorsContainer());
     }
 
-    private void sharingPolicyChoosePerformed(AjaxRequestTarget target, IModel<FederationSharingPolicyType> rowModel){
+    private void sharingPolicyChoosePerformed(AjaxRequestTarget target, IModel<SharingPolicyType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             return;
         }
@@ -1258,7 +1258,7 @@ public class PageOrg extends PageBase {
         }
 
         OrgType org = model.getObject();
-        FederationSharingPolicyType policy = rowModel.getObject();
+        SharingPolicyType policy = rowModel.getObject();
         ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
         policyRef.setSharedInFederation(true);
@@ -1289,7 +1289,7 @@ public class PageOrg extends PageBase {
         return members;
     }
 
-    private void provisioningPolicyChoosePerformed(AjaxRequestTarget target, IModel<FederationProvisioningPolicyType> rowModel){
+    private void provisioningPolicyChoosePerformed(AjaxRequestTarget target, IModel<ProvisioningPolicyType> rowModel){
         if(rowModel == null || rowModel.getObject() == null){
             return;
         }
@@ -1299,7 +1299,7 @@ public class PageOrg extends PageBase {
         }
 
         OrgType org = model.getObject();
-        FederationProvisioningPolicyType policy = rowModel.getObject();
+        ProvisioningPolicyType policy = rowModel.getObject();
         ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
         policyRef.setSharedInFederation(false);
@@ -1413,7 +1413,7 @@ public class PageOrg extends PageBase {
 
             @Override
             public boolean isEnabled() {
-                FederationSharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
+                SharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
 
                 if(rule == null){
                     SingleValueTolerance defaultSingleValueTolerance = sharingPolicyModel.getObject().getDefaultSingleValueTolerance();
@@ -1434,7 +1434,7 @@ public class PageOrg extends PageBase {
             return true;
         }
 
-        FederationSharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
+        SharingRuleType rule = WebMiscUtil.getRuleByAttributeName(sharingPolicyModel.getObject(), attributeName);
 
         if(rule == null){
             MultiValueTolerance defaultMultiValueTolerance = sharingPolicyModel.getObject().getDefaultMultiValueTolerance();
@@ -1842,7 +1842,7 @@ public class PageOrg extends PageBase {
                 }
 
                 modelService.updateObject(orgUnit);
-                if(orgUnit.isSharedSubtree()){
+                if(orgUnit.isShareSubtree()){
                     shareOrgSubtree(orgUnit);
                 }
             }

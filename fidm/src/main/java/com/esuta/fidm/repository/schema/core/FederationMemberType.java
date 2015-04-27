@@ -23,6 +23,13 @@ public class FederationMemberType extends ObjectType{
     private String name;
 
     /**
+     *  Display name can be used as a readable form for identity
+     *  provider, member of identity federation
+     * */
+    @Index
+    private String displayName;
+
+    /**
      *  This attribute is a unique identifier used in identity federations
      * */
     private String federationMemberName;
@@ -53,12 +60,6 @@ public class FederationMemberType extends ObjectType{
      *  which federation member can be contacted
      * */
     private String webAddress;
-
-    /**
-     *  Display name can be used as a readable form for identity
-     *  provider, member of identity federation
-     * */
-    private String displayName;
 
     /**
      *  A physical locality, can be a city, country, state, address, etc.

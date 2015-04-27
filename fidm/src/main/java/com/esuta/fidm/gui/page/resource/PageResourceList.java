@@ -49,6 +49,7 @@ public class PageResourceList extends PageBase {
         List<IColumn> columns = new ArrayList<>();
 
         columns.add(new PropertyColumn<ResourceType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<ResourceType, String>(new Model<>("Display Name"), "displayName", "displayName"));
         columns.add(new PropertyColumn<ResourceType, String>(new Model<>("Type"), "resourceType", "resourceType"));
 
         columns.add(new EditDeleteButtonColumn<ResourceType>(new Model<>("Actions")){
