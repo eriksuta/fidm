@@ -26,7 +26,7 @@ import java.util.List;
 public class ObjectChooserDialog<T extends ObjectType> extends ModalWindow{
 
     private static final String ID_TABLE = "table";
-    private static final String ID_SHARED_IN_FEDERATION = "sharedInFederation";
+    private static final String ID_SHARED_IN_FEDERATION = "shareInFederation";
     private static final String ID_CANCEL = "cancelButton";
 
     private boolean initialized;

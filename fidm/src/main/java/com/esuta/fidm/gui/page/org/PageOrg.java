@@ -72,8 +72,8 @@ public class PageOrg extends PageBase {
 
     private static final String ID_FEDERATION_CONTAINER = "federationContainer";
     private static final String ID_BUTTON_SHOW_COPIES = "showFederationCopies";
-    private static final String ID_SHARE_IN_FEDERATION = "sharedInFederation";
-    private static final String ID_SHARE_SUBTREE = "sharedSubtree";
+    private static final String ID_SHARE_IN_FEDERATION = "shareInFederation";
+    private static final String ID_SHARE_SUBTREE = "shareSubtree";
     private static final String ID_OVERRIDE_SHARING = "overrideParentSharing";
 
     private static final String ID_BUTTON_SAVE = "saveButton";
@@ -363,7 +363,7 @@ public class PageOrg extends PageBase {
         });
         federationContainer.add(showFederationCopies);
 
-        CheckBox sharedInFederation = new CheckBox(ID_SHARE_IN_FEDERATION, new PropertyModel<Boolean>(model, "sharedInFederation"));
+        CheckBox sharedInFederation = new CheckBox(ID_SHARE_IN_FEDERATION, new PropertyModel<Boolean>(model, "shareInFederation"));
         sharedInFederation.add(new OnChangeAjaxBehavior() {
 
             @Override
@@ -373,12 +373,12 @@ public class PageOrg extends PageBase {
         });
         federationContainer.add(sharedInFederation);
 
-        CheckBox shareSubtree = new CheckBox(ID_SHARE_SUBTREE, new PropertyModel<Boolean>(model, "sharedSubtree"));
+        CheckBox shareSubtree = new CheckBox(ID_SHARE_SUBTREE, new PropertyModel<Boolean>(model, "shareSubtree"));
         shareSubtree.add(new VisibleEnableBehavior(){
 
             @Override
             public boolean isEnabled() {
-                return model.getObject().isSharedInFederation();
+                return model.getObject().isShareInFederation();
             }
         });
         federationContainer.add(shareSubtree);
@@ -393,7 +393,7 @@ public class PageOrg extends PageBase {
                     return false;
                 }
 
-                return model.getObject().isSharedInFederation();
+                return model.getObject().isShareInFederation();
             }
         });
         federationContainer.add(overrideSharing);
@@ -1680,7 +1680,7 @@ public class PageOrg extends PageBase {
             //If the children does not override parent sharing, set sharing to true and save
             for(OrgType orgUnit: children){
                 if(!orgUnit.isOverrideParentSharing()){
-                    orgUnit.setSharedInFederation(true);
+                    orgUnit.setShareInFederation(true);
                     getModelService().updateObject(orgUnit);
                     success("Org. unit: '" + orgUnit.getName() + "' federation sharing set successfully.");
                 }
@@ -1770,7 +1770,7 @@ public class PageOrg extends PageBase {
         }
 
         //If org. unit is shared in federation, sharing policy must be specified
-        if(orgUnit.isSharedInFederation()){
+        if(orgUnit.isShareInFederation()){
             if(orgUnit.getSharingPolicy() == null){
                 error("Sharing policy must be specified for org. unit shared in federation. Specify a sharing" +
                         "policy for this org. unit or do not share it in federation.");

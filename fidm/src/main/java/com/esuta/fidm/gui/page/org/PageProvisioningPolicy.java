@@ -204,7 +204,7 @@ public class PageProvisioningPolicy extends PageBase{
         policyContainer.add(policyDescription);
 
         DropDownChoice defaultBehavior = new DropDownChoice<>(ID_DEFAULT_BEHAVIOR,
-                new PropertyModel<ProvisioningBehaviorType>(selected, "defaultRule"),
+                new PropertyModel<ProvisioningBehaviorType>(selected, "defaultBehavior"),
                 WebMiscUtil.createReadonlyModelFromEnum(ProvisioningBehaviorType.class),
                 new EnumChoiceRenderer<ProvisioningBehaviorType>(this));
         defaultBehavior.setRequired(true);

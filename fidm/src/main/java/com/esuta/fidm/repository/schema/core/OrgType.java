@@ -134,12 +134,12 @@ public class OrgType extends ObjectType{
      *  federation environment. This decision is solemnly made by
      *  the 'owner' of org. unit - current identity provider.
      * */
-    private boolean sharedInFederation;
+    private boolean shareInFederation;
 
     /**
      *  An attribute responsible for sharing a subtree of org. unit.
      *  This attribute can be set only in case, when this org. unit
-     *  is already shared in identity federation, thus 'sharedInFederation'
+     *  is already shared in identity federation, thus 'shareInFederation'
      *  attribute is set to true. If set to false, only this org. unit
      *  is shared among federation members, not it's subtree.
      * */
@@ -148,7 +148,7 @@ public class OrgType extends ObjectType{
     /**
      *  An attribute used to override the decision of parent org. unit.
      *  This attribute can be used only in case, when this org. unit
-     *  is already shared in federation, thus 'sharedInFederation' attribute
+     *  is already shared in federation, thus 'shareInFederation' attribute
      *  is set to true. If the org. unit is shared in federation and this
      *  attribute is set to true (default value is false), then this
      *  specific org. unit and it's subtree won't be shared in federation.
@@ -251,12 +251,12 @@ public class OrgType extends ObjectType{
         this.federationIdentifier = federationIdentifier;
     }
 
-    public boolean isSharedInFederation() {
-        return sharedInFederation;
+    public boolean isShareInFederation() {
+        return shareInFederation;
     }
 
-    public void setSharedInFederation(boolean sharedInFederation) {
-        this.sharedInFederation = sharedInFederation;
+    public void setShareInFederation(boolean shareInFederation) {
+        this.shareInFederation = shareInFederation;
     }
 
     public boolean isShareSubtree() {
@@ -312,7 +312,7 @@ public class OrgType extends ObjectType{
         OrgType orgType1 = (OrgType) o;
 
         if (overrideParentSharing != orgType1.overrideParentSharing) return false;
-        if (sharedInFederation != orgType1.sharedInFederation) return false;
+        if (shareInFederation != orgType1.shareInFederation) return false;
         if (shareSubtree != orgType1.shareSubtree) return false;
         if (copies != null ? !copies.equals(orgType1.copies) : orgType1.copies != null) return false;
         if (displayName != null ? !displayName.equals(orgType1.displayName) : orgType1.displayName != null)
@@ -352,7 +352,7 @@ public class OrgType extends ObjectType{
         result = 31 * result + (provisioningPolicy != null ? provisioningPolicy.hashCode() : 0);
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
         result = 31 * result + (copies != null ? copies.hashCode() : 0);
-        result = 31 * result + (sharedInFederation ? 1 : 0);
+        result = 31 * result + (shareInFederation ? 1 : 0);
         result = 31 * result + (shareSubtree ? 1 : 0);
         result = 31 * result + (overrideParentSharing ? 1 : 0);
         return result;

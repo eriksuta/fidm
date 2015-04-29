@@ -516,7 +516,7 @@ public class RestFederationService implements IFederationService{
             int count = 0;
 
             for(OrgType org: orgUnits){
-                if(org.isSharedInFederation() && org.getFederationIdentifier() == null){
+                if(org.isShareInFederation() && org.getFederationIdentifier() == null){
                     count++;
                 }
             }
@@ -552,7 +552,7 @@ public class RestFederationService implements IFederationService{
             List<OrgType> sharedOrgUnits = new ArrayList<>();
 
             for(OrgType org: orgUnits){
-                if(org.isSharedInFederation() && org.getFederationIdentifier() == null){
+                if(org.isShareInFederation() && org.getFederationIdentifier() == null){
                     FederationIdentifierType federationIdentifier = new FederationIdentifierType();
                     federationIdentifier.setFederationMemberId(getLocalFederationMemberIdentifier());
                     federationIdentifier.setUniqueAttributeValue(getUniqueAttributeValue(org, currentMember.getUniqueOrgIdentifier()));
