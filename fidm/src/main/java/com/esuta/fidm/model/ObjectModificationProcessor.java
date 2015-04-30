@@ -25,20 +25,20 @@ import java.util.List;
  *
  *  @author shood
  * */
-public class ObjectChangeProcessor {
+public class ObjectModificationProcessor {
 
-    private static final Logger LOGGER = Logger.getLogger(ObjectChangeProcessor.class);
+    private static final Logger LOGGER = Logger.getLogger(ObjectModificationProcessor.class);
 
     /**
      *  Single ObjectChangeProcessor instance
      * */
-    private static ObjectChangeProcessor instance = null;
+    private static ObjectModificationProcessor instance = null;
 
-    private ObjectChangeProcessor(){}
+    private ObjectModificationProcessor(){}
 
-    public static ObjectChangeProcessor getInstance(){
+    public static ObjectModificationProcessor getInstance(){
         if(instance == null){
-            instance = new ObjectChangeProcessor();
+            instance = new ObjectModificationProcessor();
         }
 
         return instance;
@@ -153,7 +153,7 @@ public class ObjectChangeProcessor {
      *  that changes that can be applied in federation (and thus in local identity provider)
      *  will not be returned by this method.
      * */
-    public ObjectModificationType prepareLocalChanges(ObjectModificationType modificationObject, SharingPolicyType policy){
+    public ObjectModificationType prepareLocalModifications(ObjectModificationType modificationObject, SharingPolicyType policy){
         List<AttributeModificationType> validModifications = new ArrayList<>();
 
         if(modificationObject == null || policy == null){
@@ -223,9 +223,9 @@ public class ObjectChangeProcessor {
      *  are then distributed to all other members of identity federation with
      *  a copy of org. unit. However, this method returns changes that are valid
      *  for both local and origin distribution, so it is obvious, that only
-     *  locally valid changes are not returned by this method - use prepareLocalChanges() instead.
+     *  locally valid changes are not returned by this method - use prepareLocalModifications() instead.
      * */
-    public ObjectModificationType prepareDistributedChanges(ObjectModificationType modificationObject, SharingPolicyType policy){
+    public ObjectModificationType prepareDistributedModifications(ObjectModificationType modificationObject, SharingPolicyType policy){
         List<AttributeModificationType> validModifications = new ArrayList<>();
 
         if(modificationObject == null || policy == null){

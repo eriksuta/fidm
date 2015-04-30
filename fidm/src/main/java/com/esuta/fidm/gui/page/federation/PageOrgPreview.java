@@ -671,7 +671,7 @@ public class PageOrgPreview extends PageBase{
         ProvisioningPolicyType policy = rowModel.getObject();
         ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
-        policyRef.setSharedInFederation(false);
+        policyRef.setShareInFederation(false);
         org.setProvisioningPolicy(policyRef);
 
         ModalWindow window = (ModalWindow) get(ID_PROVISIONING_POLICY_CHOOSER);

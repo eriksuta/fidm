@@ -385,7 +385,7 @@ public interface IFederationService {
      *                   as problems with reading objects in repository.
      *
      * */
-    Response processOrgChanges(OrgChangeWrapper orgChange);
+    Response processOrgChanges(OrgModificationWrapper orgChange);
 
     /**
      *  <p>

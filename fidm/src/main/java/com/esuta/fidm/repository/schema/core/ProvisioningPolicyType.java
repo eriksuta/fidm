@@ -14,7 +14,6 @@ import java.util.List;
  *  that handling of changes in org. unit definition may be different in different
  *  federation members.
  *
- *
  *  @author shood
  * */
 @Entity

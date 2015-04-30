@@ -15,7 +15,7 @@ import java.io.Serializable;
  *  @author shood
  * */
 @XmlRootElement
-public class OrgChangeWrapper implements Serializable{
+public class OrgModificationWrapper implements Serializable{
 
     /**
      *  An identification of federation member in identity
@@ -35,7 +35,7 @@ public class OrgChangeWrapper implements Serializable{
      * */
     private ObjectModificationType modificationObject;
 
-    public OrgChangeWrapper() {}
+    public OrgModificationWrapper() {}
 
     public String getFederationMember() {
         return federationMember;
@@ -64,9 +64,9 @@ public class OrgChangeWrapper implements Serializable{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof OrgChangeWrapper)) return false;
+        if (!(o instanceof OrgModificationWrapper)) return false;
 
-        OrgChangeWrapper that = (OrgChangeWrapper) o;
+        OrgModificationWrapper that = (OrgModificationWrapper) o;
 
         if (federationMember != null ? !federationMember.equals(that.federationMember) : that.federationMember != null)
             return false;

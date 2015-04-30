@@ -129,7 +129,7 @@ public class RestFederationService implements IFederationService{
         //Resolve parent org. ref sharing
         List<ObjectReferenceType> newParentOrgRefs = new ArrayList<>();
         for(ObjectReferenceType parentRef: org.getParentOrgUnits()){
-            if(parentRef.isSharedInFederation()){
+            if(parentRef.isShareInFederation()){
                 newParentOrgRefs.add(parentRef);
             }
         }
@@ -139,7 +139,7 @@ public class RestFederationService implements IFederationService{
         //Resolve governors sharing
         List<ObjectReferenceType> newGovernorRefs = new ArrayList<>();
         for(ObjectReferenceType governorRef: org.getGovernors()){
-            if(governorRef.isSharedInFederation()){
+            if(governorRef.isShareInFederation()){
                 newGovernorRefs.add(governorRef);
             }
         }
@@ -149,7 +149,7 @@ public class RestFederationService implements IFederationService{
         //Resolve resource inducements sharing
         List<InducementType> newResourceInducements = new ArrayList<>();
         for(InducementType inducementRef: org.getResourceInducements()){
-            if(inducementRef.isSharedInFederation()){
+            if(inducementRef.isShareInFederation()){
                 newResourceInducements.add(inducementRef);
             }
         }
@@ -159,7 +159,7 @@ public class RestFederationService implements IFederationService{
         //Resolve role inducements sharing
         List<InducementType> newRoleInducements = new ArrayList<>();
         for(InducementType inducementRef: org.getRoleInducements()){
-            if(inducementRef.isSharedInFederation()){
+            if(inducementRef.isShareInFederation()){
                 newRoleInducements.add(inducementRef);
             }
         }
@@ -261,7 +261,7 @@ public class RestFederationService implements IFederationService{
         }
 
         ObjectReferenceType copyReference = new ObjectReferenceType();
-        copyReference.setSharedInFederation(false);
+        copyReference.setShareInFederation(false);
         copyReference.setUid(member.getUid());
 
         org.getCopies().add(copyReference);
@@ -733,7 +733,7 @@ public class RestFederationService implements IFederationService{
     @Path(RestFederationServiceUtil.POST_PROCESS_ORG_CHANGES)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response processOrgChanges(OrgChangeWrapper orgChange) {
+    public Response processOrgChanges(OrgModificationWrapper orgChange) {
         if(orgChange == null){
             return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad request body format.").build();
         }

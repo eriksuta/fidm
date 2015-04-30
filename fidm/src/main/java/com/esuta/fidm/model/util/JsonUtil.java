@@ -99,7 +99,7 @@ public class JsonUtil {
             ref.setFederationIdentifier((FederationIdentifierType)context.deserialize(federationIdentifier, FederationIdentifierType.class));
 
             JsonElement sharedInFederation = object.get("sharedInFederation");
-            ref.setSharedInFederation((Boolean)context.deserialize(sharedInFederation, Boolean.class));
+            ref.setShareInFederation((Boolean) context.deserialize(sharedInFederation, Boolean.class));
             return ref;
         }
 
@@ -108,7 +108,7 @@ public class JsonUtil {
             JsonObject result = new JsonObject();
             result.add("uid", context.serialize(reference.getUid(), String.class));
             result.add("federationIdentifier", context.serialize(reference.getFederationIdentifier(), FederationIdentifierType.class));
-            result.add("sharedInFederation", context.serialize(reference.isSharedInFederation(), Boolean.class));
+            result.add("sharedInFederation", context.serialize(reference.isShareInFederation(), Boolean.class));
             return result;
         }
     }
@@ -130,7 +130,7 @@ public class JsonUtil {
             assignment.setFederationIdentifier((FederationIdentifierType) context.deserialize(federationIdentifier, FederationIdentifierType.class));
 
             JsonElement sharedInFederation = object.get("sharedInFederation");
-            assignment.setSharedInFederation((Boolean) context.deserialize(sharedInFederation, Boolean.class));
+            assignment.setShareInFederation((Boolean) context.deserialize(sharedInFederation, Boolean.class));
             return assignment;
         }
 
@@ -139,7 +139,7 @@ public class JsonUtil {
             JsonObject result = new JsonObject();
             result.add("uid", context.serialize(reference.getUid(), String.class));
             result.add("federationIdentifier", context.serialize(reference.getFederationIdentifier(), FederationIdentifierType.class));
-            result.add("sharedInFederation", context.serialize(reference.isSharedInFederation(), Boolean.class));
+            result.add("sharedInFederation", context.serialize(reference.isShareInFederation(), Boolean.class));
             return result;
         }
     }
@@ -161,7 +161,7 @@ public class JsonUtil {
             inducement.setFederationIdentifier((FederationIdentifierType) context.deserialize(federationIdentifier, FederationIdentifierType.class));
 
             JsonElement sharedInFederation = object.get("sharedInFederation");
-            inducement.setSharedInFederation((Boolean) context.deserialize(sharedInFederation, Boolean.class));
+            inducement.setShareInFederation((Boolean) context.deserialize(sharedInFederation, Boolean.class));
             return inducement;
         }
 
@@ -170,7 +170,7 @@ public class JsonUtil {
             JsonObject result = new JsonObject();
             result.add("uid", context.serialize(reference.getUid(), String.class));
             result.add("federationIdentifier", context.serialize(reference.getFederationIdentifier(), FederationIdentifierType.class));
-            result.add("sharedInFederation", context.serialize(reference.isSharedInFederation(), Boolean.class));
+            result.add("sharedInFederation", context.serialize(reference.isShareInFederation(), Boolean.class));
             return result;
         }
     }

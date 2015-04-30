@@ -312,7 +312,7 @@ public class PageAccount extends PageBase{
 
                 UserType user = modelService.readObject(UserType.class, owner.getUid());
                 AssignmentType accountAssignment = new AssignmentType(account.getUid());
-                accountAssignment.setSharedInFederation(false);
+                accountAssignment.setShareInFederation(false);
 
                 if(!accountExists(accountAssignment, user)){
                     user.getAccounts().add(accountAssignment);

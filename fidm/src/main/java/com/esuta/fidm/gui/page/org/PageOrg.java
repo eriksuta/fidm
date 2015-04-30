@@ -1184,7 +1184,7 @@ public class PageOrg extends PageBase {
 
         String resourceUid = resourceModel.getObject().getUid();
         InducementType resourceInducement = new InducementType(resourceUid);
-        resourceInducement.setSharedInFederation(isSharedInFederation);
+        resourceInducement.setShareInFederation(isSharedInFederation);
         model.getObject().getResourceInducements().add(resourceInducement);
 
         ModalWindow window = (ModalWindow) get(ID_RESOURCE_INDUCEMENT_CHOOSER);
@@ -1203,7 +1203,7 @@ public class PageOrg extends PageBase {
 
         String roleUid = roleModel.getObject().getUid();
         InducementType roleInducement = new InducementType(roleUid);
-        roleInducement.setSharedInFederation(isSharedInFederation);
+        roleInducement.setShareInFederation(isSharedInFederation);
         model.getObject().getRoleInducements().add(roleInducement);
 
         ModalWindow window = (ModalWindow) get(ID_ROLE_INDUCEMENT_CHOOSER);
@@ -1240,7 +1240,7 @@ public class PageOrg extends PageBase {
 
         String governorUid = governorModel.getObject().getUid();
         ObjectReferenceType governorReference = new ObjectReferenceType(governorUid);
-        governorReference.setSharedInFederation(sharedInFederation);
+        governorReference.setShareInFederation(sharedInFederation);
         model.getObject().getGovernors().add(governorReference);
 
         ModalWindow window = (ModalWindow) get(ID_GOVERNOR_CHOOSER);
@@ -1261,7 +1261,7 @@ public class PageOrg extends PageBase {
         SharingPolicyType policy = rowModel.getObject();
         ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
-        policyRef.setSharedInFederation(true);
+        policyRef.setShareInFederation(true);
         org.setSharingPolicy(policyRef);
 
         ModalWindow window = (ModalWindow) get(ID_SHARING_POLICY_CHOOSER);
@@ -1302,7 +1302,7 @@ public class PageOrg extends PageBase {
         ProvisioningPolicyType policy = rowModel.getObject();
         ObjectReferenceType policyRef = new ObjectReferenceType();
         policyRef.setUid(policy.getUid());
-        policyRef.setSharedInFederation(false);
+        policyRef.setShareInFederation(false);
         org.setProvisioningPolicy(policyRef);
 
         ModalWindow window = (ModalWindow) get(ID_PROVISIONING_POLICY_VIEWER);
@@ -1475,7 +1475,7 @@ public class PageOrg extends PageBase {
 
         String uid = rowModel.getObject().getUid();
         ObjectReferenceType parentReference = new ObjectReferenceType(uid);
-        parentReference.setSharedInFederation(isSharedInFederation);
+        parentReference.setShareInFederation(isSharedInFederation);
         model.getObject().getParentOrgUnits().add(parentReference);
 
         ModalWindow dialog = (ModalWindow) get(ID_PARENT_ORG_UNIT_CHOOSER);
@@ -1805,7 +1805,7 @@ public class PageOrg extends PageBase {
             } else {
 
                 OrgType oldOrg = modelService.readObject(OrgType.class, orgUnit.getUid());
-                ObjectModificationType modificationObject = getObjectChangeProcessor().getOrgModifications(oldOrg, orgUnit);
+                ObjectModificationType modificationObject = getObjectModificationProcessor().getOrgModifications(oldOrg, orgUnit);
 
                 if(isLocalOrgUnit()){
 
@@ -1827,14 +1827,14 @@ public class PageOrg extends PageBase {
                 } else {
 
                     //First, apply changes applicable only locally
-                    ObjectModificationType localModificationObject = getObjectChangeProcessor()
-                            .prepareLocalChanges(modificationObject, sharingPolicyModel.getObject());
+                    ObjectModificationType localModificationObject = getObjectModificationProcessor()
+                            .prepareLocalModifications(modificationObject, sharingPolicyModel.getObject());
 
                     getProvisioningService().applyProvisioningPolicy(oldOrg, localModificationObject.getModificationList());
 
                     //Then send changes to origin for processing
-                    ObjectModificationType remoteModificationObject = getObjectChangeProcessor()
-                            .prepareDistributedChanges(modificationObject, sharingPolicyModel.getObject());
+                    ObjectModificationType remoteModificationObject = getObjectModificationProcessor()
+                            .prepareDistributedModifications(modificationObject, sharingPolicyModel.getObject());
 
                     FederationIdentifierType orgIdentifier = oldOrg.getFederationIdentifier();
                     getFederationServiceClient().createPostOrgChangesRequest(getFederationMemberByName(orgIdentifier.getFederationMemberId()),

@@ -6,7 +6,7 @@ import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
 import com.esuta.fidm.model.federation.service.ObjectInformation;
-import com.esuta.fidm.model.federation.service.OrgChangeWrapper;
+import com.esuta.fidm.model.federation.service.OrgModificationWrapper;
 import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
@@ -315,7 +315,7 @@ public class RestFederationServiceClient {
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
-        OrgChangeWrapper requestObject = new OrgChangeWrapper();
+        OrgModificationWrapper requestObject = new OrgModificationWrapper();
         requestObject.setUniqueAttributeValue(federationIdentifier.getUniqueAttributeValue());
         requestObject.setFederationMember(getLocalFederationMemberIdentifier());
         requestObject.setModificationObject(modificationObject);
@@ -342,7 +342,7 @@ public class RestFederationServiceClient {
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
-        OrgChangeWrapper requestObject = new OrgChangeWrapper();
+        OrgModificationWrapper requestObject = new OrgModificationWrapper();
         requestObject.setUniqueAttributeValue(orgUniqueAttributeValue);
         requestObject.setFederationMember(getLocalFederationMemberIdentifier());
         requestObject.setModificationObject(modificationObject);

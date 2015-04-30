@@ -34,7 +34,7 @@ public class ProvisioningService implements IProvisioningService{
      *  Change processor instance - applies changes on org. units after provisioning
      *  policy is applied
      * */
-    private ObjectChangeProcessor changeProcessor;
+    private ObjectModificationProcessor changeProcessor;
 
     /**
      *  Model service instance for all kinds of support operations
@@ -51,7 +51,7 @@ public class ProvisioningService implements IProvisioningService{
     private Map<String, List<AttributeModificationType>> jitModificationList = new HashMap<>();
 
     private ProvisioningService(){
-        changeProcessor = ObjectChangeProcessor.getInstance();
+        changeProcessor = ObjectModificationProcessor.getInstance();
         modelService = ModelService.getInstance();
     }
 

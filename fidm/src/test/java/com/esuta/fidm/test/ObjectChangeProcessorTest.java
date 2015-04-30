@@ -1,6 +1,6 @@
 package com.esuta.fidm.test;
 
-import com.esuta.fidm.model.ObjectChangeProcessor;
+import com.esuta.fidm.model.ObjectModificationProcessor;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.AttributeModificationType;
@@ -22,7 +22,7 @@ public class ObjectChangeProcessorTest {
 
     private static final Logger LOGGER = Logger.getLogger(ObjectChangeProcessorTest.class);
 
-    private static ObjectChangeProcessor changeProcessor;
+    private static ObjectModificationProcessor changeProcessor;
 
     public static void printTestName(String testName){
         LOGGER.info("Starting test: " + testName);
@@ -31,7 +31,7 @@ public class ObjectChangeProcessorTest {
     @BeforeClass
     public static void init(){
         LOGGER.info("Starting 'ObjectChangeProcessor' test suite.");
-        changeProcessor = ObjectChangeProcessor.getInstance();
+        changeProcessor = ObjectModificationProcessor.getInstance();
     }
 
     @AfterClass
@@ -363,7 +363,7 @@ public class ObjectChangeProcessorTest {
         OrgType newOrg = new OrgType();
         newOrg.setName("Org");
         ObjectReferenceType governor = new ObjectReferenceType();
-        governor.setSharedInFederation(false);
+        governor.setShareInFederation(false);
         governor.setUid("uid");
 
         FederationIdentifierType federationIdentifier = new FederationIdentifierType();
@@ -410,7 +410,7 @@ public class ObjectChangeProcessorTest {
         OrgType oldOrg = new OrgType();
         oldOrg.setName("Org");
         ObjectReferenceType oldGovernor = new ObjectReferenceType();
-        oldGovernor.setSharedInFederation(false);
+        oldGovernor.setShareInFederation(false);
         oldGovernor.setUid("uid");
         oldGovernor.setFederationIdentifier(federationIdentifier);
         oldOrg.getGovernors().add(oldGovernor);
@@ -418,7 +418,7 @@ public class ObjectChangeProcessorTest {
         OrgType newOrg = new OrgType();
         newOrg.setName("Org");
         ObjectReferenceType newGovernor = new ObjectReferenceType();
-        newGovernor.setSharedInFederation(false);
+        newGovernor.setShareInFederation(false);
         newGovernor.setUid("new uid");
         newGovernor.setFederationIdentifier(federationIdentifier);
         newOrg.getGovernors().add(newGovernor);
@@ -461,7 +461,7 @@ public class ObjectChangeProcessorTest {
         OrgType oldOrg = new OrgType();
         oldOrg.setName("Org");
         ObjectReferenceType oldGovernor = new ObjectReferenceType();
-        oldGovernor.setSharedInFederation(false);
+        oldGovernor.setShareInFederation(false);
         oldGovernor.setUid("uid");
         oldGovernor.setFederationIdentifier(federationIdentifier);
         oldOrg.getGovernors().add(oldGovernor);
@@ -500,7 +500,7 @@ public class ObjectChangeProcessorTest {
         OrgType newOrg = new OrgType();
         newOrg.setName("Org");
         InducementType roleInducement = new InducementType();
-        roleInducement.setSharedInFederation(false);
+        roleInducement.setShareInFederation(false);
         roleInducement.setUid("uid");
 
         FederationIdentifierType federationIdentifier = new FederationIdentifierType();
@@ -547,7 +547,7 @@ public class ObjectChangeProcessorTest {
         OrgType oldOrg = new OrgType();
         oldOrg.setName("Org");
         InducementType oldRoleInducement = new InducementType();
-        oldRoleInducement.setSharedInFederation(false);
+        oldRoleInducement.setShareInFederation(false);
         oldRoleInducement.setUid("uid");
         oldRoleInducement.setFederationIdentifier(federationIdentifier);
         oldOrg.getRoleInducements().add(oldRoleInducement);
@@ -555,7 +555,7 @@ public class ObjectChangeProcessorTest {
         OrgType newOrg = new OrgType();
         newOrg.setName("Org");
         InducementType newRoleInducement = new InducementType();
-        newRoleInducement.setSharedInFederation(false);
+        newRoleInducement.setShareInFederation(false);
         newRoleInducement.setUid("new uid");
         newRoleInducement.setFederationIdentifier(federationIdentifier);
         newOrg.getRoleInducements().add(newRoleInducement);
@@ -598,7 +598,7 @@ public class ObjectChangeProcessorTest {
         OrgType oldOrg = new OrgType();
         oldOrg.setName("Org");
         InducementType roleInducement = new InducementType();
-        roleInducement.setSharedInFederation(false);
+        roleInducement.setShareInFederation(false);
         roleInducement.setUid("uid");
         roleInducement.setFederationIdentifier(federationIdentifier);
         oldOrg.getRoleInducements().add(roleInducement);
@@ -650,9 +650,9 @@ public class ObjectChangeProcessorTest {
         modificationObject.getModificationList().add(modification);
 
         //Perform filtering
-        ObjectModificationType enforceModification = changeProcessor.prepareLocalChanges(modificationObject, enforcePolicy);
-        ObjectModificationType allowOwnModification = changeProcessor.prepareLocalChanges(modificationObject, allowOwnPolicy);
-        ObjectModificationType allowAllModification = changeProcessor.prepareLocalChanges(modificationObject, allowAllPolicy);
+        ObjectModificationType enforceModification = changeProcessor.prepareLocalModifications(modificationObject, enforcePolicy);
+        ObjectModificationType allowOwnModification = changeProcessor.prepareLocalModifications(modificationObject, allowOwnPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareLocalModifications(modificationObject, allowAllPolicy);
 
         //Check the results
         Assert.assertNotNull(enforceModification);
@@ -706,9 +706,9 @@ public class ObjectChangeProcessorTest {
         modificationObject.getModificationList().add(modification);
 
         //Perform filtering
-        ObjectModificationType enforceModification = changeProcessor.prepareLocalChanges(modificationObject, enforcePolicy);
-        ObjectModificationType allowOwnModification = changeProcessor.prepareLocalChanges(modificationObject, allowOwnPolicy);
-        ObjectModificationType allowAllModification = changeProcessor.prepareLocalChanges(modificationObject, allowAllPolicy);
+        ObjectModificationType enforceModification = changeProcessor.prepareLocalModifications(modificationObject, enforcePolicy);
+        ObjectModificationType allowOwnModification = changeProcessor.prepareLocalModifications(modificationObject, allowOwnPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareLocalModifications(modificationObject, allowAllPolicy);
 
         //Check the results
         Assert.assertNotNull(enforceModification);
@@ -753,11 +753,11 @@ public class ObjectChangeProcessorTest {
         modificationObject.getModificationList().add(modification);
 
         //Perform filtering
-        ObjectModificationType enforceModification = changeProcessor.prepareLocalChanges(modificationObject, enforcePolicy);
-        ObjectModificationType allowAddOwnModification = changeProcessor.prepareLocalChanges(modificationObject, allowAddOwnPolicy);
-        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareLocalChanges(modificationObject, allowChangeOwnPolicy);
-        ObjectModificationType allowAddModification = changeProcessor.prepareLocalChanges(modificationObject, allowAddPolicy);
-        ObjectModificationType allowAllModification = changeProcessor.prepareLocalChanges(modificationObject, allowAllPolicy);
+        ObjectModificationType enforceModification = changeProcessor.prepareLocalModifications(modificationObject, enforcePolicy);
+        ObjectModificationType allowAddOwnModification = changeProcessor.prepareLocalModifications(modificationObject, allowAddOwnPolicy);
+        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareLocalModifications(modificationObject, allowChangeOwnPolicy);
+        ObjectModificationType allowAddModification = changeProcessor.prepareLocalModifications(modificationObject, allowAddPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareLocalModifications(modificationObject, allowAllPolicy);
 
         //Check the results
         Assert.assertNotNull(enforceModification);
@@ -833,11 +833,11 @@ public class ObjectChangeProcessorTest {
         modificationObject.getModificationList().add(modification);
 
         //Perform filtering
-        ObjectModificationType enforceModification = changeProcessor.prepareLocalChanges(modificationObject, enforcePolicy);
-        ObjectModificationType allowAddOwnModification = changeProcessor.prepareLocalChanges(modificationObject, allowAddOwnPolicy);
-        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareLocalChanges(modificationObject, allowChangeOwnPolicy);
-        ObjectModificationType allowAddModification = changeProcessor.prepareLocalChanges(modificationObject, allowAddPolicy);
-        ObjectModificationType allowAllModification = changeProcessor.prepareLocalChanges(modificationObject, allowAllPolicy);
+        ObjectModificationType enforceModification = changeProcessor.prepareLocalModifications(modificationObject, enforcePolicy);
+        ObjectModificationType allowAddOwnModification = changeProcessor.prepareLocalModifications(modificationObject, allowAddOwnPolicy);
+        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareLocalModifications(modificationObject, allowChangeOwnPolicy);
+        ObjectModificationType allowAddModification = changeProcessor.prepareLocalModifications(modificationObject, allowAddPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareLocalModifications(modificationObject, allowAllPolicy);
 
         //Check the results
         Assert.assertNotNull(enforceModification);
@@ -882,9 +882,9 @@ public class ObjectChangeProcessorTest {
         modificationObject.getModificationList().add(modification);
 
         //Perform filtering
-        ObjectModificationType enforceModification = changeProcessor.prepareDistributedChanges(modificationObject, enforcePolicy);
-        ObjectModificationType allowOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowOwnPolicy);
-        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAllPolicy);
+        ObjectModificationType enforceModification = changeProcessor.prepareDistributedModifications(modificationObject, enforcePolicy);
+        ObjectModificationType allowOwnModification = changeProcessor.prepareDistributedModifications(modificationObject, allowOwnPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedModifications(modificationObject, allowAllPolicy);
 
         //Check the results
         Assert.assertNotNull(enforceModification);
@@ -938,9 +938,9 @@ public class ObjectChangeProcessorTest {
         modificationObject.getModificationList().add(modification);
 
         //Perform filtering
-        ObjectModificationType enforceModification = changeProcessor.prepareDistributedChanges(modificationObject, enforcePolicy);
-        ObjectModificationType allowOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowOwnPolicy);
-        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAllPolicy);
+        ObjectModificationType enforceModification = changeProcessor.prepareDistributedModifications(modificationObject, enforcePolicy);
+        ObjectModificationType allowOwnModification = changeProcessor.prepareDistributedModifications(modificationObject, allowOwnPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedModifications(modificationObject, allowAllPolicy);
 
         //Check the results
         Assert.assertNotNull(enforceModification);
@@ -985,11 +985,11 @@ public class ObjectChangeProcessorTest {
         modificationObject.getModificationList().add(modification);
 
         //Perform filtering
-        ObjectModificationType enforceModification = changeProcessor.prepareDistributedChanges(modificationObject, enforcePolicy);
-        ObjectModificationType allowAddOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAddOwnPolicy);
-        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowChangeOwnPolicy);
-        ObjectModificationType allowAddModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAddPolicy);
-        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAllPolicy);
+        ObjectModificationType enforceModification = changeProcessor.prepareDistributedModifications(modificationObject, enforcePolicy);
+        ObjectModificationType allowAddOwnModification = changeProcessor.prepareDistributedModifications(modificationObject, allowAddOwnPolicy);
+        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareDistributedModifications(modificationObject, allowChangeOwnPolicy);
+        ObjectModificationType allowAddModification = changeProcessor.prepareDistributedModifications(modificationObject, allowAddPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedModifications(modificationObject, allowAllPolicy);
 
         //Check the results
         Assert.assertNotNull(enforceModification);
@@ -1065,11 +1065,11 @@ public class ObjectChangeProcessorTest {
         modificationObject.getModificationList().add(modification);
 
         //Perform filtering
-        ObjectModificationType enforceModification = changeProcessor.prepareDistributedChanges(modificationObject, enforcePolicy);
-        ObjectModificationType allowAddOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAddOwnPolicy);
-        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareDistributedChanges(modificationObject, allowChangeOwnPolicy);
-        ObjectModificationType allowAddModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAddPolicy);
-        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedChanges(modificationObject, allowAllPolicy);
+        ObjectModificationType enforceModification = changeProcessor.prepareDistributedModifications(modificationObject, enforcePolicy);
+        ObjectModificationType allowAddOwnModification = changeProcessor.prepareDistributedModifications(modificationObject, allowAddOwnPolicy);
+        ObjectModificationType allowChangeOwnModification = changeProcessor.prepareDistributedModifications(modificationObject, allowChangeOwnPolicy);
+        ObjectModificationType allowAddModification = changeProcessor.prepareDistributedModifications(modificationObject, allowAddPolicy);
+        ObjectModificationType allowAllModification = changeProcessor.prepareDistributedModifications(modificationObject, allowAllPolicy);
 
         //Check the results
         Assert.assertNotNull(enforceModification);

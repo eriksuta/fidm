@@ -39,7 +39,7 @@ public class InducementType implements Serializable{
      *  relationship is not valid in local identity provider. However,
      *  it is not seen in any copy of object possessing this reference.
      * */
-    private boolean sharedInFederation;
+    private boolean shareInFederation;
 
     public InducementType() {   }
 
@@ -63,12 +63,12 @@ public class InducementType implements Serializable{
         this.federationIdentifier = federationIdentifier;
     }
 
-    public boolean isSharedInFederation() {
-        return sharedInFederation;
+    public boolean isShareInFederation() {
+        return shareInFederation;
     }
 
-    public void setSharedInFederation(boolean sharedInFederation) {
-        this.sharedInFederation = sharedInFederation;
+    public void setShareInFederation(boolean shareInFederation) {
+        this.shareInFederation = shareInFederation;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class InducementType implements Serializable{
 
         InducementType that = (InducementType) o;
 
-        if (sharedInFederation != that.sharedInFederation) return false;
+        if (shareInFederation != that.shareInFederation) return false;
         if (federationIdentifier != null ? !federationIdentifier.equals(that.federationIdentifier) : that.federationIdentifier != null)
             return false;
         if (uid != null ? !uid.equals(that.uid) : that.uid != null) return false;
@@ -90,7 +90,7 @@ public class InducementType implements Serializable{
     public int hashCode() {
         int result = uid != null ? uid.hashCode() : 0;
         result = 31 * result + (federationIdentifier != null ? federationIdentifier.hashCode() : 0);
-        result = 31 * result + (sharedInFederation ? 1 : 0);
+        result = 31 * result + (shareInFederation ? 1 : 0);
         return result;
     }
 }
