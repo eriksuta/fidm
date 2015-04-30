@@ -43,6 +43,7 @@ public class PageResource extends PageBase {
     public static final String ID_MAIN_FORM = "mainForm";
     public static final String ID_NAME = "name";
     public static final String ID_DESCRIPTION = "description";
+    private static final String ID_DISPLAY_NAME = "displayName";
     public static final String ID_TYPE = "type";
     public static final String ID_BUTTON_SAVE = "saveButton";
     public static final String ID_BUTTON_CANCEL = "cancelButton";
@@ -107,6 +108,9 @@ public class PageResource extends PageBase {
 
         TextArea description = new TextArea<>(ID_DESCRIPTION, new PropertyModel<String>(model, "description"));
         mainForm.add(description);
+
+        TextField displayName = new TextField<>(ID_DISPLAY_NAME, new PropertyModel<String>(model, "displayName"));
+        mainForm.add(displayName);
 
         TextField type = new TextField<>(ID_TYPE, new PropertyModel<String>(model, "resourceType"));
         mainForm.add(type);

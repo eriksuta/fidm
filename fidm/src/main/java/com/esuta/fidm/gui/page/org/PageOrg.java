@@ -267,7 +267,7 @@ public class PageOrg extends PageBase {
 
             @Override
             protected boolean isInputEnabled() {
-                return !canManipulateWithMultiValueAttribute("orgType");
+                return canManipulateWithMultiValueAttribute("orgType");
             }
         };
         mainForm.add(orgType);
@@ -448,6 +448,12 @@ public class PageOrg extends PageBase {
 
                 try {
                     ProvisioningPolicyType policy = getModelService().readObject(ProvisioningPolicyType.class, provisioningPolicyUid);
+
+                    if(policy == null){
+                        LOGGER.error("Could not load provisioning policy with uid: '" + provisioningPolicyUid + "' from the repository.");
+                        return "Not Loaded Properly";
+                    }
+
                     return policy.getName();
                 } catch (DatabaseCommunicationException e) {
                     error("Could not load provisioning policy with uid: '" + provisioningPolicyUid + "' from the repository.");
