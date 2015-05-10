@@ -3,465 +3,1058 @@
 
     <xsd:annotation>
         <xsd:documentation>
-            What can be achieved using this schema (use cases):
-
-            1. Organizational unit can be local (only available on one IdP), or it can be
-               made available on several organizations in federation (see attribute federationAvailable)
-
-            2. An IdP is able to determine, if organizational unit originates from it or if it
-               is just a copy of org. unit (structure) from other IdP in federation space. This also
-               means, that one organization structure is seen differently from the perspective of identity
-               providers in federation. From org. unit perspective, it is classical OrgType. From
-               IdP that is not origin, it is seen as FederationOrgType (not included in this schema), or
-               remote org. unit. This has several implication on what can be done with such org. unit.
-               For example, when deleting org. unit from IdP, OrgType is removed from local IdP and also
-               from all other copies on other IdPs inside federation. However, if org. unit is removed
-               from other than origin IdP, only local copy is removed and original OrgType is not harmed.
-               (This behavior can be configured)
-
-            3. Origin IdP provider is able to define leader and governors of organizational unit. An org.
-               unit does not need to have any leader or governors at all. But their are necessary if actions
-               concerning org. unit need verification and confirmation.
-
-            4. Remote IdP can only define federationLeader and federationGovernors. These users are only
-               responsible for administration of local copy of org. unit and their decision should not
-               apply on origin org. unit (this can be configured otherwise). But Remote IdP is not able
-               to define leader or federationGovernor.
-
-            5. Only leader is able to completely remove org. unit from IdP. This is one capability, that
-               cannot be added to governor capabilities. However, such decision may require a confirmation
-               from a group, or all of governors.
-
-            6. IdP can configure a set of rights for leader (federation leader) and governors
-               (federation governors) (L, G, FL, FG). Some actions are:
-                    1.  add orgParent (L),
-                    2.  add federation orgParent (FL)
-                    3.  add member (L, G)
-                    4.  add federationMember (L, G, FL, FG)
-                    5.  remove orgParent (L)
-                    6.  remove federation orgParent (FL)
-                    7.  remove member (L, G)
-                    8.  remove federation member (L, FL, G, FG)
-                    9.  add inducement (L, G)
-                    10. add federation inducement (FL, FG)
-                    11. remove inducement (L, G)
-                    12. remove federation inducement (FL, FG)
-                    13. remove org. unit (L)
-
-               Also, IdP can configure, that every action need a set of confirmations made by leader,
-               governors or federation administrators - only than the action itself is carried.
-
-            7. An IdP is able to define org type provisioning in federation space. It can be either
-               Just In Time provisioning or proActive provisioning. In JIT provisioning, a change on
-               organization in one IdP is distributed to other IdPs inside federation space when defined
-               action happens. This trigger may be, for example, a user with org. unit accessing
-               federation resource. This access attempt will request org. unit synchronization and
-               if there is new version inside federation, synchronization is triggered.
-
-            8. Second is proActive provisioning. In this case, synchronization event is triggered
-               automatically in the moment, when change happens (or in defined time). Time definition
-               can be very handy. For example, when we introduce new resource inducement on org. unit
-               with 10 000 users, it may be a good decision to trigger the synchronization to night
-               hours, so the system is not halted and users can work with it.
-
-            9. IdP is able to define a list of organizations inside federation, that work with
-               current org. unit. This means that every org. unit can cooperate with different
-               identity providers. This will be handy in project oriented companies, where there
-               are several projects running and each project is a cooperation with several
-               organizations inside federation space.
-
+            This is the place where the core data schema of
+            proposed specification is defined. Proposed schema
+            conforms to XML naming rules  and it is recommended
+            that any extensions of this schema conform to these
+            conventions as well. Attributes used in core schema
+            are derived from standard XML schema (String, Boolean, Decimal, Integer ...).
+            Of course, complex attributes are used when needed.
+            Schema extensions are allowed and there is a strong
+            assumption that each implementation will provide custom
+            extension to core schema objects. It is forbidden to redefine
+            attributes defined in specification to maintain interoperability
+            between implementations.
         </xsd:documentation>
     </xsd:annotation>
 
-    <xsd:complexType name="OrgType">
+    <!-- Object -->
+    <xsd:complexType name="Object" abstract="true">
         <xsd:annotation>
             <xsd:documentation>
-                This is a schema definition for organizational unit that can be used
-                in federated identity management and federated provisioning
+                This is an abstract object that serves as a super-type for all
+                other core types of the specification. It groups common
+                attributes such as object uid, name and description
             </xsd:documentation>
         </xsd:annotation>
 
         <xsd:sequence>
-            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
+            <xsd:element name="uid" minOccurs="1" maxOccurs="1" type="xsd:string">
                 <xsd:annotation>
                     <xsd:documentation>
-                        A unique identifier of an OrgType instance.
+                        A unique identifier in the namespace of local identity provider.
+                        The identifier format is not prescribed. Use any identifier format
+                        as you want.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
 
-            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+            <xsd:element name="name" minOccurs="1" maxOccurs="1" type="xsd:string">
                 <xsd:annotation>
                     <xsd:documentation>
-                        A name of organizational unit. Must be unique in namespace defined
-                        by organizational units in single Identity Provider
+                        A unique name, unique for underlying type, not necessarily entire namespace
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
 
-            <xsd:element name="description" type="xsd:string" maxOccurs="1">
+            <xsd:element name="description" minOccurs="1" maxOccurs="1" type="xsd:string">
                 <xsd:annotation>
                     <xsd:documentation>
-                        A simple textual description of organizational unit
+                        Provides description of specific instance of an object
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
 
-            <xsd:element name="displayName" type="xsd:string" minOccurs="0" maxOccurs="1">
+            <xsd:element name="extension" minOccurs="0" maxOccurs="1" type="Extension">
                 <xsd:annotation>
                     <xsd:documentation>
-                        Display name of organizational unit is in schema for
-                        purposes of user interface
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="type" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Type of the org. This may specify whether it
-                        is department, division, project, team, ...
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="locality" type="xsd:string" minOccurs="0" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Primary locality of the org, the place where
-                        the org is usually placed, the country, city or
-                        building that it belongs to. The specific meaning
-                        and form of this property is deployment-specific.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="parentOrgRef" type="OrgType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A parent organization for this organizational unit
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="leader" type="UserType" minOccurs="0" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A manager, or responsive person for this instance of org. unit.
-                        This value needs to be defined only in case, when operations
-                        performed with org. unit (e.g. adding identity, adding
-                        federated identity) must be approved before application.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="governor" type="UserType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A list of governors, that held some level of responsibility
-                        for actions performed within organizational unit. What exact
-                        responsibilities these are, will be defined later - it will
-                        probably be a list of responsibilities and each governor may
-                        possess different responsibilities
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="members" type="UserType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A list of organization members
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="inducement" type="ResourceType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A list of resources, to which this organization unit has inducement.
-                        An inducement means that every user that belongs to this org. unit
-                        is expected to have accounts on defined resource.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <!-- Attributes defined below all deal with federation identity management
-                 from organizational unit point of perspective -->
-            <xsd:element name="federationAvailable" type="xsd:boolean" default="false" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        This attribute is probably the most important one from
-                        federation point of perspective. If it is set to true,
-                        it means, that this organization unit is turned into
-                        federated organization unit. With this ability, there may
-                        be added new users from different organization in federation
-                        to this use case. This org. may also be provisioned in
-                        federation space etc.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="origin" type="xsd:boolean" minOccurs="0" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        This attribute defines, if organization unit originates
-                        from this identity provider (true) or it originates
-                        in some other organization's identity provider (false).
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="federationOrganization" type="FederationMemberType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A list of federation organizations with whom this organization unit should
-                        cooperate (be synchronized with etc.). This list is unique with
-                        every organizational unit - this means, that every and each org. unit
-                        may cooperate with different list of organizations inside federation space.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="federationLeader" type="FederationUserType" minOccurs="0" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A manager, or responsive person for this instance of org. unit.
-                        This value needs to be defined only in case, when operations
-                        performed with org. unit (e.g. adding identity, adding
-                        federated identity) must be approved before application.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="federationGovernor" type="FederationUserType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A list of governors, that held some level of responsibility
-                        for actions performed within organizational unit. What exact
-                        responsibilities these are, will be defined later - it will
-                        probably be a list of responsibilities and each governor may
-                        possess different responsibilities
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="federationMember" type="FederationUserType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A list of organization members
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="provisioningType" type="FederationOrfProvisioningType">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A type of provisioning that this organization is using
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="federationInducement" type="FederatedResourceType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A list of resources that are located on other identity provider
-                        than current, to which this organization unit has inducement.
-                        An inducement means that every user that belongs to this org. unit
-                        is expected to have accounts on defined resource in federation space.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-        </xsd:sequence>
-    </xsd:complexType>
-
-    <!-- UserType -->
-    <xsd:complexType name="UserType">
-        <xsd:annotation>
-            <xsd:documentation>
-                This is a schema definition for user that can be used
-                in federated identity management and federated provisioning
-            </xsd:documentation>
-        </xsd:annotation>
-
-        <xsd:sequence>
-            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A unique identifier of an UserType instance.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A name of user. Must be unique in namespace defined
-                        by users in single Identity Provider
+                        Container that provides generic extensibility mechanism.
+                        Almost any extension property can be placed in this container.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
         </xsd:sequence>
     </xsd:complexType>
 
-    <!-- FederationUserType -->
-    <xsd:complexType name="FederationUserType">
+    <!-- Extension -->
+    <xsd:complexType name="Extension">
         <xsd:annotation>
             <xsd:documentation>
-                This is a schema definition for user from other
-                organization inside federation space that can be used
-                in federated identity management and federated provisioning
+                Place for attributes that are not part of
+                core schema definition.
             </xsd:documentation>
         </xsd:annotation>
-
         <xsd:sequence>
-            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A unique identifier of an FederationUserType instance. (Should this
-                        identifier be unique inside organization or inside
-                        entire federation?)
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A name of organizational unit. Must be unique in namespace defined
-                        by users in single Identity Provider - this will probably be a copy
-                        of user's name from it's own organization
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
+            <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
         </xsd:sequence>
     </xsd:complexType>
 
-    <!-- ResourceType -->
-    <xsd:complexType name="ResourceType">
+    <!-- ======================== -->
+    <!-- Core specification types -->
+    <!-- ======================== -->
+
+    <!-- Org -->
+    <xsd:complexType name="Org">
         <xsd:annotation>
             <xsd:documentation>
-                This is a schema definition for resource type that can be used
-                in federated identity management and federated provisioning -
-                inducement of this resource in organization means that every
-                user having assigned this organization is expected to have
-                an account on this resource.
+                A representation of organizational unit. Objects of Org type are
+                used to create organizational unit hierarchies.
             </xsd:documentation>
         </xsd:annotation>
 
-        <xsd:sequence>
-            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A unique identifier of an ResourceType instance.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
+        <xsd:complexContent>
+            <xsd:extension base="Object">
+                <xsd:sequence>
 
-            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A name of resource. Must be unique in namespace defined
-                        by resources in single Identity Provider
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-        </xsd:sequence>
+                    <xsd:element name="displayName" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The display name of the organizational unit. Should be a
+                                human readable form, such as 'Chemistry Department' etc.
+                                This attribute is mostly used in user interface.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="orgType" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A list of types of organizational unit. A type of org. unit
+                                defines its purpose, or other form of specification. An example
+                                can be a project, department, class, etc.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="locality" type="xsd:string" minOccurs="0" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A physical locality of organizational unit. In most cases, this
+                                should be a place, e.g. a country, state, city or a street.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="parentOrgUnit" type="ObjectReference" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A list of organizational units that are a level higher in the org.
+                                unit hierarchy. Thanks to this attribute, we are able to create
+                                org. unit hierarchies. One org. unit may have multiple parents
+                                and one org. units may have multiple children. The children org. units
+                                are not stored in org. unit in current implementation. There are
+                                also several limitations in org. unit hierarchies.
+                                    - org. unit can't be parent to itself
+                                    - org. unit can't have a children that is somewhere
+                                      in the chain of it's parents (to prevent cycles)
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="governors" type="ObjectReference" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A list of governors, a references to the users that
+                                possess some level of control over org. units and
+                                decisions made with org. units
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="resourceInducements" type="Inducement" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A list of references to relying parties (service providers,
+                                connected resources). These are the resources, that members
+                                of org. unit are forced to have by belonging to org. unit.
+                                Org. units, or more specifically, the inducement mechanisms
+                                takes care that all members of org. unit have these inducements
+                                at ALL times. If they do not, such state is considered
+                                as inconsistent.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="roleInducements" type="Inducement" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The same concept as with the attribute 'resourceInducements', but
+                                with roles.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="sharingPolicy" type="ObjectReference" minOccurs="0" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A unique sharing policy - or a set of sharing rules that
+                                are applied during interaction in identity federation and
+                                determines, what can be changed by the copies of this
+                                org. unit.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="provisioningPolicy" type="ObjectReference" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A unique provisioning policy that contains a set of rules that
+                                tells the system a behavior prescription - a set of reaction
+                                routines to changes in identity federations. This reference is
+                                unique to every copy of org. unit in the federation.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="federationIdentifier" type="FederationIdentifier" minOccurs="0" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A federation identifier used to uniquely identify the org. unit
+                                across federation. More specifically, it is a link to the origin
+                                of this org. unit. If this attribute is empty, the org. unit is
+                                local, thus the origin of this org. unit is current identity
+                                provider. A federation identifier contains an identifier
+                                of federation member (FederationMember) and a single
+                                'uniqueAttributeValue' - an attribute containing a value that
+                                is guaranteed to be unique in origin identity provider. The
+                                source of this value is not known to this provider, it is handled
+                                by origin identity provider, so we believe that this mechanism
+                                is privacy-respecting.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="copies" type="ObjectReference" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A list of references to FederationMember instances - in other words,
+                                a list of members of identity federation containing a copy of this
+                                org. unit. This also means, that only origin org. unit has this
+                                attribute filled with values, every copy of org. unit must have this
+                                attribute with null value. Thanks to this attribute, we are able to
+                                track the copies of org. unit and interact with it (mostly
+                                for change distribution in identity federation)
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="shareInFederation" type="xsd:boolean" minOccurs="1" maxOccurs="1" default="false">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                An attribute declaring, if this org. unit can be shared in
+                                federation environment. This decision is solemnly made by
+                                the 'owner' of org. unit - current identity provider.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="shareSubtree" type="xsd:boolean" minOccurs="1" maxOccurs="1" default="false">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                An attribute responsible for sharing a subtree of org. unit.
+                                This attribute can be set only in case, when this org. unit
+                                is already shared in identity federation, thus 'shareInFederation'
+                                attribute is set to true. If set to false, only this org. unit
+                                is shared among federation members, not it's subtree.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="overrideParentSharing" type="xsd:boolean" minOccurs="1" maxOccurs="1" default="false">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                An attribute used to override the decision of parent org. unit.
+                                This attribute can be used only in case, when this org. unit
+                                is already shared in federation, thus 'shareInFederation' attribute
+                                is set to true. If the org. unit is shared in federation and this
+                                attribute is set to true (default value is false), then this
+                                specific org. unit and it's subtree won't be shared in federation.
+                                This simple attribute enables identity providers to share only
+                                specific parts of org. unit hierarchies in identity federation.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+
     </xsd:complexType>
 
-    <!-- FederatedResourceType -->
-    <xsd:complexType name="FederatedResourceType">
+    <!-- FederationMember -->
+    <xsd:complexType name="FederationMember">
         <xsd:annotation>
             <xsd:documentation>
-                This is a schema definition for federation resource type that can be used
-                in federated identity management and federated provisioning -
-                inducement of this resource in organization means that every
-                user having assigned this organization is expected to have
-                an account on this resource.
+                a representation of a specific member of identity federation.
+                It creates a relationship between two members of federation that
+                is required to share organizational units. It also stores the names
+                of unique attributes used to uniquely identify identity objects
+                in identity federation
             </xsd:documentation>
         </xsd:annotation>
 
-        <xsd:sequence>
-            <xsd:element name="uid" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A unique identifier of an FederatedResourceType instance.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
+        <xsd:complexContent>
+            <xsd:extension base="Object">
+                <xsd:sequence>
 
-            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A name of resource. Must be unique in namespace defined
-                        by resources in single Identity Provider
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-        </xsd:sequence>
+                    <xsd:element name="displayName" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Display name can be used as a readable form for identity
+                                provider, member of identity federation
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="federationMemberName" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                This attribute is a unique identifier used in identity federations
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="requesterIdentifier" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Another identifier attribute, this one uniquely identifies the
+                                requester of federation membership relationship
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="status" type="FederationMemberStatus" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A status of federation membership, can have several values:
+                                    AVAILABLE
+                                    REQUESTED
+                                    DENIED
+                                    DELETE_REQUESTED
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="uniqueOrgIdentifier" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A name of attribute of a representation of org. unit that is unique in federation
+                                member system. A system can identify the org. unit by using the value
+                                of this attribute.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="uniqueUserIdentifier" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A name of attribute of a subject representation that is unique in federation
+                                member system. A system can identify the user (subject) by using the value
+                                of this attribute.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="uniqueResourceIdentifier" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A name of attribute of a relying party representation that is unique in federation
+                                member system. A system can identify the resource (relying party)
+                                by using the value of this attribute.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="uniqueRoleIdentifier" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A name of attribute of role that is unique in federation
+                                member system. A system can identify the role by using the value
+                                of this attribute.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
     </xsd:complexType>
 
-    <!-- FederationMember Type -->
-    <xsd:complexType name="FederationMemberType">
+    <!-- enumeration - FederationMemberStatus-->
+    <xsd:simpleType name="FederationMemberStatus">
         <xsd:annotation>
             <xsd:documentation>
-                A member of federation, basically an organization with its
-                own Identity provider and several others relying parties
-                linked to it
-            </xsd:documentation>
-        </xsd:annotation>
-
-        <xsd:sequence>
-            <xsd:element name="identifier" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A unique identifier of an FederationMember instance - what kind of
-                        identifier that is is yet to be decided. (Should it be a unique
-                        identifier only in each IdP system or unique in entire federation?)
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="address" type="xsd:string" minOccurs="1" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Some kind of address to identify the communication interface with
-                        this federation member. May be an IP address, REST API address, WS
-                        or something else - remains to be decided.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-        </xsd:sequence>
-    </xsd:complexType>
-
-    <!-- FederationOrfProvisioningType -->
-    <xsd:simpleType name="FederationOrfProvisioningType">
-        <xsd:annotation>
-            <xsd:documentation>
-                A type of org. unit provisioning.
+                A status of federation membership.
             </xsd:documentation>
         </xsd:annotation>
 
         <xsd:restriction base="xsd:string">
-            <xsd:enumeration value="justInTime">
+            <xsd:enumeration value="AVAILABLE">
                 <xsd:annotation>
                     <xsd:documentation>
-                        Organization, or organization assets (users, resources, accounts)
-                        are provisioned when the time is right - usually a defined action
-                        that triggers org. provisioning, like accessing resource in
-                        federation etc.
+                        FederationMember with this status has accepted the relation request
+                        and org. unit can be shared with this member.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:enumeration>
-            <xsd:enumeration value="proActive">
+
+            <xsd:enumeration value="REQUESTED">
                 <xsd:annotation>
                     <xsd:documentation>
-                        Organization and its assets are provisioned immediately when there is
-                        change in organizational unit, e.g. when adding new resource inducement,
-                        the org. unit is provisioned at that exact moment.
+                        FederationMember has performed a membership request that awaits a
+                        response to this request
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="DENIED">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        FederationMember has performed a membership request and it has not
+                        been accepted. A request may be performed again. In this state,
+                        org. unit cannot be shared with this FederationMember
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="DELETE_REQUESTED">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        FederationMember has performed a deletion request. This request can be
+                        accepted or denied, but org. units cannot be shared with FederationMember
+                        who has requested membership deletion.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:enumeration>
         </xsd:restriction>
     </xsd:simpleType>
+
+    <!-- SharingPolicy -->
+    <xsd:complexType name="SharingPolicy">
+        <xsd:annotation>
+            <xsd:documentation>
+                TODO
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:complexContent>
+            <xsd:extension base="Object">
+                <xsd:sequence>
+
+                    <xsd:element name="displayName" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The display name of sharing policy. Should be a human readable form,
+                                such as 'Chemistry Department Sharing Policy' etc. This attribute is mostly
+                                used in user interface.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="defaultSingleValueTolerance" type="SingleValueTolerance" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A default tolerance level for single value attributes. This attribute
+                                must always be set. If there is no specific rule for some single
+                                value attribute, the value in this variable will be used to decide
+                                sharing policy.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="defaultMultiValueTolerance" type="MultiValueTolerance" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A default tolerance level for multi value attributes. This attribute
+                                must always be set. If there is no specific rule for some multi
+                                value attribute, the value in this variable will be used to decide
+                                sharing policy.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="rules" type="SharingRule" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A list of sharing rules that together compose a policy of
+                                this object.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+
+    </xsd:complexType>
+
+    <!-- enumeration - SingleValueTolerance-->
+    <xsd:simpleType name="SingleValueTolerance">
+        <xsd:annotation>
+            <xsd:documentation>
+                An enumeration type containing a list of levels of change
+                toleration for a single-value attribute.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ENFORCE">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An origin identity provider enforces the value of
+                        attribute - the copies of such unit are not able
+                        to change it in any way.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="ALLOW_OWN">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An origin identity provider lets the copies of
+                        org. unit decide about the value of target attribute.
+                        It can be changed locally - this means that the
+                        change will only be applied on the copy of org.
+                        unit, not on the origin org. unit.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="ALLOW_MODIFY">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An origin identity provider allows the specified copy
+                        of it to change the value of target attribute - this
+                        value will be then distributed and applied to origin
+                        org. unit and to all other copies of org. unit.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- enumeration - MultiValueTolerance-->
+    <xsd:simpleType name="MultiValueTolerance">
+        <xsd:annotation>
+            <xsd:documentation>
+                An enumeration type containing a list of levels of change
+                toleration for a multi-value attributes.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ENFORCE">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An origin identity provider enforces the value(s) of
+                        attribute - the copies of such unit are not able
+                        to change it in any way.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="ALLOW_ADD_OWN">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An origin org. unit specifies a set of values for target
+                        attribute and these values must remain unchanged. However,
+                        the copy of org. unit is able to define additional values
+                        of such attribute. These added values are only applied
+                        on a copy of such unit.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="ALLOW_MODIFY_OWN">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An origin org. unit allows not only addition of own values
+                        for target attribute, but also allows the change of existing
+                        values of multi-value attribute, however the changes are still
+                        only applied on local values of such org. unit
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="ALLOW_ADD">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An origin. org unit allows the copy of org. unit in federation
+                        to add values and these values are distributed and applied in
+                        origin org. unit as well as on every copy of such org. unit
+                        in identity federation.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="ALLOW_MODIFY">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An origin. org. unit allows maximal level of control over
+                        multi-value attribute. All change operations, such as addition,
+                        updated or delete operations are applied on origin org. unit
+                        as well as on every other copy of org. unit in identity
+                        federation.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ProvisioningPolicy -->
+    <xsd:complexType name="ProvisioningPolicy">
+        <xsd:annotation>
+            <xsd:documentation>
+                A policy that in simple words specifies the behavior, or a reaction of a
+                system to change events that occurs in org. units or org. unit hierarchies.
+                Every federation member may define a specific provisioning policy for
+                org. unit and it does not matter, if org. unit is local or remote. This also means,
+                that handling of changes in org. unit definition may be different in different
+                federation members.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:complexContent>
+            <xsd:extension base="Object">
+                <xsd:sequence>
+
+                    <xsd:element name="displayName" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The display name of the provisioning policy. Should be a human readable form,
+                                such as 'Chemistry Department Provisioning Policy' etc. This attribute is mostly
+                                used in user interface.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="defaultBehavior" type="ProvisioningBehavior" minOccurs="1" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The display name of sharing policy. Should be a human readable form,
+                                such as 'Chemistry Department Sharing Policy' etc. This attribute is mostly
+                                used in user interface.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="defaultExecutionTime" type="xsd:dateTime" minOccurs="0" maxOccurs="1">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                The default time of execution of provisioning changes. This field has meaning
+                                only if STATIC provisioning behavior is configured and it sets a moment
+                                in future, where all current changes will be triggered. If no date is set,
+                                the changes will be applied next time the configured time is here.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="rules" type="ProvisioningRule" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                A list of provisioning rules that together compose a policy of
+                                this object.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <!-- enumeration - ProvisioningBehavior-->
+    <xsd:simpleType name="ProvisioningBehavior">
+        <xsd:annotation>
+            <xsd:documentation>
+                An enumeration type defining three types of provisioning behaviors.
+                These behaviors serves as a prescription for what should happen, when
+                certain actions are triggered (like change on an attribute of org. type).
+                These behaviors basically specifies, when an attribute change event
+                should be processed.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="PRO_ACTIVE">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Most strict provisioning behavior type. Choosing this as a provisioning
+                        behavior in provisioning rule will tell the system to compute and apply
+                        the reaction to change immediately as this change is detected.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="JUST_IN_TIME">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        This provisioning behavior tells the system to compute and apply the
+                        reaction to the attribute change event when it is needed. For example,
+                        if another resource inducement was added to org. unit and JUST_IN_TIME
+                        provisioning behavior is specified as a reaction to such change, the
+                        accounts for all members of org. unit will not be created immediately,
+                        but gradually, over time, as needed for each member specifically - the
+                        account for member will be created when the member requests an access
+                        to such resource, no sooner, no later, precisely when it is needed.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="STATIC">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A special type of provisioning behavior. It defines a specific moment
+                        in the future, when a change processing should be made. This behavior
+                        is especially useful, when the change processing may be a resource
+                        intensive process (such as addition of resource inducement to org.
+                        unit - the system may need to create accounts for thousands of members).
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ================ -->
+    <!-- Embeddable Types -->
+    <!-- ================ -->
+
+    <!-- FederationIdentifier -->
+    <xsd:complexType name="FederationIdentifier">
+        <xsd:annotation>
+            <xsd:documentation>
+                An entity used to identify an object that is a copy of
+                another object in identity federation.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="federationMemberId" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An identifier of an origin identity provider in
+                        identity federation that holds the origin version
+                        of an object, that this identifier is referencing.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="uniqueAttributeValue" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A String representation of a value of unique
+                        attribute, that identifies the object in origin
+                        identity provider. The holder of this identifier
+                        does not know the type or meaning of such attribute,
+                        only the value, thus privacy is respected
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="objectType" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A String representation of a type, or class, of an
+                        origin object in origin identity federation.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- ObjectReference -->
+    <xsd:complexType name="ObjectReference">
+        <xsd:annotation>
+            <xsd:documentation>
+                This object represents a reference to some object in identity provider. It
+                may be an object in local or remote identity provider. The relation
+                modelled by this type is considered as generic and it can be used when
+                Assignment/Inducement are not suitable. Common situations are
+                parent org. relation etc. However, the reference must be to type
+                extending Object.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="uid" type="xsd:string" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of object that is the target of the reference
+                        relation. This value makes sense only when the relation is made
+                        with object in local identity provider. This attribute is
+                        required if this reference is pointed towards object in local
+                        identity provider.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="federationIdentifier" type="FederationIdentifier" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An identifier of the target object in remote identity provider.
+                        It is also required if a reference is pointing towards remote
+                        object.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="shareInFederation" type="xsd:boolean" minOccurs="1" maxOccurs="1" default="false">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An attribute that determines, if this reference relationship
+                        should be shared in the copies of object in identity federation.
+                        If this attribute is set to true, it does not mean that the
+                        relationship is not valid in local identity provider. However,
+                        it is not seen in any copy of object possessing this reference.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Inducement -->
+    <xsd:complexType name="Inducement">
+        <xsd:annotation>
+            <xsd:documentation>
+                This class represents a reference to some object in identity provider. It
+                may be an object in local or remote identity provider. The relation
+                modelled by this type is considered as special. It models the enforced possession
+                of some other object in identity provider. For example, a membership
+                in an organizational unit may induce the possession of some roles or
+                the possession of accounts on selected resources. These enforced
+                possessions should be modelled by inducement relations. The reference must be to type
+                extending ObjectType.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="uid" type="xsd:string" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of object that is the target of the inducement
+                        relation. This value makes sense only when the relation is made
+                        with object in local identity provider. This attribute is
+                        required if this reference is pointed towards object in local
+                        identity provider.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="federationIdentifier" type="FederationIdentifier" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An identifier of the target object in remote identity provider.
+                        It is also required if an inducement is pointing towards a remote
+                        object.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="shareInFederation" type="xsd:boolean" minOccurs="1" maxOccurs="1" default="false">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An attribute that determines, if this inducement relationship
+                        should be shared in the copies of object in identity federation.
+                        If this attribute is set to true, it does not mean that the
+                        relationship is not valid in local identity provider. However,
+                        it is not seen in any copy of object possessing this reference.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Assignment -->
+    <xsd:complexType name="Assignment">
+        <xsd:annotation>
+            <xsd:documentation>
+                This class represents a reference to some object in identity provider. It
+                may be an object in local or remote identity provider. The relation
+                modelled by this type is considered as special. It models the possession
+                of some other object in identity provider. For example, a user
+                may have assigned accounts, roles or org. units. The reference must be to type
+                extending ObjectType.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="uid" type="xsd:string" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A unique identifier of object that is the target of the assignment
+                        relation. This value makes sense only when the relation is made
+                        with object in local identity provider. This attribute is
+                        required if this assignment is pointed towards object in local
+                        identity provider.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="federationIdentifier" type="FederationIdentifier" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An identifier of the target object in remote identity provider.
+                        It is also required if an assignment is pointing towards a remote
+                        object.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="shareInFederation" type="xsd:boolean" minOccurs="1" maxOccurs="1" default="false">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        An attribute that determines, if this assignment relationship
+                        should be shared in the copies of object in identity federation.
+                        If this attribute is set to true, it does not mean that the
+                        relationship is not valid in local identity provider. However,
+                        it is not seen in any copy of object possessing this reference.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="assignedByInducement" type="xsd:boolean" minOccurs="1" maxOccurs="1" default="false">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        This attribute identifies the source of assignment. In general,
+                        assignment may be manual (done by administrator by GUI) or
+                        automatic - performed by system based on inducement configuration.
+                        This attribute stores the information about it.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- SharingRule -->
+    <xsd:complexType name="SharingRule">
+        <xsd:annotation>
+            <xsd:documentation>
+                A rule defining the tolerance level for a specified
+                attribute of org. unit.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="attributeName" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The String representation of a name of the attribute
+                        of org. unit, for which this rule is specified for.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="singleValueTolerance" type="SingleValueTolerance" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        If the attribute of this rule is single-value, this field
+                        should be filled and it will represent the change tolerance
+                        level for target attribute org org. unit
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="multiValueTolerance" type="MultiValueTolerance" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        If the attribute of this rule is multi-value, this field
+                        should be filled and it will represent the change tolerance
+                        level for target attribute org org. unit
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- ProvisioningRule -->
+    <xsd:complexType name="ProvisioningRule">
+        <xsd:annotation>
+            <xsd:documentation>
+                A type modelling one rule of a provisioning policy.
+                It defines an attribute, a modification type and a provisioning behaviour.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:sequence>
+            <xsd:element name="attributeName" type="xsd:string" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The String representation of a name of the attribute
+                        of org. unit, for which this rule is specified for.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="modificationType" type="ModificationType" minOccurs="1" maxOccurs="1" default="ModificationType:ALL">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The type of modification for which this behavior will be applied.
+                        The default value is 'ALL' - this means that provisioning rule
+                        will be applied to all kind of changes on the specified attribute.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="provisioningType" type="ProvisioningBehavior" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A definition of provisioning type for the change type for specific
+                        attribute. This attribute specified when and how should the change
+                        event be processed.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+
+            <xsd:element name="executionTime" type="xsd:dateTime" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The time of execution of provisioning changes. This field has meaning
+                        only if STATIC provisioning behavior is configured and it sets a moment
+                        in future, where all current changes will be triggered. If no date is set,
+                        the changes will be applied next time the configured time is here.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- enumeration - ModificationType-->
+    <xsd:simpleType name="ModificationType">
+        <xsd:annotation>
+            <xsd:documentation>
+                A type of change made on some attribute of an object. However simple
+                this enumeration type may seem, many depends on it in provisioning
+                engine.
+            </xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ALL">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        All types of modifications are covered with this value
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="ADD">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The type of modification is addition.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="DELETE">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The type of modification is deletion.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+
+            <xsd:enumeration value="MODIFY">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        The type of modification is modify.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
 </xsd:schema>
