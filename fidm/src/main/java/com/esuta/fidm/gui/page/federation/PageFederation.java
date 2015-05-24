@@ -62,6 +62,7 @@ public class PageFederation extends PageBase {
     private static final String ID_USER_UNIQUE_ATTRIBUTE = "userIdentifier";
     private static final String ID_ROLE_UNIQUE_ATTRIBUTE = "roleIdentifier";
     private static final String ID_RESOURCE_UNIQUE_ATTRIBUTE = "resourceIdentifier";
+    private static final String ID_ACCOUNT_UNIQUE_IDENTIFIER = "accountIdentifier";
 
     private static final String ID_BUTTON_SAVE = "saveButton";
     private static final String ID_BUTTON_CANCEL = "cancelButton";
@@ -247,6 +248,23 @@ public class PageFederation extends PageBase {
                 });
         resourceIdentifier.setRequired(true);
         mainForm.add(resourceIdentifier);
+
+        DropDownChoice accountIdentifier = new DropDownChoice<>(ID_ACCOUNT_UNIQUE_IDENTIFIER,
+                new PropertyModel<String>(model, "uniqueAccountIdentifier"), createUniqueAccountAttributeList(),
+                new IChoiceRenderer<String>() {
+
+                    @Override
+                    public String getDisplayValue(String object) {
+                        return object;
+                    }
+
+                    @Override
+                    public String getIdValue(String object, int index) {
+                        return Integer.toString(index);
+                    }
+                });
+        accountIdentifier.setRequired(true);
+        mainForm.add(accountIdentifier);
 
         AjaxSubmitLink cancel = new AjaxSubmitLink(ID_BUTTON_CANCEL) {
 
@@ -525,6 +543,13 @@ public class PageFederation extends PageBase {
     }
 
     private List<String> createUniqueResourceAttributeList(){
+        List<String> list = new ArrayList<>();
+        list.add("name");
+        list.add("uid");
+        return list;
+    }
+
+    private List<String> createUniqueAccountAttributeList(){
         List<String> list = new ArrayList<>();
         list.add("name");
         list.add("uid");

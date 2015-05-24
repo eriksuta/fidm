@@ -305,7 +305,13 @@ public class PageOrg extends PageBase {
         //Sharing policy components
         TextField sharingPolicyLabel = new TextField<>(ID_SHARING_POLICY_LABEL, createSharingPolicyLabel());
         sharingPolicyLabel.setOutputMarkupId(true);
-        sharingPolicyLabel.add(AttributeAppender.replace("placeholder", "Set policy"));
+        sharingPolicyLabel.add(AttributeAppender.replace("placeholder", new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return isLocalOrgUnit() ? "Set Policy" : "View Policy";
+            }
+        }));
         sharingPolicyLabel.setEnabled(false);
         mainForm.add(sharingPolicyLabel);
 
@@ -410,12 +416,16 @@ public class PageOrg extends PageBase {
 
             @Override
             public String getObject() {
-                if(model == null || model.getObject() == null || model.getObject().getSharingPolicy() == null){
+                if(model == null || model.getObject() == null){
                     return "Set Policy";
                 }
 
                 if(!isLocalOrgUnit()){
                     return "View origin sharing policy";
+                }
+
+                if(model.getObject().getSharingPolicy() == null){
+                    return "Set Policy";
                 }
 
                 ObjectReferenceType sharingPolicyRef = model.getObject().getSharingPolicy();
@@ -1706,7 +1716,7 @@ public class PageOrg extends PageBase {
         }
     }
 
-    private void createRemoteReferencesIfNeeded(ObjectModificationType modificationObject, OrgType org, FederationMemberType member)
+    private void createRemoteReferencesIfNeeded(ObjectModificationType modificationObject, FederationMemberType member)
             throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
 
         for(AttributeModificationType modification: modificationObject.getModificationList()){
@@ -1826,7 +1836,7 @@ public class PageOrg extends PageBase {
                         String uniqueOrgAttributeName = member.getUniqueOrgIdentifier();
                         String uniqueAttributeValue = WebMiscUtil.getUniqueAttributeValue(oldOrg, uniqueOrgAttributeName);
 
-                        createRemoteReferencesIfNeeded(modificationObject, oldOrg, member);
+                        createRemoteReferencesIfNeeded(modificationObject, member);
                         getFederationServiceClient().createPostOrgChangesRequest(member, uniqueAttributeValue, modificationObject);
                     }
 

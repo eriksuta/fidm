@@ -94,6 +94,13 @@ public class FederationMemberType extends ObjectType{
      * */
     private String uniqueRoleIdentifier;
 
+    /**
+     *  A name of attribute of AccountType that is unique in federation
+     *  member system. A system can identify the account by using the value
+     *  of this attribute.
+     * */
+    private String uniqueAccountIdentifier;
+
     public FederationMemberType(){}
 
     public String getName() {
@@ -192,6 +199,14 @@ public class FederationMemberType extends ObjectType{
         this.uniqueRoleIdentifier = uniqueRoleIdentifier;
     }
 
+    public String getUniqueAccountIdentifier() {
+        return uniqueAccountIdentifier;
+    }
+
+    public void setUniqueAccountIdentifier(String uniqueAccountIdentifier) {
+        this.uniqueAccountIdentifier = uniqueAccountIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -201,42 +216,43 @@ public class FederationMemberType extends ObjectType{
         FederationMemberType that = (FederationMemberType) o;
 
         if (port != that.port) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) return false;
         if (federationMemberName != null ? !federationMemberName.equals(that.federationMemberName) : that.federationMemberName != null)
             return false;
-        if (locality != null ? !locality.equals(that.locality) : that.locality != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (requesterIdentifier != null ? !requesterIdentifier.equals(that.requesterIdentifier) : that.requesterIdentifier != null)
             return false;
         if (status != that.status) return false;
+        if (webAddress != null ? !webAddress.equals(that.webAddress) : that.webAddress != null) return false;
+        if (locality != null ? !locality.equals(that.locality) : that.locality != null) return false;
         if (uniqueOrgIdentifier != null ? !uniqueOrgIdentifier.equals(that.uniqueOrgIdentifier) : that.uniqueOrgIdentifier != null)
+            return false;
+        if (uniqueUserIdentifier != null ? !uniqueUserIdentifier.equals(that.uniqueUserIdentifier) : that.uniqueUserIdentifier != null)
             return false;
         if (uniqueResourceIdentifier != null ? !uniqueResourceIdentifier.equals(that.uniqueResourceIdentifier) : that.uniqueResourceIdentifier != null)
             return false;
         if (uniqueRoleIdentifier != null ? !uniqueRoleIdentifier.equals(that.uniqueRoleIdentifier) : that.uniqueRoleIdentifier != null)
             return false;
-        if (uniqueUserIdentifier != null ? !uniqueUserIdentifier.equals(that.uniqueUserIdentifier) : that.uniqueUserIdentifier != null)
-            return false;
-        if (webAddress != null ? !webAddress.equals(that.webAddress) : that.webAddress != null) return false;
+        return !(uniqueAccountIdentifier != null ? !uniqueAccountIdentifier.equals(that.uniqueAccountIdentifier) : that.uniqueAccountIdentifier != null);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (federationMemberName != null ? federationMemberName.hashCode() : 0);
         result = 31 * result + (requesterIdentifier != null ? requesterIdentifier.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + port;
         result = 31 * result + (webAddress != null ? webAddress.hashCode() : 0);
-        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (locality != null ? locality.hashCode() : 0);
         result = 31 * result + (uniqueOrgIdentifier != null ? uniqueOrgIdentifier.hashCode() : 0);
         result = 31 * result + (uniqueUserIdentifier != null ? uniqueUserIdentifier.hashCode() : 0);
         result = 31 * result + (uniqueResourceIdentifier != null ? uniqueResourceIdentifier.hashCode() : 0);
         result = 31 * result + (uniqueRoleIdentifier != null ? uniqueRoleIdentifier.hashCode() : 0);
+        result = 31 * result + (uniqueAccountIdentifier != null ? uniqueAccountIdentifier.hashCode() : 0);
         return result;
     }
 }

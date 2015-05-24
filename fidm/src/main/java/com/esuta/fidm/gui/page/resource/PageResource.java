@@ -18,12 +18,16 @@ import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -179,7 +183,7 @@ public class PageResource extends PageBase {
     private List<IColumn> createAccountColumns(){
         List<IColumn> columns = new ArrayList<>();
 
-        columns.add(new PropertyColumn<AccountType, String>(new Model<>("Name"), "accountName", "accountName"));
+        columns.add(new PropertyColumn<AccountType, String>(new Model<>("Name"), "name", "name"));
         columns.add(new LinkColumn<AccountType>(new Model<>("Owner"), "owner"){
 
             @Override
@@ -190,6 +194,21 @@ public class PageResource extends PageBase {
             @Override
             public void onClick(AjaxRequestTarget target, IModel<AccountType> rowModel) {
                 accountOwnerEditPerformed(target, rowModel);
+            }
+        });
+        columns.add(new AbstractColumn<AccountType, String>(new Model<>("Owner Origin")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<AccountType>> cellItem, String componentId, IModel<AccountType> rowModel) {
+                AccountType account = rowModel.getObject();
+
+                if(account.getUid() != null){
+                    cellItem.add(new Label(componentId, "Local"));
+                } else {
+                    cellItem.add(new Label(componentId, "Remote"));
+                }
+
+
             }
         });
         columns.add(new EditDeleteButtonColumn<AccountType>(new Model<>("Actions")){
@@ -219,7 +238,7 @@ public class PageResource extends PageBase {
         String resourceUid = model.getObject().getUid();
 
         for(AccountType acc: list){
-            if(resourceUid.equals(acc.getResource())){
+            if(resourceUid.equals(acc.getResource().getUid())){
                 newList.add(acc);
             }
         }
@@ -233,15 +252,20 @@ public class PageResource extends PageBase {
             @Override
             public String getObject() {
                 ObjectReferenceType ownerReference = rowModel.getObject().getOwner();
-                UserType owner = null;
 
-                try {
-                    owner = getModelService().readObject(UserType.class, ownerReference.getUid());
-                } catch (DatabaseCommunicationException e) {
-                    LOGGER.error("Could not load user with uid: '" + ownerReference.getUid() + "' from the repository.");
+                if(ownerReference.getUid() != null){
+                    UserType owner = null;
+
+                    try {
+                        owner = getModelService().readObject(UserType.class, ownerReference.getUid());
+                    } catch (DatabaseCommunicationException e) {
+                        LOGGER.error("Could not load user with uid: '" + ownerReference.getUid() + "' from the repository.");
+                    }
+
+                    return owner != null ? owner.getName() : null;
+                } else {
+                    return ownerReference.getFederationIdentifier().getUniqueAttributeValue();
                 }
-
-                return owner != null ? owner.getName() : null;
             }
         };
     }
