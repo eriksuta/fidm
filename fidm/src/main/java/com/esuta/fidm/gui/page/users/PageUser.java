@@ -410,6 +410,7 @@ public class PageUser extends PageBase {
             @Override
             public void populateItem(Item<ICellPopulator<AccountType>> cellItem, String componentId, IModel<AccountType> rowModel) {
                 if(rowModel == null || rowModel.getObject() == null){
+                    cellItem.add(new Label(componentId, "Remote Account"));
                     return;
                 }
 

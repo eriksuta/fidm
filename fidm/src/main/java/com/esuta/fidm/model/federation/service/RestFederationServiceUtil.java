@@ -30,6 +30,12 @@ public class RestFederationServiceUtil implements Serializable{
     public static final String GET_REMOVE_ORG_LINK_PARAM = "/removeOrgLink/{memberIdentifier}/{uniqueAttributeValue}";
     public static final String GET_REMOVE_ORG_LINK = "/removeOrgLink/";
 
+    public static final String POST_REQUEST_ACCOUNT = "/requestAccount";
+    public static final String GET_ACCOUNT_PARAM = "/getAccount/{memberIdentifier}/{uniqueAccountIdentifier}";
+    public static final String GET_ACCOUNT = "/getAccount/";
+    public static final String GET_REMOVE_ACCOUNT_PARAM = "/removeAccountFromResource/{memberIdentifier}/{uniqueAccountIdentifier}";
+    public static final String GET_REMOVE_ACCOUNT = "/removeAccountFromResource/";
+
     public static String createGetFederationMemberIdentifier(String address, int port){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
@@ -175,6 +181,48 @@ public class RestFederationServiceUtil implements Serializable{
         sb.append(memberIdentifier);
         sb.append("/");
         sb.append(uniqueAttributeValue);
+        return sb.toString();
+    }
+
+    public static String createPostRequestAccountUrl(String address, int port){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(POST_REQUEST_ACCOUNT);
+        return sb.toString();
+    }
+
+    public static String createGetHasAccountOnResourceUrl(String address, int port, String memberIdentifier,
+                                                          String accountIdentifier){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_ACCOUNT);
+        sb.append(memberIdentifier);
+        sb.append("/");
+        sb.append(accountIdentifier);
+
+        return sb.toString();
+    }
+
+    public static String createGetRemoveAccountFromResourceUrl(String address, int port, String memberIdentifier,
+                                                          String accountIdentifier){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_REMOVE_ACCOUNT);
+        sb.append(memberIdentifier);
+        sb.append("/");
+        sb.append(accountIdentifier);
         return sb.toString();
     }
 }

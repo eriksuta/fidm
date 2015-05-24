@@ -426,4 +426,115 @@ public interface IFederationService {
      *
      * */
     Response removeOrgLink(String memberIdentifier, String uniqueAttributeValue);
+
+    /**
+     *  <p>
+     *      A method that is responsible for remote account creation. Remote account needs to be
+     *      created when a user of one member of identity federation needs an account on another
+     *      member of identity federation.
+     *  </p>
+     *
+     *  @param accountWrapper
+     *      A wrapper object for information about the account. It contains following fields
+     *      (All fields are requested and must not be empty):
+     *          - memberIdentifier - an identifier of a requesting member of identity federation
+     *          - accountName - a name of the account to create (may be altered by the service to be unique)
+     *          - resourceUniqueAttributeValue - a name of the resource on which we want the new account
+     *          - password - password for requested account
+     *          - ownerIdentifier - a FederationIdentifierType - an identifier of remote
+     *                      owner of created account
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing a message informing requester about the state of the
+     *      request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when the new account
+     *                   was created without any problems. In this case, the message contains
+     *                   a unique identifier of created account.
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
+     *                   malformed, e.g. some parameters of accountWrapper are not
+     *                   set or there is no existing membership relation between
+     *                   requesting and requested federation members. Another situation
+     *                   handled as bad request is when there is no resource for provided
+     *                   requested account, so the identity provider is not able to create it.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     * */
+    Response requestAccount(AccountRequestWrapper accountWrapper);
+
+    /**
+     *  <p>
+     *      This method retrieves a remote account specified by a unique attribute
+     *      defining this account in requested identity provider.
+     *  </p>
+     *
+     *  @param memberIdentifier
+     *      A unique identifier of federation member in identity federation performing the
+     *      request.
+     *
+     *  @param uniqueAccountIdentifier
+     *      An identifier of an account in local identity provider that we are looking for.
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing a message informing requester about the state of the
+     *      request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when the request
+     *                   was processed correctly. In this case, the message contains
+     *                   an account.
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
+     *                   malformed, e.g. some parameters of method are not set or there is no
+     *                   existing membership relation between  requesting and requested federation
+     *                   members.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     *
+     * */
+    Response getAccount(String memberIdentifier, String uniqueAccountIdentifier);
+
+    /**
+     *  <p>
+     *      This method finds out if a certain user from remote member of identity federation has
+     *      a remote account in this identity federation on a specified resource. If this account is
+     *      present, it also removes it. It returns an information about retrieval/removal process
+     *      in form of a success/error message.
+     *  </p>
+     *
+     *  @param memberIdentifier
+     *      A unique identifier of federation member in identity federation performing the
+     *      request.
+     *
+     *  @param uniqueAccountIdentifier
+     *      An identifier of an account in local identity provider that we are trying to
+     *      remove
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing a message informing requester about the state of the
+     *      request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when the request
+     *                   was processed correctly. In this case, The account specified
+     *                   by method parameter was removed.
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
+     *                   malformed, e.g. some parameters of method are not set or there is no
+     *                   existing membership relation between  requesting and requested federation
+     *                   members. Another situation is when the account specified as parameter
+     *                   of this method does not exist.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     *
+     * */
+    Response removeAccountFromResource(String memberIdentifier, String uniqueAccountIdentifier);
+
+
+
 }

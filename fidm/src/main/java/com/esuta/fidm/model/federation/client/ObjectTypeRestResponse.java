@@ -15,6 +15,10 @@ public class ObjectTypeRestResponse<T extends ObjectType> extends SimpleRestResp
         this.value = value;
     }
 
+    public ObjectTypeRestResponse(int status, String message) {
+        super(status, message);
+    }
+
     public ObjectTypeRestResponse(int status, String message, T value) {
         super(status, message);
         this.value = value;

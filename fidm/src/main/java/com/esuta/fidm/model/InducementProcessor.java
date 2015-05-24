@@ -1,10 +1,16 @@
 package com.esuta.fidm.model;
 
+import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
+import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
+import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
+import com.esuta.fidm.model.federation.client.SimpleRestResponse;
 import com.esuta.fidm.repository.schema.core.*;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +31,6 @@ public class InducementProcessor {
 
     private ModelService modelService;
 
-    private InducementProcessor(){}
-
     public static InducementProcessor getInstance(){
         if(processor == null){
             processor = new InducementProcessor();
@@ -39,7 +43,7 @@ public class InducementProcessor {
         this.modelService = modelService;
     }
 
-    public void handleUserInducements(UserType user){
+    public void handleUserInducements(UserType user) throws DatabaseCommunicationException {
         if(user.getUid() == null){
             handleNewUserInducements(user);
         } else {
@@ -47,7 +51,7 @@ public class InducementProcessor {
         }
     }
 
-    private void handleNewUserInducements(UserType user){
+    private void handleNewUserInducements(UserType user) throws DatabaseCommunicationException {
         List<AssignmentType> userOrgAssignments = user.getOrgUnitAssignments();
 
         if(userOrgAssignments.isEmpty()){
@@ -95,16 +99,148 @@ public class InducementProcessor {
     }
 
     private void handleExistingUserResourceInducements(UserType user, List<InducementType> resourceInducementIdentifiers){
+        List<InducementType> localInducements = new ArrayList<>();
+        List<InducementType> remoteInducements = new ArrayList<>();
+
+        for(InducementType inducement: resourceInducementIdentifiers){
+            if(inducement.getUid() == null && inducement.getFederationIdentifier() != null){
+                remoteInducements.add(inducement);
+            } else if(inducement.getUid() != null && inducement.getFederationIdentifier() == null){
+                localInducements.add(inducement);
+            } else {
+                LOGGER.error("Invalid inducement state: " + inducement);
+                //This should not happen
+            }
+        }
+
+        handleExistingUserLocalResourceInducements(user, localInducements);
+        handleExistingUserRemoteResourceInducements(user, remoteInducements);
+    }
+
+    private void handleExistingUserRemoteResourceInducements(UserType user, List<InducementType> resourceInducementIdentifiers){
+        List<AccountType> remoteAccounts = new ArrayList<>();
+        List<FederationIdentifierType> resourcesWithAccounts = new ArrayList<>();
+        List<FederationIdentifierType> resourcesWithoutAccounts = new ArrayList<>();
+
+        // Retrieve existing accounts of handled user
+        for(AssignmentType assignment: user.getAccounts()){
+            FederationIdentifierType identifier = assignment.getFederationIdentifier();
+
+            FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
+
+            try {
+                ObjectTypeRestResponse response = RestFederationServiceClient.getInstance()
+                        .createGetAccountRequest(member, identifier.getUniqueAttributeValue());
+
+                if(response.getStatus() == HttpStatus.OK_200){
+                    remoteAccounts.add((AccountType)response.getValue());
+                }
+
+            } catch (DatabaseCommunicationException | NoSuchFieldException | IllegalAccessException e) {
+                LOGGER.error("Could not find out, if user '" + user.getName() + "' has account on remote resource: '" +
+                        identifier.getUniqueAttributeValue() + "'. Reason: ", e);
+            }
+        }
+
+        for(AccountType account: remoteAccounts){
+            resourcesWithAccounts.add(account.getResource().getFederationIdentifier());
+        }
+
+        // Find out, if we need to create any new account enforced by inducement
+        for(InducementType resourceInducement: resourceInducementIdentifiers){
+            FederationIdentifierType uniqueResourceIdentifier = resourceInducement.getFederationIdentifier();
+
+            if(!resourcesWithAccounts.contains(uniqueResourceIdentifier)){
+                resourcesWithoutAccounts.add(uniqueResourceIdentifier);
+            }
+        }
+
+        // Create missing accounts
+        for(FederationIdentifierType resourceReference: resourcesWithoutAccounts){
+
+            try {
+                SimpleRestResponse response = RestFederationServiceClient.getInstance().createAccountRequest(WebMiscUtil.getFederationMemberByName(resourceReference.getFederationMemberId()),
+                        resourceReference.getUniqueAttributeValue(), user);
+
+                if(HttpStatus.OK_200 != response.getStatus()){
+                    LOGGER.error("Account not created on remote resource. Error: " + response.getMessage());
+                    continue;
+                }
+
+                AssignmentType assignment = new AssignmentType();
+                assignment.setAssignedByInducement(true);
+                assignment.setShareInFederation(true);
+
+                FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+                federationIdentifier.setObjectType(AccountType.class.getCanonicalName());
+                federationIdentifier.setFederationMemberId(resourceReference.getFederationMemberId());
+                federationIdentifier.setUniqueAttributeValue(response.getMessage());
+                assignment.setFederationIdentifier(federationIdentifier);
+                user.getAccounts().add(assignment);
+
+            } catch (NoSuchFieldException | IllegalAccessException | DatabaseCommunicationException e) {
+                LOGGER.error("Could not create a request to create a remote account for user.");
+            }
+        }
+
+        //Remove accounts, if necessary
+        List<FederationIdentifierType> remoteResourceInducementIdentifiers = new ArrayList<>();
+        for(InducementType inducement: resourceInducementIdentifiers){
+            remoteResourceInducementIdentifiers.add(inducement.getFederationIdentifier());
+        }
+
+        try {
+
+            List<AssignmentType> assignmentsToRemove = new ArrayList<>();
+            for(AssignmentType assignment: user.getAccounts()){
+                FederationIdentifierType identifier = assignment.getFederationIdentifier();
+
+                FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
+
+                ObjectTypeRestResponse response = RestFederationServiceClient.getInstance()
+                        .createGetAccountRequest(member, identifier.getUniqueAttributeValue());
+
+                if(HttpStatus.OK_200 == response.getStatus()){
+                    AccountType account = (AccountType)response.getValue();
+
+                    FederationIdentifierType remoteResourceIdentifier = account.getResource().getFederationIdentifier();
+
+                    if(!remoteResourceInducementIdentifiers.contains(remoteResourceIdentifier) && assignment.isAssignedByInducement()){
+                        assignmentsToRemove.add(assignment);
+                    }
+                }
+            }
+
+            for(AssignmentType assignmentToRemove: assignmentsToRemove){
+                FederationIdentifierType identifier = assignmentToRemove.getFederationIdentifier();
+                FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
+
+                SimpleRestResponse response = RestFederationServiceClient.getInstance()
+                        .createRemoveAccountFromResourceRequest(member, identifier.getUniqueAttributeValue());
+
+                LOGGER.info("Remove account removal operation progress: Status[" + response.getStatus() + "], Message[" + response.getMessage() + "]");
+
+                user.getAccounts().remove(assignmentToRemove);
+                LOGGER.debug("Removing assignment with uid: '" + assignmentToRemove.getUid() + "' from user with uid: '" + user.getName() + "'.");
+            }
+        } catch (DatabaseCommunicationException | NoSuchFieldException | IllegalAccessException e) {
+            LOGGER.error("Could not remove remote account for some reason. Whatever.");
+        }
+    }
+
+    private void handleExistingUserLocalResourceInducements(UserType user, List<InducementType> resourceInducementIdentifiers){
         List<AccountType> userAccounts = new ArrayList<>();
         List<ObjectReferenceType> resourcesWithAccounts = new ArrayList<>();
         List<ObjectReferenceType> resourcesWithoutAccounts = new ArrayList<>();
 
         // Retrieve existing accounts of handled user
-        for(AssignmentType accountReferences: user.getAccounts()){
+        for(AssignmentType assignment: user.getAccounts()){
             try {
-                userAccounts.add(modelService.readObject(AccountType.class, accountReferences.getUid()));
+                if(assignment.getUid() != null) {
+                    userAccounts.add(modelService.readObject(AccountType.class, assignment.getUid()));
+                }
             } catch (DatabaseCommunicationException e) {
-                LOGGER.error("Could not retrieve account with uid: '" + accountReferences.getUid() + "' belonging to user: '" + user.getName() + "'.", e);
+                LOGGER.error("Could not retrieve account with uid: '" + assignment.getUid() + "' belonging to user: '" + user.getName() + "'.", e);
             }
         }
 
@@ -151,14 +287,16 @@ public class InducementProcessor {
         }
 
         try {
-
             List<AssignmentType> assignmentsToRemove = new ArrayList<>();
-            for(AssignmentType accountAssignment: user.getAccounts()){
-                AccountType account = modelService.readObject(AccountType.class, accountAssignment.getUid());
-                String resourceUid = account.getResource().getUid();
+            for(AssignmentType assignment: user.getAccounts()){
 
-                if(!resourceInducementUids.contains(resourceUid) && accountAssignment.isAssignedByInducement()){
-                    assignmentsToRemove.add(accountAssignment);
+                if(assignment.getUid() != null) {
+                    AccountType account = modelService.readObject(AccountType.class, assignment.getUid());
+                    String resourceUid = account.getResource().getUid();
+
+                    if (!resourceInducementUids.contains(resourceUid) && assignment.isAssignedByInducement()) {
+                        assignmentsToRemove.add(assignment);
+                    }
                 }
             }
 
@@ -174,28 +312,60 @@ public class InducementProcessor {
         }
     }
 
-    private void handleNewUserResourceInducements(UserType user, List<InducementType> resourceIdentifiers){
-        for(InducementType inducement: resourceIdentifiers){
-            String inducementUid = inducement.getUid();
-            AccountType newAccount = new AccountType();
+    private void handleNewUserResourceInducements(UserType user, List<InducementType> resourceIdentifiers)
+            throws DatabaseCommunicationException {
 
-            ObjectReferenceType resourceReference = new ObjectReferenceType(inducementUid);
-            newAccount.setResource(resourceReference);
-            newAccount.setPassword(user.getPassword());
+        for(InducementType inducement: resourceIdentifiers) {
+            if (inducement.getFederationIdentifier() == null) {
 
-            ObjectReferenceType ownerReference = new ObjectReferenceType(user.getUid());
-            newAccount.setOwner(ownerReference);
-            newAccount.setName(user.getName());
+                String inducementUid = inducement.getUid();
+                AccountType newAccount = new AccountType();
 
-            try {
-                newAccount = modelService.createObject(newAccount);
+                ObjectReferenceType resourceReference = new ObjectReferenceType(inducementUid);
+                newAccount.setResource(resourceReference);
+                newAccount.setPassword(user.getPassword());
 
-                AssignmentType accountAssignment = new AssignmentType(newAccount.getUid());
-                accountAssignment.setAssignedByInducement(true);
-                user.getAccounts().add(accountAssignment);
-                LOGGER.debug("New account with uid: '" + newAccount.getUid() + "' created on resource: '" + inducementUid + "' for user: '" + user.getName() + "'.");
-            } catch (ObjectAlreadyExistsException | DatabaseCommunicationException e) {
-                LOGGER.error("Could not create new account for user: '" + user.getName() + "' on resource: '" + inducementUid + "'. ", e);
+                ObjectReferenceType ownerReference = new ObjectReferenceType(user.getUid());
+                newAccount.setOwner(ownerReference);
+                newAccount.setName(user.getName());
+
+                try {
+                    newAccount = modelService.createObject(newAccount);
+
+                    AssignmentType accountAssignment = new AssignmentType(newAccount.getUid());
+                    accountAssignment.setAssignedByInducement(true);
+                    user.getAccounts().add(accountAssignment);
+                    LOGGER.debug("New account with uid: '" + newAccount.getUid() + "' created on resource: '" + inducementUid + "' for user: '" + user.getName() + "'.");
+                } catch (ObjectAlreadyExistsException | DatabaseCommunicationException e) {
+                    LOGGER.error("Could not create new account for user: '" + user.getName() + "' on resource: '" + inducementUid + "'. ", e);
+                }
+            } else {
+                FederationIdentifierType resourceIdentifier = inducement.getFederationIdentifier();
+
+                try {
+                    SimpleRestResponse response = RestFederationServiceClient.getInstance().createAccountRequest(
+                            WebMiscUtil.getFederationMemberByName(resourceIdentifier.getFederationMemberId()),
+                            resourceIdentifier.getUniqueAttributeValue(), user);
+
+                    if(HttpStatus.OK_200 != response.getStatus()){
+                        LOGGER.error("Account not created on remote resource. Error: " + response.getMessage());
+                        continue;
+                    }
+
+                    AssignmentType assignment = new AssignmentType();
+                    assignment.setAssignedByInducement(true);
+                    assignment.setShareInFederation(true);
+
+                    FederationIdentifierType federationIdentifier = new FederationIdentifierType();
+                    federationIdentifier.setObjectType(AccountType.class.getCanonicalName());
+                    federationIdentifier.setFederationMemberId(resourceIdentifier.getFederationMemberId());
+                    federationIdentifier.setUniqueAttributeValue(response.getMessage());
+                    assignment.setFederationIdentifier(federationIdentifier);
+                    user.getAccounts().add(assignment);
+
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    LOGGER.error("Could not create a request to create a remote account for user.");
+                }
             }
         }
     }

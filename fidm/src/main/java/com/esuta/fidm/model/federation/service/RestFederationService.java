@@ -1,5 +1,6 @@
 package com.esuta.fidm.model.federation.service;
 
+import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
@@ -83,6 +84,26 @@ public class RestFederationService implements IFederationService{
 
             if(uniqueAttributeValue.equals(attributeValue)){
                 return org;
+            }
+        }
+
+        return null;
+    }
+
+    private ResourceType getResourceByUniqueAttributeValue(FederationMemberType member, String uniqueAttributeValue)
+            throws NoSuchFieldException, DatabaseCommunicationException, IllegalAccessException {
+
+        String uniqueAttributeName = member.getUniqueOrgIdentifier();
+
+        List<ResourceType> allResources = modelService.getAllObjectsOfType(ResourceType.class);
+
+        for(ResourceType resource: allResources){
+            Field uniqueAttribute = resource.getClass().getDeclaredField(uniqueAttributeName);
+            uniqueAttribute.setAccessible(true);
+            String attributeValue = (String)uniqueAttribute.get(resource);
+
+            if(uniqueAttributeValue.equals(attributeValue)){
+                return resource;
             }
         }
 
@@ -704,7 +725,6 @@ public class RestFederationService implements IFederationService{
                         .entity("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue).build();
             }
 
-
             ObjectReferenceType sharingPolicyRef = org.getSharingPolicy();
             String sharingPolicyUid = sharingPolicyRef.getUid();
 
@@ -716,6 +736,7 @@ public class RestFederationService implements IFederationService{
                         .entity("No sharing policy defined for requested org. unit: " + uniqueAttributeValue).build();
             }
 
+            policy.setUid(null);
             return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(policy)).build();
 
         } catch (DatabaseCommunicationException e) {
@@ -832,6 +853,183 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Could not update org. unit in the repository.", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Could not update org. unit in the repository." + e).build();
+        }
+    }
+
+    @POST
+    @Path(RestFederationServiceUtil.POST_REQUEST_ACCOUNT)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response requestAccount(AccountRequestWrapper accountWrapper) {
+        if(accountWrapper == null){
+            LOGGER.error("Bad or missing parameter.");
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        if(accountWrapper.getAccountName() == null || accountWrapper.getMemberIdentifier() == null ||
+                accountWrapper.getOwnerIdentifier() == null || accountWrapper.getPassword() == null ||
+                accountWrapper.getResourceUniqueAttributeValue() == null){
+            LOGGER.error("Bad or missing parameter.");
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            String memberIdentifier = accountWrapper.getMemberIdentifier();
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
+
+            if(currentMember == null){
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            ResourceType resource = getResourceByUniqueAttributeValue(currentMember, accountWrapper.getResourceUniqueAttributeValue());
+
+            if(resource == null){
+                LOGGER.error("No resource with uid '" + accountWrapper.getResourceUniqueAttributeValue() + "' exists. Can't create account.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No resource with uid '" + accountWrapper.getResourceUniqueAttributeValue() + "' exists. Can't create account.").build();
+            }
+
+            AccountType account = new AccountType();
+            account.setName(accountWrapper.getAccountName() + "-" + resource.getName());
+            account.setPassword(accountWrapper.getPassword());
+
+            ObjectReferenceType resourceRef = new ObjectReferenceType();
+            resourceRef.setUid(resource.getUid());
+            resourceRef.setShareInFederation(true);
+            account.setResource(resourceRef);
+
+            ObjectReferenceType ownerRef = new ObjectReferenceType();
+            ownerRef.setShareInFederation(true);
+            ownerRef.setFederationIdentifier(accountWrapper.getOwnerIdentifier());
+            account.setOwner(ownerRef);
+
+            AccountType newAccount = modelService.createObject(account);
+
+            LOGGER.info("New account created for remote owner. Uid: '" + newAccount.getUid() + "'");
+            return Response.status(HttpStatus.OK_200).entity(account.getName()).build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not create an account. Can't read from the repository.");
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not create an account. Can't read from the repository.").build();
+        } catch (ObjectAlreadyExistsException e) {
+            LOGGER.error("Could not create an account. Can't read from the repository.");
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not create an account. Can't read from the repository.").build();
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Incorrect unique attribute for resource is set. Can't find resource unique identifier. Reason: ", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Incorrect unique attribute for resource is set. Can't find resource unique identifier. Reason: " + e).build();
+        }
+    }
+
+    @GET
+    @Path(RestFederationServiceUtil.GET_ACCOUNT_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAccount(@PathParam("memberIdentifier")String memberIdentifier,
+                               @PathParam("uniqueAccountIdentifier")String uniqueAccountIdentifier) {
+
+        if(memberIdentifier == null || memberIdentifier.isEmpty() ||
+                uniqueAccountIdentifier == null || uniqueAccountIdentifier.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
+
+            if (currentMember == null) {
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            List<AccountType> accounts = modelService.getAllObjectsOfType(AccountType.class);
+
+            for(AccountType account: accounts){
+                if(uniqueAccountIdentifier.equals(account.getName())){
+                    String resourceUid = account.getResource().getUid();
+                    ResourceType resource = modelService.readObject(ResourceType.class, resourceUid);
+
+                    FederationIdentifierType resourceIdentifier = new FederationIdentifierType();
+                    resourceIdentifier.setObjectType(ResourceType.class.getCanonicalName());
+                    resourceIdentifier.setFederationMemberId(WebMiscUtil.getLocalFederationMemberIdentifier());
+                    resourceIdentifier.setUniqueAttributeValue(WebMiscUtil.getUniqueAttributeValue(resource,
+                            WebMiscUtil.getFederationMemberByName(memberIdentifier).getUniqueResourceIdentifier()));
+                     account.getResource().setUid(null);
+                    account.getResource().setFederationIdentifier(resourceIdentifier);
+
+                    LOGGER.info("Found account with name: '" + uniqueAccountIdentifier + "'.");
+                    return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(account)).build();
+                }
+            }
+
+            LOGGER.info("Cannot find an account with name: '" + uniqueAccountIdentifier + "'.");
+            return Response.status(HttpStatus.BAD_REQUEST_400)
+                    .entity("Cannot find an account with name: '" + uniqueAccountIdentifier + "'.").build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load resource or account from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not load resource or account from the repository." + e).build();
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Could not load resource or account from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not load resource or account from the repository." + e).build();
+        }
+    }
+
+    @GET
+    @Path(RestFederationServiceUtil.GET_REMOVE_ACCOUNT_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response removeAccountFromResource(@PathParam("memberIdentifier")String memberIdentifier,
+                                              @PathParam("uniqueAccountIdentifier")String uniqueAccountIdentifier) {
+
+        if(memberIdentifier == null || memberIdentifier.isEmpty() ||
+                uniqueAccountIdentifier == null || uniqueAccountIdentifier.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
+
+            if (currentMember == null) {
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            List<AccountType> accounts = modelService.getAllObjectsOfType(AccountType.class);
+
+            AccountType accountToRemove = null;
+            for(AccountType account: accounts){
+                if(uniqueAccountIdentifier.equals(account.getName())){
+                    accountToRemove = account;
+                }
+            }
+
+            if(accountToRemove == null){
+                LOGGER.error("Can't find account: '" + uniqueAccountIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("Can't find account: '" + uniqueAccountIdentifier + "'.").build();
+            }
+
+            modelService.deleteObject(accountToRemove);
+            LOGGER.info("Account: '" + uniqueAccountIdentifier + "' removed.");
+            return Response.status(HttpStatus.OK_200)
+                    .entity("Account: '" + uniqueAccountIdentifier + "' removed.").build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load resource or account from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not load resource or account from the repository." + e).build();
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Can't remove account: " + uniqueAccountIdentifier + "'. Account does not exist.");
+            return Response.status(HttpStatus.BAD_REQUEST_400)
+                    .entity("Can't remove account: " + uniqueAccountIdentifier + "'. Account does not exist.").build();
         }
     }
 }

@@ -1,9 +1,14 @@
 package com.esuta.fidm.gui.component;
 
+import com.esuta.fidm.gui.page.PageBase;
+import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
+import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
+import org.apache.log4j.Logger;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.w3c.dom.Document;
@@ -33,6 +38,8 @@ import java.util.List;
  *  @author shood
  * */
 public final class WebMiscUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(WebMiscUtil.class);
 
     public static <T extends Enum> IModel<List<T>> createReadonlyModelFromEnum(final Class<T> type) {
         return new AbstractReadOnlyModel<List<T>>() {
@@ -187,5 +194,28 @@ public final class WebMiscUtil {
         attribute.setAccessible(true);
         attributeValue = (String)attribute.get(object);
         return attributeValue;
+    }
+
+    public static FederationMemberType getFederationMemberByName(String federationMemberName){
+        FederationMemberType memberToRetrieve = null;
+
+        try {
+            List<FederationMemberType> allMembers = ModelService.getInstance().getAllObjectsOfType(FederationMemberType.class);
+
+            for(FederationMemberType member: allMembers){
+                if(member.getFederationMemberName().equals(federationMemberName)){
+                    memberToRetrieve = member;
+                }
+            }
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not retrieve all federation member from the repository.", e);
+        }
+
+        return memberToRetrieve;
+    }
+
+    public static String getLocalFederationMemberIdentifier() throws DatabaseCommunicationException {
+        SystemConfigurationType systemConfiguration = ModelService.getInstance().readObject(SystemConfigurationType.class, PageBase.SYSTEM_CONFIG_UID);
+        return systemConfiguration.getIdentityProviderIdentifier();
     }
 }

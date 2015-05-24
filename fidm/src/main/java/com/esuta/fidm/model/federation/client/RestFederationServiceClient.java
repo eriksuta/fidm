@@ -1,18 +1,13 @@
 package com.esuta.fidm.model.federation.client;
 
+import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
-import com.esuta.fidm.model.federation.service.FederationMembershipRequest;
-import com.esuta.fidm.model.federation.service.ObjectInformation;
-import com.esuta.fidm.model.federation.service.OrgModificationWrapper;
-import com.esuta.fidm.model.federation.service.RestFederationServiceUtil;
+import com.esuta.fidm.model.federation.service.*;
 import com.esuta.fidm.model.util.JsonUtil;
-import com.esuta.fidm.repository.schema.core.FederationMemberType;
-import com.esuta.fidm.repository.schema.core.SharingPolicyType;
-import com.esuta.fidm.repository.schema.core.OrgType;
-import com.esuta.fidm.repository.schema.core.SystemConfigurationType;
+import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import com.esuta.fidm.repository.schema.support.ObjectModificationType;
 import com.sun.jersey.api.client.Client;
@@ -374,6 +369,86 @@ public class RestFederationServiceClient {
         int responseStatus = response.getStatus();
         String responseMessage = response.getEntity(String.class);
         LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        return new SimpleRestResponse(responseStatus, responseMessage);
+    }
+
+    public SimpleRestResponse createAccountRequest(FederationMemberType member, String uniqueAttributeValue, UserType user)
+            throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
+
+        String address = member.getWebAddress();
+        int port = member.getPort();
+
+        AccountRequestWrapper accountWrapper = new AccountRequestWrapper();
+        accountWrapper.setMemberIdentifier(WebMiscUtil.getLocalFederationMemberIdentifier());
+        accountWrapper.setAccountName(user.getName());
+        accountWrapper.setPassword(user.getPassword());
+        accountWrapper.setResourceUniqueAttributeValue(uniqueAttributeValue);
+
+        FederationIdentifierType ownerIdentifier = new FederationIdentifierType();
+        ownerIdentifier.setFederationMemberId(WebMiscUtil.getLocalFederationMemberIdentifier());
+        ownerIdentifier.setObjectType(UserType.class.getCanonicalName());
+        ownerIdentifier.setUniqueAttributeValue(WebMiscUtil.getUniqueAttributeValue(user, member.getUniqueUserIdentifier()));
+        accountWrapper.setOwnerIdentifier(ownerIdentifier);
+
+        String url = RestFederationServiceUtil.createPostRequestAccountUrl(address, port);
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+        String jsonObject = JsonUtil.objectToJson(accountWrapper);
+
+        ClientResponse response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonObject);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        return new SimpleRestResponse(responseStatus, responseMessage);
+    }
+
+    public ObjectTypeRestResponse createGetAccountRequest(FederationMemberType member, String accountIdentifier)
+            throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
+
+        String address = member.getWebAddress();
+        int port = member.getPort();
+
+        String url = RestFederationServiceUtil.createGetHasAccountOnResourceUrl(address, port,
+                WebMiscUtil.getLocalFederationMemberIdentifier(), accountIdentifier);
+
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + responseStatus + ", message: " + responseMessage);
+
+        if(HttpStatus.OK_200 == responseStatus){
+            ObjectTypeRestResponse accountResponse = new ObjectTypeRestResponse<>((AccountType)JsonUtil.jsonToObject(responseMessage, AccountType.class));
+            accountResponse.setStatus(responseStatus);
+            return accountResponse;
+        } else {
+            return new ObjectTypeRestResponse<>(responseStatus, responseMessage);
+        }
+    }
+
+    public SimpleRestResponse createRemoveAccountFromResourceRequest(FederationMemberType member, String accountIdentifier)
+            throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
+
+        String address = member.getWebAddress();
+        int port = member.getPort();
+
+        String url = RestFederationServiceUtil.createGetRemoveAccountFromResourceUrl(address, port,
+                WebMiscUtil.getLocalFederationMemberIdentifier(), accountIdentifier);
+
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + responseStatus + ", message: " + responseMessage);
 
         return new SimpleRestResponse(responseStatus, responseMessage);
     }
