@@ -992,7 +992,7 @@ public class RestFederationService implements IFederationService{
     @Path(RestFederationServiceUtil.GET_REMOVE_ACCOUNT_PARAM)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response removeAccountFromResource(@PathParam("memberIdentifier")String memberIdentifier,
+    public Response removeAccount(@PathParam("memberIdentifier")String memberIdentifier,
                                               @PathParam("uniqueAccountIdentifier")String uniqueAccountIdentifier) {
 
         if(memberIdentifier == null || memberIdentifier.isEmpty() ||
@@ -1037,6 +1037,70 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Can't remove account: " + uniqueAccountIdentifier + "'. Account does not exist.");
             return Response.status(HttpStatus.BAD_REQUEST_400)
                     .entity("Can't remove account: " + uniqueAccountIdentifier + "'. Account does not exist.").build();
+        }
+    }
+
+    @GET
+    @Path(RestFederationServiceUtil.GET_ORG_MEMBERS_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Override
+    public Response getOrgMembers(@PathParam("memberIdentifier")String memberIdentifier,
+                                  @PathParam("uniqueOrgIdentifier")String uniqueOrgIdentifier) {
+
+        if(memberIdentifier == null || memberIdentifier.isEmpty() ||
+                uniqueOrgIdentifier == null || uniqueOrgIdentifier.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
+
+            if (currentMember == null) {
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            OrgType org = getOrgUnitByUniqueAttributeValue(currentMember, uniqueOrgIdentifier);
+
+            if(org == null){
+                LOGGER.error("No org. unit found for identifier: '" + uniqueOrgIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No org. unit found for identifier: '" + uniqueOrgIdentifier + "'.").build();
+            }
+
+            String orgUid = org.getUid();
+
+            List<UserType> users = modelService.getAllObjectsOfType(UserType.class);
+            List<UserType> usersToReturn = new ArrayList<>();
+            for(UserType user: users){
+                for(AssignmentType assignment: user.getOrgUnitAssignments()){
+                    if(assignment.getUid() != null && assignment.getUid().equals(orgUid)){
+                        usersToReturn.add(user);
+                    }
+                }
+            }
+
+            for(UserType user: usersToReturn){
+                user.setUid(null);
+
+                FederationIdentifierType identifier = new FederationIdentifierType();
+                identifier.setObjectType(UserType.class.getCanonicalName());
+                identifier.setFederationMemberId(WebMiscUtil.getLocalFederationMemberIdentifier());
+                identifier.setUniqueAttributeValue(WebMiscUtil.getUniqueAttributeValue(user,
+                        WebMiscUtil.getFederationMemberByName(memberIdentifier).getUniqueUserIdentifier()));
+                user.setFederationIdentifier(identifier);
+            }
+
+            LOGGER.info("Returning " + usersToReturn.size() + " of members of org. unit: '" + uniqueOrgIdentifier + "'.");
+            return Response.status(HttpStatus.OK_200)
+                    .entity(JsonUtil.objectToJson(usersToReturn)).build();
+
+        } catch (DatabaseCommunicationException | IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Could not load specified org. unit ot its members.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not load specified org. unit ot its members." + e).build();
         }
     }
 }

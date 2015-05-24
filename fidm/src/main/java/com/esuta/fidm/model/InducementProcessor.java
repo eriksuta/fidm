@@ -126,6 +126,10 @@ public class InducementProcessor {
         for(AssignmentType assignment: user.getAccounts()){
             FederationIdentifierType identifier = assignment.getFederationIdentifier();
 
+            if(identifier == null){
+                continue;
+            }
+
             FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
 
             try {
@@ -194,6 +198,10 @@ public class InducementProcessor {
             List<AssignmentType> assignmentsToRemove = new ArrayList<>();
             for(AssignmentType assignment: user.getAccounts()){
                 FederationIdentifierType identifier = assignment.getFederationIdentifier();
+
+                if(identifier == null){
+                    continue;
+                }
 
                 FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
 

@@ -33,8 +33,11 @@ public class RestFederationServiceUtil implements Serializable{
     public static final String POST_REQUEST_ACCOUNT = "/requestAccount";
     public static final String GET_ACCOUNT_PARAM = "/getAccount/{memberIdentifier}/{uniqueAccountIdentifier}";
     public static final String GET_ACCOUNT = "/getAccount/";
-    public static final String GET_REMOVE_ACCOUNT_PARAM = "/removeAccountFromResource/{memberIdentifier}/{uniqueAccountIdentifier}";
-    public static final String GET_REMOVE_ACCOUNT = "/removeAccountFromResource/";
+    public static final String GET_REMOVE_ACCOUNT_PARAM = "/removeAccount/{memberIdentifier}/{uniqueAccountIdentifier}";
+    public static final String GET_REMOVE_ACCOUNT = "/removeAccount/";
+
+    public static final String GET_ORG_MEMBERS_PARAM = "/getOrgMembers/{memberIdentifier}/{uniqueOrgIdentifier}";
+    public static final String GET_ORG_MEMBERS = "/getOrgMembers/";
 
     public static String createGetFederationMemberIdentifier(String address, int port){
         StringBuilder sb = new StringBuilder();
@@ -211,8 +214,8 @@ public class RestFederationServiceUtil implements Serializable{
         return sb.toString();
     }
 
-    public static String createGetRemoveAccountFromResourceUrl(String address, int port, String memberIdentifier,
-                                                          String accountIdentifier){
+    public static String createGetRemoveAccountUrl(String address, int port, String memberIdentifier,
+                                                   String accountIdentifier){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
         sb.append(address);
@@ -223,6 +226,21 @@ public class RestFederationServiceUtil implements Serializable{
         sb.append(memberIdentifier);
         sb.append("/");
         sb.append(accountIdentifier);
+        return sb.toString();
+    }
+
+    public static String createGetOrgMembersUrl(String address, int port, String memberIdentifier,
+                                                String orgIdentifier){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_ORG_MEMBERS);
+        sb.append(memberIdentifier);
+        sb.append("/");
+        sb.append(orgIdentifier);
         return sb.toString();
     }
 }

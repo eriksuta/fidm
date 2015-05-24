@@ -438,7 +438,7 @@ public class RestFederationServiceClient {
         String address = member.getWebAddress();
         int port = member.getPort();
 
-        String url = RestFederationServiceUtil.createGetRemoveAccountFromResourceUrl(address, port,
+        String url = RestFederationServiceUtil.createGetRemoveAccountUrl(address, port,
                 WebMiscUtil.getLocalFederationMemberIdentifier(), accountIdentifier);
 
         Client client = Client.create();
@@ -451,5 +451,33 @@ public class RestFederationServiceClient {
         LOGGER.info("Response status: " + responseStatus + ", message: " + responseMessage);
 
         return new SimpleRestResponse(responseStatus, responseMessage);
+    }
+
+    public GenericListRestResponse<UserType> createGetOrgUnitMembersRequest(FederationMemberType federationMember, String orgIdentifier)
+            throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetOrgMembersUrl(address, port,
+                getLocalFederationMemberIdentifier(), orgIdentifier);
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        GenericListRestResponse<UserType> responseObject = new GenericListRestResponse<>();
+        responseObject.setStatus(responseStatus);
+        if(responseStatus == HttpStatus.OK_200){
+            responseObject.setValues(JsonUtil.jsonListToObject(responseMessage, UserType[].class));
+        } else {
+            responseObject.setMessage(responseMessage);
+        }
+
+        return responseObject;
     }
 }

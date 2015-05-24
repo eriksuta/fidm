@@ -5,6 +5,7 @@ import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.data.FederationObjectInformationProvider;
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
+import com.esuta.fidm.gui.component.data.table.RemoteOrgMembersProvider;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextEditPanel;
 import com.esuta.fidm.gui.component.form.MultiValueTextPanel;
@@ -38,13 +39,17 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -60,7 +65,7 @@ import java.util.List;
  * */
 public class PageOrg extends PageBase {
 
-    private transient Logger LOGGER = Logger.getLogger(PageOrg.class);
+    private static final Logger LOGGER = Logger.getLogger(PageOrg.class);
 
     private static final String ID_MAIN_FORM = "mainForm";
     private static final String ID_NAME = "name";
@@ -91,6 +96,8 @@ public class PageOrg extends PageBase {
     private static final String ID_GOVERNORS_CONTAINER = "governorsContainer";
     private static final String ID_BUTTON_ADD_GOVERNOR = "addGovernor";
     private static final String ID_GOVERNORS_TABLE = "governorsTable";
+    private static final String ID_REMOTE_MEMBERS_CONTAINER = "remoteMemberContainer";
+    private static final String ID_REMOTE_MEMBERS_TABLE = "remoteMembersTable";
 
     private static final String ID_SHARING_POLICY_LABEL = "sharingPolicyLabel";
     private static final String ID_SHARING_POLICY_EDIT = "sharingPolicyEdit";
@@ -966,7 +973,7 @@ public class PageOrg extends PageBase {
     }
 
     private void initContainers(Form mainForm){
-        //Members Container
+        //Local Members Container
         WebMarkupContainer membersContainer = new WebMarkupContainer(ID_MEMBERS_CONTAINER);
         membersContainer.setOutputMarkupId(true);
         membersContainer.setOutputMarkupPlaceholderTag(true);
@@ -1005,6 +1012,25 @@ public class PageOrg extends PageBase {
         });
         membersTable.setOutputMarkupId(true);
         membersContainer.add(membersTable);
+
+        //Remote Members Container
+        WebMarkupContainer remoteMembersContainer = new WebMarkupContainer(ID_REMOTE_MEMBERS_CONTAINER);
+        remoteMembersContainer.setOutputMarkupId(true);
+        remoteMembersContainer.setOutputMarkupPlaceholderTag(true);
+        mainForm.add(remoteMembersContainer);
+
+        List<IColumn> remoteMembersColumns = createRemoteMemberColumns();
+        final RemoteOrgMembersProvider remoteMembersProvider = new RemoteOrgMembersProvider(getPage(), model.getObject(), true);
+        TablePanel remoteMembersTable = new TablePanel(ID_REMOTE_MEMBERS_TABLE, remoteMembersProvider, remoteMembersColumns, 10);
+        remoteMembersTable.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return remoteMembersProvider.size() > 0;
+            }
+        });
+        remoteMembersTable.setOutputMarkupId(true);
+        remoteMembersContainer.add(remoteMembersTable);
 
         //Governors Container
         WebMarkupContainer governorsContainer = new WebMarkupContainer(ID_GOVERNORS_CONTAINER);
@@ -1083,6 +1109,25 @@ public class PageOrg extends PageBase {
             @Override
             public boolean getRemoveVisible() {
                 return false;
+            }
+        });
+
+        return columns;
+    }
+
+    private List<IColumn> createRemoteMemberColumns(){
+        List<IColumn> columns = new ArrayList<>();
+
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Given Name"), "givenName", "givenName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Family Name"), "familyName", "familyName"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("E-mail"), "emailAddress", "emailAddress"));
+        columns.add(new PropertyColumn<UserType, String>(new Model<>("Locality"), "locality", "locality"));
+        columns.add(new AbstractColumn<UserType, String>(new Model<>("Origin")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<UserType>> cellItem, String componentId, IModel<UserType> rowModel) {
+                cellItem.add(new Label(componentId, rowModel.getObject().getFederationIdentifier().getFederationMemberId()));
             }
         });
 

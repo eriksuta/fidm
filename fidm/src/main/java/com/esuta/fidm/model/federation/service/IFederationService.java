@@ -533,8 +533,41 @@ public interface IFederationService {
      *                   as problems with reading objects in repository.
      *
      * */
-    Response removeAccountFromResource(String memberIdentifier, String uniqueAccountIdentifier);
+    Response removeAccount(String memberIdentifier, String uniqueAccountIdentifier);
 
+    /**
+     *  <p>
+     *      This method retrieves a list of subjects that are members of org. unit
+     *      specified by the attribute of method (uniqueOrgIdentifier).
+     *  </p>
+     *
+     *  @param memberIdentifier
+     *      A unique identifier of federation member in identity federation performing the
+     *      request.
+     *
+     *  @param uniqueOrgIdentifier
+     *      An identifier of org. unit in requested member of identity federation.
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing a message informing requester about the state of the
+     *      request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when the request
+     *                   was processed correctly. In this case, the response contains
+     *                   a list of members of org. unit specified by attribute 'uniqueAccountIdentifier'
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
+     *                   malformed, e.g. some parameters of method are not set or there is no
+     *                   existing membership relation between  requesting and requested federation
+     *                   members. Another situation is when the org. unit specified as parameter
+     *                   of this method does not exist.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     *
+     * */
+    Response getOrgMembers(String memberIdentifier, String uniqueOrgIdentifier);
 
 
 }
