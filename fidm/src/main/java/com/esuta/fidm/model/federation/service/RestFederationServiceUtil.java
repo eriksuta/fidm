@@ -195,8 +195,8 @@ public class RestFederationServiceUtil implements Serializable{
         return sb.toString();
     }
 
-    public static String createGetHasAccountOnResourceUrl(String address, int port, String memberIdentifier,
-                                                          String accountIdentifier){
+    public static String createGetAccountUrl(String address, int port, String memberIdentifier,
+                                             String accountIdentifier){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
         sb.append(address);

@@ -958,8 +958,15 @@ public class RestFederationService implements IFederationService{
                     resourceIdentifier.setFederationMemberId(WebMiscUtil.getLocalFederationMemberIdentifier());
                     resourceIdentifier.setUniqueAttributeValue(WebMiscUtil.getUniqueAttributeValue(resource,
                             WebMiscUtil.getFederationMemberByName(memberIdentifier).getUniqueResourceIdentifier()));
-                     account.getResource().setUid(null);
+                    account.getResource().setUid(null);
                     account.getResource().setFederationIdentifier(resourceIdentifier);
+
+                    account.setUid(null);
+                    FederationIdentifierType accountIdentifier = new FederationIdentifierType();
+                    accountIdentifier.setObjectType(AccountType.class.getCanonicalName());
+                    accountIdentifier.setUniqueAttributeValue(account.getName());
+                    accountIdentifier.setFederationMemberId(WebMiscUtil.getLocalFederationMemberIdentifier());
+                    account.setFederationIdentifier(accountIdentifier);
 
                     LOGGER.info("Found account with name: '" + uniqueAccountIdentifier + "'.");
                     return Response.status(HttpStatus.OK_200).entity(JsonUtil.objectToJson(account)).build();

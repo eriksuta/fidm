@@ -216,7 +216,7 @@ public class InducementProcessor {
                 FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
 
                 SimpleRestResponse response = RestFederationServiceClient.getInstance()
-                        .createRemoveAccountFromResourceRequest(member, identifier.getUniqueAttributeValue());
+                        .createRemoveAccountRequest(member, identifier.getUniqueAttributeValue());
 
                 LOGGER.info("Remove account removal operation progress: Status[" + response.getStatus() + "], Message[" + response.getMessage() + "]");
 

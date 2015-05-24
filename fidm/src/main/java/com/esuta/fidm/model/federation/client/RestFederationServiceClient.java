@@ -411,7 +411,7 @@ public class RestFederationServiceClient {
         String address = member.getWebAddress();
         int port = member.getPort();
 
-        String url = RestFederationServiceUtil.createGetHasAccountOnResourceUrl(address, port,
+        String url = RestFederationServiceUtil.createGetAccountUrl(address, port,
                 WebMiscUtil.getLocalFederationMemberIdentifier(), accountIdentifier);
 
         Client client = Client.create();
@@ -432,7 +432,7 @@ public class RestFederationServiceClient {
         }
     }
 
-    public SimpleRestResponse createRemoveAccountFromResourceRequest(FederationMemberType member, String accountIdentifier)
+    public SimpleRestResponse createRemoveAccountRequest(FederationMemberType member, String accountIdentifier)
             throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
 
         String address = member.getWebAddress();

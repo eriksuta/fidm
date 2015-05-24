@@ -24,7 +24,7 @@ public class AssignableDataProvider<T extends ObjectType, S extends ObjectType> 
     }
 
     @Override
-    public Iterator<? extends T> iterator(long first, long count) {
+    public Iterator<T> iterator(long first, long count) {
         getData().clear();
         getCurrentPageData().clear();
 
@@ -74,5 +74,7 @@ public class AssignableDataProvider<T extends ObjectType, S extends ObjectType> 
         return 0;
     }
 
-
+    public S getAssignmentSource() {
+        return assignmentSource;
+    }
 }

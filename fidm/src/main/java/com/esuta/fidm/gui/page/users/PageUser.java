@@ -1,10 +1,12 @@
 package com.esuta.fidm.gui.page.users;
 
+import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.data.AssignableDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.table.TablePanel;
 import com.esuta.fidm.gui.component.modal.AssignablePopupDialog;
+import com.esuta.fidm.gui.component.modal.RemoteAccountViewerDialog;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.gui.page.org.PageOrg;
@@ -15,7 +17,10 @@ import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectAlreadyExistsException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.federation.client.ObjectTypeRestResponse;
+import com.esuta.fidm.model.federation.client.SimpleRestResponse;
 import com.esuta.fidm.repository.schema.core.*;
+import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
 import org.apache.log4j.Logger;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -36,8 +41,10 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -85,10 +92,11 @@ public class PageUser extends PageBase {
     private static final String ID_ROLE_ASSIGNABLE_POPUP = "roleAssignPopup";
     private static final String ID_ORG_ASSIGNABLE_POPUP = "orgAssignPopup";
     private static final String ID_ACCOUNT_POPUP = "accountPopup";
+    private static final String ID_REMOTE_ACCOUNT_VIEWER = "remoteAccountViewer";
 
     private IModel<UserTypeDto> model;
 
-    public PageUser(){
+    public PageUser() {
         this(null);
     }
 
@@ -256,6 +264,9 @@ public class PageUser extends PageBase {
             }
         };
         add(assignableAccount);
+
+        ModalWindow remoteAccountViewer = new RemoteAccountViewerDialog(ID_REMOTE_ACCOUNT_VIEWER, null);
+        add(remoteAccountViewer);
     }
 
     private void initAssignments(Form mainForm){
@@ -339,8 +350,43 @@ public class PageUser extends PageBase {
 
         List<IColumn> accountColumns = createAccountColumns();
 
-        AssignableDataProvider<AccountType, UserType> accountProvider = new AssignableDataProvider<>(getPage(),
-                AccountType.class, model.getObject().getUser());
+        AssignableDataProvider<AccountType, UserType> accountProvider = new AssignableDataProvider<AccountType, UserType>(getPage(),
+                AccountType.class, model.getObject().getUser()){
+
+            @Override
+            public Iterator<AccountType> iterator(long first, long count) {
+                getData().clear();
+                getCurrentPageData().clear();
+
+                try {
+
+                    UserType user = getAssignmentSource();
+
+                    for(AssignmentType assignment: user.getAccounts()){
+                        if(assignment.getUid() != null && assignment.getFederationIdentifier() == null){
+                            AccountType account = getModelService().readObject(AccountType.class, assignment.getUid());
+                            getData().add(account);
+                        } else if(assignment.getUid() == null && assignment.getFederationIdentifier() != null){
+                            FederationIdentifierType identifier = assignment.getFederationIdentifier();
+                            FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
+
+                            ObjectTypeRestResponse response = PageUser.this.getFederationServiceClient()
+                                    .createGetAccountRequest(member, identifier.getUniqueAttributeValue());
+
+                            if(response.getStatus() == HttpStatus.OK_200){
+                                AccountType account = (AccountType)response.getValue();
+                                getData().add(account);
+                            }
+                        }
+                    }
+
+                } catch (Exception e){
+                    LOGGER.error("Could not create an iterator object for data of type: '" + getType().getSimpleName() + "'. Could not read objects from model.");
+                }
+
+                return getData().iterator();
+            }
+        };
 
         TablePanel accountTable = new TablePanel(ID_TABLE_ACCOUNTS, accountProvider, accountColumns, 10);
         accountTable.add(new VisibleEnableBehavior(){
@@ -384,7 +430,7 @@ public class PageUser extends PageBase {
         columns.add(new PropertyColumn<OrgType, String>(new Model<>("Display Name"), "displayName", "displayName"));
         columns.add(new PropertyColumn<OrgType, String>(new Model<>("Org. Type"), "orgType", "orgType"));
         columns.add(new PropertyColumn<OrgType, String>(new Model<>("Locality"), "locality", "locality"));
-        columns.add(new EditDeleteButtonColumn<OrgType>(new Model<>("Actions")){
+        columns.add(new EditDeleteButtonColumn<OrgType>(new Model<>("Actions")) {
 
             @Override
             public void editPerformed(AjaxRequestTarget target, IModel<OrgType> rowModel) {
@@ -404,19 +450,41 @@ public class PageUser extends PageBase {
         List<IColumn> columns = new ArrayList<>();
 
         columns.add(new PropertyColumn<AccountType, String>(new Model<>("Name"), "name", "name"));
+        columns.add(new AbstractColumn<AccountType, String>(new Model<>("Origin")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<AccountType>> cellItem, String componentId, IModel<AccountType> rowModel) {
+                if(rowModel == null || rowModel.getObject() == null){
+                    return;
+                }
+
+                AccountType account = rowModel.getObject();
+
+                if(account.getUid() == null){
+                    cellItem.add(new Label(componentId, "Remote"));
+                } else {
+                    cellItem.add(new Label(componentId, "Local"));
+                }
+            }
+        });
+
         columns.add(new AbstractColumn<AccountType, String>(new Model<>("Resource")) {
 
 
             @Override
             public void populateItem(Item<ICellPopulator<AccountType>> cellItem, String componentId, IModel<AccountType> rowModel) {
                 if(rowModel == null || rowModel.getObject() == null){
-                    cellItem.add(new Label(componentId, "Remote Account"));
                     return;
                 }
 
                 AccountType account = rowModel.getObject();
                 ObjectReferenceType resourceReference = account.getResource();
                 String resourceUid = resourceReference.getUid();
+
+                if(resourceUid == null){
+                    cellItem.add(new Label(componentId, resourceReference.getFederationIdentifier().getUniqueAttributeValue()));
+                    return;
+                }
 
                 ResourceType resource;
 
@@ -617,9 +685,17 @@ public class PageUser extends PageBase {
             return;
         }
 
-        PageParameters parameters = new PageParameters();
-        parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
-        setResponsePage(PageAccount.class, parameters);
+        AccountType account = rowModel.getObject();
+
+        if(account.getUid() != null) {
+            PageParameters parameters = new PageParameters();
+            parameters.add(UID_PAGE_PARAMETER_NAME, rowModel.getObject().getUid());
+            setResponsePage(PageAccount.class, parameters);
+        } else {
+            RemoteAccountViewerDialog window = (RemoteAccountViewerDialog) get(ID_REMOTE_ACCOUNT_VIEWER);
+            window.updateModel(account);
+            window.show(target);
+        }
     }
 
     /**
@@ -634,27 +710,56 @@ public class PageUser extends PageBase {
 
         String accountUid = rowModel.getObject().getUid();
 
-        //remove owner from affected account as well
-        try {
-            AccountType acc = getModelService().readObject(AccountType.class, accountUid);
-            acc.setOwner(null);
+        if(accountUid != null){
+            try {
+                AccountType acc = getModelService().readObject(AccountType.class, accountUid);
+                getModelService().deleteObject(acc);
+            } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
+                LOGGER.error("Could not retrieve account with uid: '" + accountUid + "' of user with uid: '" + model.getObject().getUser().getUid() + "'.");
+                target.add(getFeedbackPanel());
+            }
 
-            getModelService().updateObject(acc);
-        } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
-            LOGGER.error("Could not retrieve account with uid: '" + accountUid + "' of user with uid: '" + model.getObject().getUser().getUid() + "'.");
-            target.add(getFeedbackPanel());
-        }
+            AssignmentType toRemove = new AssignmentType();
+            for(AssignmentType accountRef: model.getObject().getUser().getAccounts()){
+                if(accountRef.getUid().equals(accountUid)){
+                    toRemove = accountRef;
+                    break;
+                }
+            }
 
-        AssignmentType toRemove = new AssignmentType();
-        for(AssignmentType accountRef: model.getObject().getUser().getAccounts()){
-            if(accountRef.getUid().equals(accountUid)){
-                toRemove = accountRef;
-                break;
+            model.getObject().getUser().getAccounts().remove(toRemove);
+            target.add(getAccountContainer());
+        } else {
+            FederationIdentifierType identifier = rowModel.getObject().getFederationIdentifier();
+            FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
+
+            try {
+                SimpleRestResponse response = getFederationServiceClient()
+                        .createRemoveAccountRequest(member, identifier.getUniqueAttributeValue());
+
+                if(response.getStatus() == HttpStatus.OK_200){
+                    AssignmentType toRemove = new AssignmentType();
+                    for(AssignmentType accountRef: model.getObject().getUser().getAccounts()){
+                        if(accountRef.getFederationIdentifier().getUniqueAttributeValue().equals(identifier.getUniqueAttributeValue())){
+                            toRemove = accountRef;
+                            break;
+                        }
+                    }
+
+                    model.getObject().getUser().getAccounts().remove(toRemove);
+                    target.add(getAccountContainer());
+                } else {
+                    LOGGER.error("Could not remove remote account with uid: '" + identifier.getUniqueAttributeValue()  +
+                            "' of user with uid: '" + model.getObject().getUser().getUid() + "'.");
+                    target.add(getFeedbackPanel());
+                }
+
+            } catch (DatabaseCommunicationException | NoSuchFieldException | IllegalAccessException e) {
+                LOGGER.error("Could not remove remote account with uid: '" + identifier.getUniqueAttributeValue()  +
+                        "' of user with uid: '" + model.getObject().getUser().getUid() + "'.");
+                target.add(getFeedbackPanel());
             }
         }
-
-        model.getObject().getUser().getAccounts().remove(toRemove);
-        target.add(getAccountContainer());
     }
 
     private void cancelPerformed(){
