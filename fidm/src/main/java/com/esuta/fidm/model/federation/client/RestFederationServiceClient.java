@@ -480,4 +480,32 @@ public class RestFederationServiceClient {
 
         return responseObject;
     }
+
+    public GenericListRestResponse<String> createGetAvailableResourcesRequest(FederationMemberType federationMember)
+            throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetAvailableResourcesUrl(address, port,
+                getLocalFederationMemberIdentifier());
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        GenericListRestResponse<String> responseObject = new GenericListRestResponse<>();
+        responseObject.setStatus(responseStatus);
+        if(responseStatus == HttpStatus.OK_200){
+            responseObject.setValues(JsonUtil.jsonListToObject(responseMessage, String[].class));
+        } else {
+            responseObject.setMessage(responseMessage);
+        }
+
+        return responseObject;
+    }
 }

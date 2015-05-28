@@ -2,13 +2,14 @@ package com.esuta.fidm.model.federation.client;
 
 import com.esuta.fidm.repository.schema.core.ObjectType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *  @author shood
  * */
-public class GenericListRestResponse<T extends ObjectType> extends SimpleRestResponse{
+public class GenericListRestResponse<T extends Serializable> extends SimpleRestResponse{
 
     private List<T> values;
 

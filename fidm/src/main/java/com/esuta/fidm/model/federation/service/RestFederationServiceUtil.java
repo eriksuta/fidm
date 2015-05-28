@@ -39,6 +39,9 @@ public class RestFederationServiceUtil implements Serializable{
     public static final String GET_ORG_MEMBERS_PARAM = "/getOrgMembers/{memberIdentifier}/{uniqueOrgIdentifier}";
     public static final String GET_ORG_MEMBERS = "/getOrgMembers/";
 
+    public static final String GET_AVAILABLE_RESOURCES_PARAM = "/getAvailableResources/{memberIdentifier}";
+    public static final String GET_AVAILABLE_RESOURCES = "/getAvailableResources/";
+
     public static String createGetFederationMemberIdentifier(String address, int port){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
@@ -241,6 +244,18 @@ public class RestFederationServiceUtil implements Serializable{
         sb.append(memberIdentifier);
         sb.append("/");
         sb.append(orgIdentifier);
+        return sb.toString();
+    }
+
+    public static String createGetAvailableResourcesUrl(String address, int port, String memberIdentifier){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_AVAILABLE_RESOURCES);
+        sb.append(memberIdentifier);
         return sb.toString();
     }
 }

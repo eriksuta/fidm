@@ -569,5 +569,34 @@ public interface IFederationService {
      * */
     Response getOrgMembers(String memberIdentifier, String uniqueOrgIdentifier);
 
+    /**
+     *  <p>
+     *      This method returns all available resources for the federation member identified
+     *      by specified parameter. It should return a list of identifiers to these resources.
+     *  </p>
+     *
+     *  @param memberIdentifier
+     *      A unique identifier of federation member in identity federation performing the
+     *      request.
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing a message informing requester about the state of the
+     *      request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when the request
+     *                   was processed correctly. In this case, the response contains
+     *                   a list of identifiers of resources that are available to requester.
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
+     *                   malformed, e.g. some parameters of method are not set or there is no
+     *                   existing membership relation between requesting and requested federation
+     *                   members.
+     *                   *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     *
+     * */
+    Response getAvailableResources(String memberIdentifier);
 
 }

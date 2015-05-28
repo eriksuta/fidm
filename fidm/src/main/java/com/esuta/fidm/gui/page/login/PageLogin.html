@@ -67,10 +67,19 @@
 
                                 <dl class="dl-horizontal">
                                     <dt>
-                                        <label>Log to resource</label>
+                                        <label>Log to local resource</label>
                                     </dt>
                                     <dd>
                                         <input wicket:id="logToResource" type="checkbox" />
+                                    </dd>
+                                </dl>
+
+                                <dl class="dl-horizontal">
+                                    <dt>
+                                        <label>Log to remote resource</label>
+                                    </dt>
+                                    <dd>
+                                        <input wicket:id="logToRemoteResource" type="checkbox" />
                                     </dd>
                                 </dl>
 
@@ -83,6 +92,28 @@
                                             <select wicket:id="resource" class="form-control"></select>
                                         </dd>
                                     </dl>
+                                </div>
+
+                                <div wicket:id="remoteLoginContainer">
+                                    <dl class="dl-horizontal">
+                                        <dt>
+                                            <label>Federation Member</label>
+                                        </dt>
+                                        <dd>
+                                            <select wicket:id="federationMember" class="form-control"></select>
+                                        </dd>
+                                    </dl>
+
+                                    <div wicket:id="remoteResourceContainer">
+                                        <dl class="dl-horizontal">
+                                            <dt>
+                                                <label>Remote Resource</label>
+                                            </dt>
+                                            <dd>
+                                                <select wicket:id="remoteResource" class="form-control"></select>
+                                            </dd>
+                                        </dl>
+                                    </div>
                                 </div>
 
                                  <!-- Change this to a button or input when using this as a form -->

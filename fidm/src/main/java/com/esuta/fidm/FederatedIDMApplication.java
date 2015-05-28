@@ -40,7 +40,7 @@ public class FederatedIDMApplication extends WebApplication{
 	@Override
 	public void init(){
 		super.init();
-        System.setProperty("objectdb.conf", "F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\objectdb-2.4.0\\objectdb.conf");
+        System.setProperty("objectdb.conf", "D:\\skola\\Diplo\\_repository\\_db\\objectdb-2.4.0\\objectdb.conf");
 
 //        Initialization of system configuration object
         SystemConfigurationType systemConfig = new SystemConfigurationType();
@@ -50,10 +50,10 @@ public class FederatedIDMApplication extends WebApplication{
 
 //        TODO - this is just a temporary hack, so we can run multiple application instances to test federation functions
         if(getLocalPort() == 8080){
-            systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository.odb");
+            systemConfig.setDbConnectionFile("D:\\skola\\Diplo\\_repository\\_db\\repository.odb");
             systemConfig.setIdentityProviderIdentifier("Local-Identity-Provider-1");
         } else {
-            systemConfig.setDbConnectionFile("F:\\FIIT\\Ing\\Diplo\\_repository\\_db\\repository2.odb");
+            systemConfig.setDbConnectionFile("D:\\skola\\Diplo\\_repository\\_db\\repository2.odb");
             systemConfig.setIdentityProviderIdentifier("Local-Identity-Provider-2");
         }
         systemConfig.setName("System Configuration - Initial");

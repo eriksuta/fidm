@@ -1044,7 +1044,6 @@ public class RestFederationService implements IFederationService{
     @Path(RestFederationServiceUtil.GET_ORG_MEMBERS_PARAM)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Override
     public Response getOrgMembers(@PathParam("memberIdentifier")String memberIdentifier,
                                   @PathParam("uniqueOrgIdentifier")String uniqueOrgIdentifier) {
 
@@ -1101,6 +1100,48 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Could not load specified org. unit ot its members.", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Could not load specified org. unit ot its members." + e).build();
+        }
+    }
+
+    @GET
+    @Path(RestFederationServiceUtil.GET_AVAILABLE_RESOURCES_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAvailableResources(@PathParam("memberIdentifier") String memberIdentifier) {
+
+        if(memberIdentifier == null || memberIdentifier.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
+
+            if (currentMember == null) {
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            List<String> resourceNames = new ArrayList<>();
+            List<ResourceType> resources = modelService.getAllObjectsOfType(ResourceType.class);
+            for(ResourceType resource: resources){
+                resourceNames.add(resource.getName());
+            }
+
+            if(resourceNames.isEmpty()){
+                LOGGER.error("The list of provided resources is empty.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No resources are provided by this member of identity federation.").build();
+            }
+
+            LOGGER.error("Returning a list of " + resourceNames.size() + " available resources.");
+            return Response.status(HttpStatus.OK_200)
+                    .entity(JsonUtil.objectToJson(resourceNames)).build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load resources from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not load resources from the repository." + e).build();
         }
     }
 }

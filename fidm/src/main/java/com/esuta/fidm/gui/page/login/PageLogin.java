@@ -1,6 +1,7 @@
 package com.esuta.fidm.gui.page.login;
 
 import com.esuta.fidm.gui.component.CustomFeedbackPanel;
+import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.component.behavior.VisibleEnableBehavior;
 import com.esuta.fidm.gui.component.model.LoadableModel;
 import com.esuta.fidm.gui.page.dashboard.PageDashboard;
@@ -13,6 +14,9 @@ import com.esuta.fidm.model.auth.AuthResult;
 import com.esuta.fidm.model.auth.AuthService;
 import com.esuta.fidm.model.auth.IAuthService;
 import com.esuta.fidm.model.IProvisioningService;
+import com.esuta.fidm.model.federation.client.GenericListRestResponse;
+import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
+import com.esuta.fidm.repository.schema.core.FederationMemberType;
 import com.esuta.fidm.repository.schema.core.ResourceType;
 import com.esuta.fidm.repository.schema.core.UserType;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +32,7 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
+import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,14 +54,22 @@ public class PageLogin extends WebPage {
     //Provisioning service - needed when user tries to log in to an account
     private transient IProvisioningService provisioningService;
 
+    //Federation Service client - handling login to remote resource
+    private transient RestFederationServiceClient federationServiceClient;
+
     private static final String ID_LOGIN_FORM = "loginForm";
     private static final String ID_FEEDBACK_CONTAINER = "feedbackContainer";
     private static final String ID_FEEDBACK = "feedback";
     private static final String ID_NAME = "name";
     private static final String ID_PASSWORD = "password";
     private static final String ID_LOGIN_TO_RESOURCE = "logToResource";
+    private static final String ID_LOGIN_TO_REMOTE_RESOURCE = "logToRemoteResource";
     private static final String ID_RESOURCE_CONTAINER = "resourceContainer";
     private static final String ID_RESOURCE = "resource";
+    private static final String ID_REMOTE_LOGIN_CONTAINER = "remoteLoginContainer";
+    private static final String ID_FEDERATION_MEMBER = "federationMember";
+    private static final String ID_REMOTE_RESOURCE_CONTAINER = "remoteResourceContainer";
+    private static final String ID_REMOTE_RESOURCE = "remoteResource";
     private static final String ID_BUTTON_LOGIN = "login";
 
     private IModel<LoginDto> loginModel;
@@ -65,6 +78,7 @@ public class PageLogin extends WebPage {
         modelService = ModelService.getInstance();
         authService = AuthService.getInstance();
         provisioningService = ProvisioningService.getInstance();
+        federationServiceClient = RestFederationServiceClient.getInstance();
 
         loginModel = new LoadableModel<LoginDto>(false) {
 
@@ -96,6 +110,33 @@ public class PageLogin extends WebPage {
         PasswordTextField password = new PasswordTextField(ID_PASSWORD, new PropertyModel<String>(loginModel, LoginDto.F_PASSWORD));
         loginForm.add(password);
 
+        CheckBox loginToResource = new CheckBox(ID_LOGIN_TO_RESOURCE, new PropertyModel<Boolean>(loginModel, LoginDto.F_LOGIN_TO_RESOURCE));
+        loginToResource.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                loginModel.getObject().setLoginToRemoteResource(false);
+                target.add(get(ID_LOGIN_FORM + ":" + ID_LOGIN_TO_REMOTE_RESOURCE));
+                target.add(get(ID_LOGIN_FORM + ":" + ID_RESOURCE_CONTAINER));
+                target.add(get(ID_LOGIN_FORM + ":" + ID_REMOTE_LOGIN_CONTAINER));
+            }
+        });
+        loginForm.add(loginToResource);
+
+        CheckBox loginToRemoteResource = new CheckBox(ID_LOGIN_TO_REMOTE_RESOURCE, new PropertyModel<Boolean>(loginModel, LoginDto.F_LOGIN_TO_REMOTE_RESOURCE));
+        loginToRemoteResource.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                loginModel.getObject().setLoginToResource(false);
+                target.add(get(ID_LOGIN_FORM + ":" + ID_LOGIN_TO_RESOURCE));
+                target.add(get(ID_LOGIN_FORM + ":" + ID_RESOURCE_CONTAINER));
+                target.add(get(ID_LOGIN_FORM + ":" + ID_REMOTE_LOGIN_CONTAINER));
+            }
+        });
+        loginForm.add(loginToRemoteResource);
+
+        //Resource container
         final WebMarkupContainer resourceContainer = new WebMarkupContainer(ID_RESOURCE_CONTAINER);
         resourceContainer.setOutputMarkupId(true);
         resourceContainer.setOutputMarkupPlaceholderTag(true);
@@ -109,24 +150,69 @@ public class PageLogin extends WebPage {
         loginForm.add(resourceContainer);
 
         DropDownChoice resource = new DropDownChoice<>(ID_RESOURCE, new PropertyModel<String>(loginModel, LoginDto.F_RESOURCE_NAME),
-                new AbstractReadOnlyModel<List<String>>() {
+            new AbstractReadOnlyModel<List<String>>() {
 
-                    @Override
-                    public List<String> getObject() {
-                        return prepareResourceList();
-                    }
-                });
+                @Override
+                public List<String> getObject() {
+                    return prepareResourceList();
+                }
+            }
+        );
         resourceContainer.add(resource);
 
-        CheckBox loginToResource = new CheckBox(ID_LOGIN_TO_RESOURCE, new PropertyModel<Boolean>(loginModel, LoginDto.F_LOGIN_TO_RESOURCE));
-        loginToResource.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+        //Remote LOGIN container
+        final WebMarkupContainer remoteLoginContainer = new WebMarkupContainer(ID_REMOTE_LOGIN_CONTAINER);
+        remoteLoginContainer.setOutputMarkupId(true);
+        remoteLoginContainer.setOutputMarkupPlaceholderTag(true);
+        remoteLoginContainer.add(new VisibleEnableBehavior() {
+
+            @Override
+            public boolean isVisible() {
+                return loginModel.getObject().isLoginToRemoteResource();
+            }
+        });
+        loginForm.add(remoteLoginContainer);
+
+        DropDownChoice federationMember = new DropDownChoice<>(ID_FEDERATION_MEMBER, new PropertyModel<String>(loginModel, LoginDto.F_FEDERATION_MEMBER_NAME),
+            new AbstractReadOnlyModel<List<String>>() {
+
+                @Override
+                public List<String> getObject() {
+                    return prepareFederationMemberList();
+                }
+            }
+        );
+        federationMember.add(new AjaxFormComponentUpdatingBehavior("onchange") {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                target.add(resourceContainer);
+                federationMemberSelectionPerformed(target);
             }
         });
-        loginForm.add(loginToResource);
+        remoteLoginContainer.add(federationMember);
+
+        WebMarkupContainer remoteResourceContainer = new WebMarkupContainer(ID_REMOTE_RESOURCE_CONTAINER);
+        remoteResourceContainer.setOutputMarkupId(true);
+        remoteResourceContainer.setOutputMarkupPlaceholderTag(true);
+        remoteResourceContainer.add(new VisibleEnableBehavior(){
+
+            @Override
+            public boolean isVisible() {
+                return loginModel.getObject().getFederationMemberName() != null;
+            }
+        });
+        remoteLoginContainer.add(remoteResourceContainer);
+
+        DropDownChoice remoteResources = new DropDownChoice<>(ID_REMOTE_RESOURCE, new PropertyModel<String>(loginModel, LoginDto.F_REMOTE_RESOURCE_NAME),
+            new AbstractReadOnlyModel<List<String>>() {
+
+                @Override
+                public List<String> getObject() {
+                    return loginModel.getObject().getRemoteResourceNameList();
+                }
+            }
+        );
+        remoteResourceContainer.add(remoteResources);
 
         AjaxSubmitLink login = new AjaxSubmitLink(ID_BUTTON_LOGIN) {
 
@@ -167,6 +253,57 @@ public class PageLogin extends WebPage {
         }
 
         return resourceNames;
+    }
+
+    private List<String> prepareFederationMemberList(){
+        List<String> members = new ArrayList<>();
+
+        try {
+            List<FederationMemberType> federationMembers = modelService.getAllObjectsOfType(FederationMemberType.class);
+
+            for(FederationMemberType member: federationMembers){
+                members.add(member.getFederationMemberName());
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load list of available federation members. Reason: ", e);
+            error("Could not load list of available federation members. Reason: " + e);
+        }
+
+        return members;
+    }
+
+    private void federationMemberSelectionPerformed(AjaxRequestTarget target){
+        String memberName = loginModel.getObject().getFederationMemberName();
+        FederationMemberType member = WebMiscUtil.getFederationMemberByName(memberName);
+
+        if(member == null){
+            LOGGER.error("Invalid federation member. Please select new one.");
+            error("Invalid federation member. Please select new one.");
+        }
+
+        try {
+            GenericListRestResponse<String> response = federationServiceClient.createGetAvailableResourcesRequest(member);
+
+            if(HttpStatus.OK_200 == response.getStatus()){
+                List<String> availableResources = response.getValues();
+                loginModel.getObject().getRemoteResourceNameList().clear();
+                loginModel.getObject().getRemoteResourceNameList().addAll(availableResources);
+                target.add(get(ID_LOGIN_FORM + ":" + ID_REMOTE_LOGIN_CONTAINER + ":" + ID_REMOTE_RESOURCE_CONTAINER));
+
+            } else {
+                LOGGER.error("Could not retrieve list of available remote resources for federation member: '" +
+                        memberName + "'. Reason: " + response.getMessage());
+                error("Could not retrieve list of available remote resources for federation member: '" +
+                        memberName + "'. Reason: " + response.getMessage());
+            }
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not retrieve list of available remote resources for federation member: '" + memberName + "'.");
+            error("Could not retrieve list of available remote resources for federation member: '" + memberName + "'.");
+        }
+
+        target.add(getFeedbackPanel());
     }
 
     private void loginPerformed(AjaxRequestTarget target){
