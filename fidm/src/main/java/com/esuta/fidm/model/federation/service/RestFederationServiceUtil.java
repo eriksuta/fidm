@@ -42,6 +42,9 @@ public class RestFederationServiceUtil implements Serializable{
     public static final String GET_AVAILABLE_RESOURCES_PARAM = "/getAvailableResources/{memberIdentifier}";
     public static final String GET_AVAILABLE_RESOURCES = "/getAvailableResources/";
 
+    public static final String GET_PERFORM_REMOTE_LOGIN_PARAM = "/remoteLogin/{memberIdentifier}/{resourceName}/{accountName}/{password}";
+    public static final String GET_PERFORM_REMOTE_LOGIN = "/remoteLogin/";
+
     public static String createGetFederationMemberIdentifier(String address, int port){
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
@@ -256,6 +259,26 @@ public class RestFederationServiceUtil implements Serializable{
         sb.append(REST_SERVICE_PATH);
         sb.append(GET_AVAILABLE_RESOURCES);
         sb.append(memberIdentifier);
+        return sb.toString();
+    }
+
+    public static String createGetRemoteLoginUrl(String address, int port, String memberIdentifier, String resourceName,
+                                                 String accountName, String password){
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_PERFORM_REMOTE_LOGIN);
+        sb.append(memberIdentifier);
+        sb.append("/");
+        sb.append(resourceName);
+        sb.append("/");
+        sb.append(accountName);
+        sb.append("/");
+        sb.append(password);
         return sb.toString();
     }
 }

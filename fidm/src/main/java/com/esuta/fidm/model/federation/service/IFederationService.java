@@ -599,4 +599,44 @@ public interface IFederationService {
      * */
     Response getAvailableResources(String memberIdentifier);
 
+    /**
+     *  <p>
+     *      This method handles a login to remote resource. It returns a response with an
+     *      information about the result of login operation.
+     *  </p>
+     *
+     *  @param memberIdentifier
+     *      A unique identifier of federation member in identity federation performing the
+     *      request.
+     *
+     *  @param resourceName
+     *      The name of the resource (unique identifier) to which the subject is trying to
+     *      get access to
+     *
+     *  @param accountName
+     *      The name of the account of the subject on the remote resource.
+     *
+     *  @param password
+     *      The password to account
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing a message informing requester about the state of the
+     *      request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when the request
+     *                   was processed correctly. In this case, the response contains
+     *                   an AuthResult object that informs the user about the result of
+     *                   authentication. Even when user is not granted access to requested
+     *                   resource, HTTP code is thrown.
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
+     *                   malformed, e.g. some parameters of method are not set or there is no
+     *                   existing membership relation between requesting and requested federation
+     *                   members.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     * */
+    Response remoteLogin(String memberIdentifier, String resourceName, String accountName, String password);
 }

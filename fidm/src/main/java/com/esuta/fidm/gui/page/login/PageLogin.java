@@ -14,6 +14,7 @@ import com.esuta.fidm.model.auth.AuthResult;
 import com.esuta.fidm.model.auth.AuthService;
 import com.esuta.fidm.model.auth.IAuthService;
 import com.esuta.fidm.model.IProvisioningService;
+import com.esuta.fidm.model.federation.client.AuthRestResponse;
 import com.esuta.fidm.model.federation.client.GenericListRestResponse;
 import com.esuta.fidm.model.federation.client.RestFederationServiceClient;
 import com.esuta.fidm.repository.schema.core.FederationMemberType;
@@ -323,9 +324,7 @@ public class PageLogin extends WebPage {
         try {
             AuthResult result;
 
-            if(!dto.isLoginToResource()){
-                result = authService.login(name, password);
-            } else {
+            if(dto.isLoginToResource()){
                 String resourceName = dto.getResourceName();
 
                 if(resourceName == null || StringUtils.isEmpty(resourceName)){
@@ -337,6 +336,23 @@ public class PageLogin extends WebPage {
                 provisioningService.checkJitProvisioningList(modelService.readObjectByName(UserType.class, name),
                         modelService.readObjectByName(ResourceType.class, resourceName));
                 result = authService.loginToResource(name, password, resourceName);
+            } else if(dto.isLoginToRemoteResource()){
+                FederationMemberType member = WebMiscUtil.getFederationMemberByName(dto.getFederationMemberName());
+
+                AuthRestResponse response = federationServiceClient.createGetRemoteLoginRequest(member,
+                        dto.getResourceName(), name, password);
+
+                if(HttpStatus.OK_200 == response.getStatus()){
+                    result = response.getResult();
+                } else {
+                    error("Could not login to remote resource. Please try again later. Reason: " + response.getMessage());
+                    LOGGER.error("Could not login to remote resource. Please try again later. Reason: " + response.getMessage());
+                    target.add(getFeedbackPanel());
+                    return;
+                }
+
+            } else {
+                result = authService.login(name, password);
             }
 
             switch (result){

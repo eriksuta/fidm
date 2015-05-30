@@ -9,6 +9,8 @@ import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.ProvisioningService;
 import com.esuta.fidm.model.IProvisioningService;
+import com.esuta.fidm.model.auth.AuthResult;
+import com.esuta.fidm.model.auth.AuthService;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
 import com.esuta.fidm.repository.schema.support.FederationIdentifierType;
@@ -1142,6 +1144,85 @@ public class RestFederationService implements IFederationService{
             LOGGER.error("Could not load resources from the repository.", e);
             return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .entity("Could not load resources from the repository." + e).build();
+        }
+    }
+
+    @GET
+    @Path(RestFederationServiceUtil.GET_PERFORM_REMOTE_LOGIN_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response remoteLogin(@PathParam("memberIdentifier")String memberIdentifier,
+                                @PathParam("resourceName")String resourceName,
+                                @PathParam("accountName")String accountName,
+                                @PathParam("password")String password) {
+
+        if(memberIdentifier == null || memberIdentifier.isEmpty() ||
+                resourceName == null || resourceName.isEmpty() ||
+                accountName == null || accountName.isEmpty() ||
+                password == null || password.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+        try {
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
+
+            if (currentMember == null) {
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            //First, check if resource exists
+            List<ResourceType> allResources = modelService.getAllObjectsOfType(ResourceType.class);
+            ResourceType targetResource = null;
+            for(ResourceType resource: allResources){
+                if(resourceName.equals(resource.getName())){
+                    targetResource = resource;
+                }
+            }
+
+            if(targetResource == null){
+                LOGGER.error("Could not found resource with name: '" + resourceName + "'. Login not performed.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("Could not found resource with name: '" + resourceName + "'. Login not performed.").build();
+            }
+
+            //Check existing accounts directly
+            List<AccountType> accounts = modelService.getAllObjectsOfType(AccountType.class);
+            for(AccountType account: accounts){
+                if(accountName.equals(account.getName())){
+                    if(password.equals(account.getPassword()) && targetResource.getUid().equals(account.getResource().getUid())){
+                        LOGGER.info("Provided account name and password correct. Login successful.");
+                        return Response.status(HttpStatus.OK_200)
+                                .entity(JsonUtil.objectToJson(AuthResult.SUCCESS)).build();
+                    } else {
+                        AuthResult result = null;
+
+                        if(!password.equals(account.getPassword())){
+                            result = AuthResult.BAD_PASSWORD;
+                        } else if(!targetResource.getUid().equals(account.getResource().getUid())) {
+                            result = AuthResult.NO_ACCOUNT_ON_RESOURCE;
+                        }
+
+                        LOGGER.info("Resource or password not correct. Login not successful");
+                        return Response.status(HttpStatus.OK_200)
+                                .entity(JsonUtil.objectToJson(result)).build();
+                    }
+                }
+            }
+
+            //In this case, we are logging using user name (account owner) and password
+            provisioningService.checkJitProvisioningList(modelService.readObjectByName(UserType.class, accountName),
+                    modelService.readObjectByName(ResourceType.class, resourceName));
+
+            AuthResult result = AuthService.getInstance().loginToResource(accountName, password, resourceName);
+            return Response.status(HttpStatus.OK_200)
+                    .entity(JsonUtil.objectToJson(result)).build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load resource or account from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not load resource or account from the repository." + e).build();
         }
     }
 }

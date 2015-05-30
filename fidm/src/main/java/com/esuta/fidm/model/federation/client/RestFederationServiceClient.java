@@ -5,6 +5,7 @@ import com.esuta.fidm.gui.page.PageBase;
 import com.esuta.fidm.infra.exception.DatabaseCommunicationException;
 import com.esuta.fidm.model.IModelService;
 import com.esuta.fidm.model.ModelService;
+import com.esuta.fidm.model.auth.AuthResult;
 import com.esuta.fidm.model.federation.service.*;
 import com.esuta.fidm.model.util.JsonUtil;
 import com.esuta.fidm.repository.schema.core.*;
@@ -507,5 +508,30 @@ public class RestFederationServiceClient {
         }
 
         return responseObject;
+    }
+
+    public AuthRestResponse createGetRemoteLoginRequest(FederationMemberType federationMember,
+                                                        String resourceName, String accountName, String password)
+            throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetRemoteLoginUrl(address, port,
+                getLocalFederationMemberIdentifier(), resourceName, accountName, password);
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        if(responseStatus == HttpStatus.OK_200){
+            return new AuthRestResponse(responseStatus, (AuthResult)JsonUtil.jsonToObject(responseMessage, AuthResult.class));
+        } else {
+            return new AuthRestResponse(responseStatus, responseMessage);
+        }
     }
 }
