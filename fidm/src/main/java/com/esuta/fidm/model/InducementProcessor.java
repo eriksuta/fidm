@@ -55,6 +55,7 @@ public class InducementProcessor {
         List<AssignmentType> userOrgAssignments = user.getOrgUnitAssignments();
 
         if(userOrgAssignments.isEmpty()){
+            removeObsoleteAssignments(user);
             LOGGER.trace("Handled user with uid: '" + user.getName() + "' has no org. unit assignments. Inducement handling done.");
             return;
         }
@@ -71,6 +72,7 @@ public class InducementProcessor {
         List<AssignmentType> userOrgAssignments = user.getOrgUnitAssignments();
 
         if(userOrgAssignments.isEmpty()){
+            removeObsoleteAssignments(user);
             LOGGER.trace("Handled user with uid: '" + user.getUid() + "'(" + user.getName() +
                     ") has no org. unit assignments. Inducement handling done.");
             return;
@@ -96,6 +98,52 @@ public class InducementProcessor {
         }
 
         return orgUnitList;
+    }
+
+    private void removeObsoleteAssignments(UserType user){
+        List<AssignmentType> roleAssignmentsToRemove = new ArrayList<>();
+        for(AssignmentType assignment: user.getRoleAssignments()){
+            if(assignment.isAssignedByInducement()){
+                roleAssignmentsToRemove.add(assignment);
+            }
+        }
+
+        user.getRoleAssignments().removeAll(roleAssignmentsToRemove);
+
+        List<AssignmentType> accountAssignmentsToRemove = new ArrayList<>();
+        for(AssignmentType assignment: user.getAccounts()){
+            if(assignment.isAssignedByInducement()){
+                accountAssignmentsToRemove.add(assignment);
+            }
+        }
+
+        try {
+            for(AssignmentType assignment: accountAssignmentsToRemove){
+                if(assignment.getUid() != null){
+                    AccountType account = modelService.readObject(AccountType.class, assignment.getUid());
+                    modelService.deleteObject(account);
+                    LOGGER.info("Account: '" + account.getName() + "' remove correctly.");
+                } else {
+                    if(assignment.getFederationIdentifier() != null){
+                        FederationIdentifierType identifier = assignment.getFederationIdentifier();
+                        FederationMemberType member = WebMiscUtil.getFederationMemberByName(identifier.getFederationMemberId());
+                        SimpleRestResponse response = RestFederationServiceClient.getInstance()
+                                .createRemoveAccountRequest(member, identifier.getUniqueAttributeValue());
+
+                        if(HttpStatus.OK_200 == response.getStatus()){
+                            LOGGER.info("Remote account: '" + identifier.getUniqueAttributeValue() + "' remove correctly.");
+                        } else {
+                            LOGGER.error("Remote account: '" + identifier.getUniqueAttributeValue() + "' NOT remove correctly.");
+                        }
+
+                    }
+                }
+            }
+
+            user.getAccounts().removeAll(accountAssignmentsToRemove);
+        } catch (DatabaseCommunicationException | ObjectNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Can't remove account of user: '" + user.getName() + "'.");
+        }
     }
 
     private void handleExistingUserResourceInducements(UserType user, List<InducementType> resourceInducementIdentifiers){
@@ -335,7 +383,6 @@ public class InducementProcessor {
 
                 ObjectReferenceType ownerReference = new ObjectReferenceType(user.getUid());
                 newAccount.setOwner(ownerReference);
-                newAccount.setName(user.getName());
 
                 try {
                     newAccount = modelService.createObject(newAccount);

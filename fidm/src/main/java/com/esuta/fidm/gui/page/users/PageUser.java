@@ -467,6 +467,38 @@ public class PageUser extends PageBase {
                 }
             }
         });
+        columns.add(new AbstractColumn<AccountType, String>(new Model<>("Creation Source")) {
+
+            @Override
+            public void populateItem(Item<ICellPopulator<AccountType>> cellItem, String componentId, IModel<AccountType> rowModel) {
+                if(rowModel == null || rowModel.getObject() == null){
+                    return;
+                }
+
+                AccountType account = rowModel.getObject();
+                if(account.getUid() != null){
+                    for(AssignmentType assignment: model.getObject().getUser().getAccounts()){
+                        if(assignment.getUid().equals(account.getUid())){
+                            if(assignment.isAssignedByInducement()){
+                                cellItem.add(new Label(componentId, "Inducement"));
+                            } else {
+                                cellItem.add(new Label(componentId, "Manual"));
+                            }
+                        }
+                    }
+                } else {
+                    for(AssignmentType assignment: model.getObject().getUser().getAccounts()){
+                        if(assignment.getFederationIdentifier().getUniqueAttributeValue().equals(account.getFederationIdentifier().getUniqueAttributeValue())){
+                            if(assignment.isAssignedByInducement()){
+                                cellItem.add(new Label(componentId, "Inducement"));
+                            } else {
+                                cellItem.add(new Label(componentId, "Manual"));
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         columns.add(new AbstractColumn<AccountType, String>(new Model<>("Resource")) {
 

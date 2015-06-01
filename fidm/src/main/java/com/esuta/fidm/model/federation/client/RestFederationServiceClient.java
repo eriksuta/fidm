@@ -300,32 +300,32 @@ public class RestFederationServiceClient {
         return responseObject;
     }
 
-    public SimpleRestResponse createPostOrgChangesRequest(FederationMemberType federationMember,
-                                                          FederationIdentifierType federationIdentifier,
-                                                          ObjectModificationType modificationObject) throws DatabaseCommunicationException {
-
-        String address = federationMember.getWebAddress();
-        int port = federationMember.getPort();
-
-        String url = RestFederationServiceUtil.createPostProcessOrgChangesRequestUrl(address, port);
-        Client client = Client.create();
-        WebResource webResource = client.resource(url);
-
-        OrgModificationWrapper requestObject = new OrgModificationWrapper();
-        requestObject.setUniqueAttributeValue(federationIdentifier.getUniqueAttributeValue());
-        requestObject.setFederationMember(getLocalFederationMemberIdentifier());
-        requestObject.setModificationObject(modificationObject);
-
-        String jsonRequest = JsonUtil.objectToJson(requestObject);
-
-        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
-
-        int responseStatus = response.getStatus();
-        String responseMessage = response.getEntity(String.class);
-        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
-
-        return new SimpleRestResponse(responseStatus, responseMessage);
-    }
+//    public SimpleRestResponse createPostOrgChangesRequest(FederationMemberType federationMember,
+//                                                          FederationIdentifierType federationIdentifier,
+//                                                          ObjectModificationType modificationObject) throws DatabaseCommunicationException {
+//
+//        String address = federationMember.getWebAddress();
+//        int port = federationMember.getPort();
+//
+//        String url = RestFederationServiceUtil.createPostProcessOrgChangesRequestUrl(address, port);
+//        Client client = Client.create();
+//        WebResource webResource = client.resource(url);
+//
+//        OrgModificationWrapper requestObject = new OrgModificationWrapper();
+//        requestObject.setUniqueAttributeValue(federationIdentifier.getUniqueAttributeValue());
+//        requestObject.setFederationMember(getLocalFederationMemberIdentifier());
+//        requestObject.setModificationObject(modificationObject);
+//
+//        String jsonRequest = JsonUtil.objectToJson(requestObject);
+//
+//        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, jsonRequest);
+//
+//        int responseStatus = response.getStatus();
+//        String responseMessage = response.getEntity(String.class);
+//        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+//
+//        return new SimpleRestResponse(responseStatus, responseMessage);
+//    }
 
     public SimpleRestResponse createPostOrgChangesRequest(FederationMemberType federationMember,
                                                           String orgUniqueAttributeValue,

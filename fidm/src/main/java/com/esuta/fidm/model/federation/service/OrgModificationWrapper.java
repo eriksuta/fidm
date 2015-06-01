@@ -14,7 +14,6 @@ import java.io.Serializable;
  *
  *  @author shood
  * */
-@XmlRootElement
 public class OrgModificationWrapper implements Serializable{
 
     /**

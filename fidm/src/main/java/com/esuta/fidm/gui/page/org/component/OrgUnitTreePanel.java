@@ -433,6 +433,7 @@ public class OrgUnitTreePanel extends Panel {
                 removeOriginLink(root);
             }
 
+            removeMemberReferences(root);
             modelService.deleteObject(root);
             LOGGER.info("Root org. unit with uid: '" + rootOrgUid + "' was deleted.");
 
@@ -511,6 +512,7 @@ public class OrgUnitTreePanel extends Panel {
                 removeOriginLink(org);
             }
 
+            removeMemberReferences(org);
             getPageBase().getModelService().deleteObject(org);
         } catch (GeneralException e){
             LOGGER.error("Could not delete org. unit: '" + orgName + "'. Reason: ", e);
@@ -521,7 +523,7 @@ public class OrgUnitTreePanel extends Panel {
 
         LOGGER.info("Org. unit '" + orgName + "' was successfully deleted from the system.");
         success("Org. unit '" + orgName + "' was successfully deleted from the system.");
-        target.add(getPageBase().getFeedbackPanel(), getChildrenTable());
+        target.add(getPageBase().getFeedbackPanel(), getChildrenTable(), getTree());
     }
 
     private void removeOriginLink(OrgType org) throws DatabaseCommunicationException {
@@ -537,6 +539,35 @@ public class OrgUnitTreePanel extends Panel {
             success("Link to deleted org. unit removed from origin. Message: " + message);
         } else {
             error("Link to deleted org. unit NOT removed from origin. Message: " + message);
+        }
+    }
+
+    private void removeMemberReferences(OrgType org) throws DatabaseCommunicationException, ObjectNotFoundException {
+        List<UserType> members = new ArrayList<>();
+
+        //First, get members of removed org. unit
+        List<UserType> allUsers = getPageBase().getModelService().getAllObjectsOfType(UserType.class);
+        for(UserType user: allUsers){
+
+            for(AssignmentType assignment: user.getOrgUnitAssignments()){
+                if(org.getUid().equals(assignment.getUid())){
+                    members.add(user);
+                }
+            }
+        }
+
+        //Remove org. unit assignments to removed org. unit
+        for(UserType user: members){
+            AssignmentType assignmentToDelete = null;
+            for(AssignmentType assignment: user.getOrgUnitAssignments()) {
+                if (org.getUid().equals(assignment.getUid())) {
+                    assignmentToDelete = assignment;
+                    break;
+                }
+            }
+
+            user.getOrgUnitAssignments().remove(assignmentToDelete);
+            getPageBase().getModelService().updateObject(user);
         }
     }
 

@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.apache.wicket.Component;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
@@ -384,16 +385,18 @@ public class PageOrg extends PageBase {
                 target.add(getFederationContainer());
             }
         });
+        sharedInFederation.setOutputMarkupId(true);
         federationContainer.add(sharedInFederation);
 
         CheckBox shareSubtree = new CheckBox(ID_SHARE_SUBTREE, new PropertyModel<Boolean>(model, "shareSubtree"));
-        shareSubtree.add(new VisibleEnableBehavior(){
+        shareSubtree.add(new VisibleEnableBehavior() {
 
             @Override
             public boolean isEnabled() {
                 return model.getObject().isShareInFederation();
             }
         });
+        shareSubtree.setOutputMarkupId(true);
         federationContainer.add(shareSubtree);
 
         CheckBox overrideSharing = new CheckBox(ID_OVERRIDE_SHARING, new PropertyModel<Boolean>(model, "overrideParentSharing"));
@@ -409,6 +412,21 @@ public class PageOrg extends PageBase {
                 return model.getObject().isShareInFederation();
             }
         });
+        overrideSharing.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                if(model.getObject().isOverrideParentSharing()) {
+                    model.getObject().setShareInFederation(false);
+                    model.getObject().setShareSubtree(false);
+                }
+
+                target.add(get(ID_MAIN_FORM + ":" + ID_FEDERATION_CONTAINER + ":" + ID_SHARE_IN_FEDERATION),
+                        get(ID_MAIN_FORM + ":" + ID_FEDERATION_CONTAINER + ":" + ID_OVERRIDE_SHARING),
+                        get(ID_MAIN_FORM + ":" + ID_FEDERATION_CONTAINER + ":" + ID_SHARE_SUBTREE));
+            }
+        });
+        overrideSharing.setOutputMarkupId(true);
         federationContainer.add(overrideSharing);
 
         initButtons(mainForm);
@@ -1831,7 +1849,7 @@ public class PageOrg extends PageBase {
         }
 
         //If org. unit is shared in federation, sharing policy must be specified
-        if(orgUnit.isShareInFederation()){
+        if(isLocalOrgUnit() && orgUnit.isShareInFederation()){
             if(orgUnit.getSharingPolicy() == null){
                 error("Sharing policy must be specified for org. unit shared in federation. Specify a sharing" +
                         "policy for this org. unit or do not share it in federation.");
@@ -1899,7 +1917,7 @@ public class PageOrg extends PageBase {
 
                     FederationIdentifierType orgIdentifier = oldOrg.getFederationIdentifier();
                     getFederationServiceClient().createPostOrgChangesRequest(getFederationMemberByName(orgIdentifier.getFederationMemberId()),
-                            orgIdentifier, remoteModificationObject);
+                            orgIdentifier.getUniqueAttributeValue(), remoteModificationObject);
                 }
 
                 modelService.updateObject(orgUnit);
