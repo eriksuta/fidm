@@ -1,5 +1,6 @@
 package com.esuta.fidm.gui.page.org.component;
 
+import com.esuta.fidm.gui.component.WebMiscUtil;
 import com.esuta.fidm.gui.component.data.ObjectDataProvider;
 import com.esuta.fidm.gui.component.data.column.EditDeleteButtonColumn;
 import com.esuta.fidm.gui.component.data.column.LinkColumn;
@@ -17,10 +18,7 @@ import com.esuta.fidm.infra.exception.GeneralException;
 import com.esuta.fidm.infra.exception.ObjectNotFoundException;
 import com.esuta.fidm.model.ModelService;
 import com.esuta.fidm.model.federation.client.SimpleRestResponse;
-import com.esuta.fidm.repository.schema.core.AssignmentType;
-import com.esuta.fidm.repository.schema.core.ObjectReferenceType;
-import com.esuta.fidm.repository.schema.core.OrgType;
-import com.esuta.fidm.repository.schema.core.UserType;
+import com.esuta.fidm.repository.schema.core.*;
 import org.apache.log4j.Logger;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
@@ -434,12 +432,18 @@ public class OrgUnitTreePanel extends Panel {
             }
 
             removeMemberReferences(root);
+            removeCopiesInFederation(root);
             modelService.deleteObject(root);
             LOGGER.info("Root org. unit with uid: '" + rootOrgUid + "' was deleted.");
 
         } catch (DatabaseCommunicationException | ObjectNotFoundException e) {
             LOGGER.error("Could not delete root org. unit with uid: '" + rootOrgUid + "'.");
             error("Could not delete root org. unit with uid: '" + rootOrgUid + "'.");
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Could not delete org. unit. Reason: ", e);
+            error("Could not delete org. unit. Reason: " + e.getMessage());
+            target.add(getPageBase().getFeedbackPanel());
+            return;
         }
 
         setResponsePage(PageOrgList.class);
@@ -513,10 +517,16 @@ public class OrgUnitTreePanel extends Panel {
             }
 
             removeMemberReferences(org);
+            removeCopiesInFederation(org);
             getPageBase().getModelService().deleteObject(org);
         } catch (GeneralException e){
             LOGGER.error("Could not delete org. unit: '" + orgName + "'. Reason: ", e);
             error("Could not delete org. unit: '" + orgName + "'. Reason: " + e.getExceptionMessage());
+            target.add(getPageBase().getFeedbackPanel());
+            return;
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Could not delete org. unit: '" + orgName + "'. Reason: ", e);
+            error("Could not delete org. unit: '" + orgName + "'. Reason: " + e.getMessage());
             target.add(getPageBase().getFeedbackPanel());
             return;
         }
@@ -539,6 +549,22 @@ public class OrgUnitTreePanel extends Panel {
             success("Link to deleted org. unit removed from origin. Message: " + message);
         } else {
             error("Link to deleted org. unit NOT removed from origin. Message: " + message);
+        }
+    }
+
+    private void removeCopiesInFederation(OrgType org) throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
+        if(org.getCopies().isEmpty()){
+            return;
+        }
+
+        for(ObjectReferenceType memberRef: org.getCopies()){
+            FederationMemberType member = getPageBase().getModelService().readObject(FederationMemberType.class, memberRef.getUid());
+
+            String value = WebMiscUtil.getUniqueAttributeValue(org, member.getUniqueOrgIdentifier());
+            SimpleRestResponse response = getPageBase().getFederationServiceClient().createRemoveOriginOrgRequest(member, value);
+
+            LOGGER.info("Deleting copies of org. '" + org.getName() + "' in identity federation member: '" +
+                    member.getFederationMemberName() + "'. Status: " + response.getStatus() + ", message: " + response.getMessage() + ".");
         }
     }
 

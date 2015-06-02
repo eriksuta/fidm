@@ -375,13 +375,13 @@ public class RestFederationServiceClient {
     }
 
     public SimpleRestResponse createRemoveOriginOrgRequest(FederationMemberType federationMember,
-                                                           FederationIdentifierType federationIdentifier) throws DatabaseCommunicationException {
+                                                           String uniqueAttributeValue) throws DatabaseCommunicationException {
 
         String address = federationMember.getWebAddress();
         int port = federationMember.getPort();
 
         String url = RestFederationServiceUtil.createGetRemoveOriginOrgkUrl(address, port,
-                getLocalFederationMemberIdentifier(), federationIdentifier.getUniqueAttributeValue());
+                getLocalFederationMemberIdentifier(), uniqueAttributeValue);
         Client client = Client.create();
         WebResource webResource = client.resource(url);
 
