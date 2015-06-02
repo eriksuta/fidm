@@ -291,6 +291,35 @@ public class RestFederationService implements IFederationService{
         modelService.updateObject(org);
     }
 
+    private void removeMemberReferences(OrgType org) throws DatabaseCommunicationException, ObjectNotFoundException {
+        List<UserType> members = new ArrayList<>();
+
+        //First, get members of removed org. unit
+        List<UserType> allUsers = modelService.getAllObjectsOfType(UserType.class);
+        for(UserType user: allUsers){
+
+            for(AssignmentType assignment: user.getOrgUnitAssignments()){
+                if(org.getUid().equals(assignment.getUid())){
+                    members.add(user);
+                }
+            }
+        }
+
+        //Remove org. unit assignments to removed org. unit
+        for(UserType user: members){
+            AssignmentType assignmentToDelete = null;
+            for(AssignmentType assignment: user.getOrgUnitAssignments()) {
+                if (org.getUid().equals(assignment.getUid())) {
+                    assignmentToDelete = assignment;
+                    break;
+                }
+            }
+
+            user.getOrgUnitAssignments().remove(assignmentToDelete);
+            modelService.updateObject(user);
+        }
+    }
+
     @GET
     @Path(RestFederationServiceUtil.GET_FEDERATION_MEMBER_IDENTIFIER)
     @Produces(MediaType.APPLICATION_JSON)
@@ -842,6 +871,86 @@ public class RestFederationService implements IFederationService{
             modelService.updateObject(org);
 
             return Response.status(HttpStatus.OK_200).entity("Link to copy og org. unit removed successfully").build();
+
+        } catch (DatabaseCommunicationException e) {
+            LOGGER.error("Could not load org. unit from the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Can't read from the repository. Internal problem: " + e).build();
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: ", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Incorrect unique attribute for org. unit is set. Can't find org. unique identifier. Reason: " + e).build();
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error("Could not update org. unit in the repository.", e);
+            return Response.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .entity("Could not update org. unit in the repository." + e).build();
+        }
+    }
+
+    @GET
+    @Path(RestFederationServiceUtil.GET_REMOVE_ORIGIN_ORG_PARAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response originOrgRemoved(@PathParam("memberIdentifier")String memberIdentifier,
+                                     @PathParam("uniqueAttributeValue")String uniqueAttributeValue) {
+
+        if(memberIdentifier == null || memberIdentifier.isEmpty() ||
+                uniqueAttributeValue == null || uniqueAttributeValue.isEmpty()){
+            return Response.status(HttpStatus.BAD_REQUEST_400).entity("Bad or missing parameter.").build();
+        }
+
+
+        try {
+            FederationMemberType currentMember = checkFederationMembership(memberIdentifier);
+
+            if (currentMember == null) {
+                LOGGER.error("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.");
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No federation membership exists with requesting federation member: '" + memberIdentifier + "'.").build();
+            }
+
+            OrgType org = getOrgUnitByUniqueAttributeValue(currentMember, uniqueAttributeValue);
+
+            if(org == null){
+                LOGGER.error("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue);
+                return Response.status(HttpStatus.BAD_REQUEST_400)
+                        .entity("No org. unit exists with defined unique attribute value: " + uniqueAttributeValue).build();
+            }
+
+            //Get members of org. unit
+            List<OrgType> allOrgUnits = modelService.getAllObjectsOfType(OrgType.class);
+            List<OrgType> children = new ArrayList<>();
+            for(OrgType unit: allOrgUnits){
+                for(ObjectReferenceType parentRef: unit.getParentOrgUnits()){
+                    if(org.getUid().equals(parentRef.getUid())){
+                        children.add(unit);
+                    }
+                }
+            }
+
+            //Remove references to removed org. unit
+            for(OrgType unit: children){
+                ObjectReferenceType refToRemove = null;
+
+                for(ObjectReferenceType parentRef: unit.getParentOrgUnits()){
+                    if(parentRef.getUid().equals(org.getUid())){
+                        refToRemove = parentRef;
+                        break;
+                    }
+                }
+
+                if(refToRemove != null){
+                    unit.getParentOrgUnits().remove(refToRemove);
+                    modelService.updateObject(unit);
+                }
+            }
+
+            //Remove the org. itself
+            removeMemberReferences(org);
+            modelService.deleteObject(org);
+
+            LOGGER.info("Org. unit '" + uniqueAttributeValue + "' removed successfully.");
+            return Response.status(HttpStatus.OK_200).entity("Org. unit '" + uniqueAttributeValue + "' removed successfully.").build();
 
         } catch (DatabaseCommunicationException e) {
             LOGGER.error("Could not load org. unit from the repository.", e);

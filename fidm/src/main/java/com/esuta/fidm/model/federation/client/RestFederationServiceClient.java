@@ -374,6 +374,26 @@ public class RestFederationServiceClient {
         return new SimpleRestResponse(responseStatus, responseMessage);
     }
 
+    public SimpleRestResponse createRemoveOriginOrgRequest(FederationMemberType federationMember,
+                                                           FederationIdentifierType federationIdentifier) throws DatabaseCommunicationException {
+
+        String address = federationMember.getWebAddress();
+        int port = federationMember.getPort();
+
+        String url = RestFederationServiceUtil.createGetRemoveOriginOrgkUrl(address, port,
+                getLocalFederationMemberIdentifier(), federationIdentifier.getUniqueAttributeValue());
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+
+        int responseStatus = response.getStatus();
+        String responseMessage = response.getEntity(String.class);
+        LOGGER.info("Response status: " + response.getStatus() + ", message: " + responseMessage);
+
+        return new SimpleRestResponse(responseStatus, responseMessage);
+    }
+
     public SimpleRestResponse createAccountRequest(FederationMemberType member, String uniqueAttributeValue, UserType user)
             throws DatabaseCommunicationException, NoSuchFieldException, IllegalAccessException {
 

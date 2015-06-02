@@ -429,6 +429,44 @@ public interface IFederationService {
 
     /**
      *  <p>
+     *      A method with the purpose of informing all copies of org. unit in identity
+     *      federation that origin org. unit has been removed. The standard procedure in
+     *      this case is to remove the copies in members of identity federation along with all
+     *      implied account and role inducements. All children of removed org. unit should be
+     *      made root org. units.
+     *  </p>
+     *
+     *  @param memberIdentifier (String)
+     *      A unique identifier of federation member in identity federation performing the
+     *      request.
+     *
+     *  @param uniqueAttributeValue (String)
+     *      A unique value of attribute specified by targeted federation member. By this value,
+     *      requested federation member is able to uniquely identify the requested org. unit.
+     *
+     *  @return javax.ws.rs.core.Response
+     *      A HTTP response containing an information, if the request was processed
+     *      properly, or a message informing requester about the error that happened
+     *      during request processing. Following HTTP codes may be thrown:
+     *
+     *      <b>200</b> - response with HTTP code 200 should be returned when the copy
+     *                   of org. unit was removed without problems.
+     *
+     *      <b>400</b> - response with HTTP code 400 should be returned when the request is
+     *                   malformed, e.g. the memberIdentifier or uniqueAttributeValue is not
+     *                   set or there is no existing membership relation between
+     *                   requesting and requested federation members. Another situation
+     *                   handled as bad request is when there is no org. unit for provided
+     *                   unique attribute value, so the org. unit copy cannot be removed.
+     *
+     *      <b>500</b> - response with HTTP code 500 should be returned when there is an internal
+     *                   error on the server side of federation member processing the request, such
+     *                   as problems with reading objects in repository.
+     * */
+    Response originOrgRemoved(String memberIdentifier, String uniqueAttributeValue);
+
+    /**
+     *  <p>
      *      A method that is responsible for remote account creation. Remote account needs to be
      *      created when a user of one member of identity federation needs an account on another
      *      member of identity federation.

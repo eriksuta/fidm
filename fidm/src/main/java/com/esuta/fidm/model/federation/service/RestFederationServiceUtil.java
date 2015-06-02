@@ -29,6 +29,8 @@ public class RestFederationServiceUtil implements Serializable{
     public static final String POST_PROCESS_ORG_CHANGES = "/processOrgChanges";
     public static final String GET_REMOVE_ORG_LINK_PARAM = "/removeOrgLink/{memberIdentifier}/{uniqueAttributeValue}";
     public static final String GET_REMOVE_ORG_LINK = "/removeOrgLink/";
+    public static final String GET_REMOVE_ORIGIN_ORG_PARAM = "/originOrgRemoved/{memberIdentifier}/{uniqueAttributeValue}";
+    public static final String GET_REMOVE_ORIGIN_ORG= "/originOrgRemoved/";
 
     public static final String POST_REQUEST_ACCOUNT = "/requestAccount";
     public static final String GET_ACCOUNT_PARAM = "/getAccount/{memberIdentifier}/{uniqueAccountIdentifier}";
@@ -187,6 +189,20 @@ public class RestFederationServiceUtil implements Serializable{
         sb.append(port);
         sb.append(REST_SERVICE_PATH);
         sb.append(GET_REMOVE_ORG_LINK);
+        sb.append(memberIdentifier);
+        sb.append("/");
+        sb.append(uniqueAttributeValue);
+        return sb.toString();
+    }
+
+    public static String createGetRemoveOriginOrgkUrl(String address, int port, String memberIdentifier, String uniqueAttributeValue){
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(address);
+        sb.append(":");
+        sb.append(port);
+        sb.append(REST_SERVICE_PATH);
+        sb.append(GET_REMOVE_ORIGIN_ORG);
         sb.append(memberIdentifier);
         sb.append("/");
         sb.append(uniqueAttributeValue);
